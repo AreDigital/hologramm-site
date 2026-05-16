@@ -369,14 +369,14 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
 <!-- NAV -->
 <nav>
 <div class="nav-inner">
-  <a class="nav-logo" href="hologramm.html">HOLOGRAMM</a>
+  <a class="nav-logo" href="index.html">HOLOGRAMM</a>
   <ul class="nav-links">
-    <li><a href="hologramm.html" data-en="HOME" data-es="INICIO">HOME</a></li>
-    <li><a href="hologramm.html#sound" data-en="SOUND" data-es="SONIDO">SOUND</a></li>
-    <li><a href="hologramm.html#visual" data-en="VISUAL" data-es="VISUAL">VISUAL</a></li>
-    <li><a href="hologramm-presskit.html" class="active" data-en="PRESSKIT" data-es="PRESSKIT">PRESSKIT</a></li>
-    <li><a href="hologramm-signals.html" data-en="SIGNALS" data-es="SEÑALES">SIGNALS</a></li>
-    <li><a href="hologramm.html#connect" data-en="CONNECT" data-es="CONECTAR">CONNECT</a></li>
+    <li><a href="index.html" data-en="HOME" data-es="INICIO">HOME</a></li>
+    <li><a href="index.html#sound" data-en="SOUND" data-es="SONIDO">SOUND</a></li>
+    <li><a href="index.html#visual" data-en="VISUAL" data-es="VISUAL">VISUAL</a></li>
+    <li><a href="presskit.html" class="active" data-en="PRESSKIT" data-es="PRESSKIT">PRESSKIT</a></li>
+    <li><a href="signals.html" data-en="SIGNALS" data-es="SEÑALES">SIGNALS</a></li>
+    <li><a href="index.html#connect" data-en="CONNECT" data-es="CONECTAR">CONNECT</a></li>
   </ul>
   <div class="nav-right">
     <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
@@ -850,15 +850,26 @@ document.getElementById('langBtn').addEventListener('click', toggleLang);
 document.getElementById('langBtnRider').addEventListener('click', toggleLang);
 
 /* ── Hamburger ── */
-document.getElementById('hamburger').addEventListener('click',()=>{
-  const nl=document.querySelector('.nav-links');
-  nl.style.display=nl.style.display==='flex'?'none':'flex';
-  nl.style.flexDirection='column'; nl.style.position='absolute';
-  nl.style.top='60px'; nl.style.right='16px';
-  nl.style.background='rgba(2,6,8,0.97)';
-  nl.style.border='1px solid rgba(0,229,255,0.12)';
-  nl.style.padding='16px 24px'; nl.style.gap='16px'; nl.style.zIndex='200';
+const burger=document.getElementById('hamburger');
+const navLinksM=document.querySelector('.nav-links');
+let menuOpen=false;
+burger.addEventListener('click',()=>{
+  menuOpen=!menuOpen;
+  if(menuOpen){
+    navLinksM.style.display='flex';
+    navLinksM.style.flexDirection='column';
+    navLinksM.style.position='absolute';
+    navLinksM.style.top='58px';
+    navLinksM.style.left='0';
+    navLinksM.style.right='0';
+    navLinksM.style.background='rgba(2,6,8,0.98)';
+    navLinksM.style.borderBottom='1px solid rgba(0,229,255,0.12)';
+    navLinksM.style.padding='20px 24px';
+    navLinksM.style.gap='18px';
+    navLinksM.style.zIndex='200';
+  } else { navLinksM.style.display='none'; }
 });
+navLinksM.querySelectorAll('a').forEach(a=>{ a.addEventListener('click',()=>{ menuOpen=false; navLinksM.style.display='none'; }); });
 
 /* ── Media dots & carousel arrows — with active card ── */
 const mediaDots  = document.querySelectorAll('#mediaDots .media-dot');

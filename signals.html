@@ -642,10 +642,8 @@ document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
 /* ── Language toggle — titles stay in English ── */
 let lang='en';
-document.getElementById('langBtn').addEventListener('click',()=>{
-  lang=lang==='en'?'es':'en';
-  document.getElementById('langBtn').textContent=lang==='en'?'ES':'EN';
-});
+const langBtnEl=document.getElementById('langBtn');
+if(langBtnEl){ langBtnEl.addEventListener('click',()=>{ lang=lang==='en'?'es':'en'; langBtnEl.textContent=lang==='en'?'ES':'EN'; }); }
 
 /* ── Hamburger ── */
 const burger=document.getElementById('hamburger');

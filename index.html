@@ -1263,14 +1263,15 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
 ════════════════════════════════════ */
 let lang='en';
 const langBtn=document.getElementById('langBtn');
-langBtn.addEventListener('click',()=>{
-  lang = lang==='en' ? 'es' : 'en';
-  langBtn.textContent = lang==='en' ? 'ES' : 'EN';
-  /* Only translate HUD corner labels and status text, not titles */
-  document.querySelectorAll('.hud-bl[data-en], .hud-br[data-en]').forEach(el=>{
-    el.textContent = lang==='en' ? el.dataset.en : el.dataset.es;
+if(langBtn){
+  langBtn.addEventListener('click',()=>{
+    lang = lang==='en' ? 'es' : 'en';
+    langBtn.textContent = lang==='en' ? 'ES' : 'EN';
+    document.querySelectorAll('.hud-bl[data-en], .hud-br[data-en]').forEach(el=>{
+      el.textContent = lang==='en' ? el.dataset.en : el.dataset.es;
+    });
   });
-});
+}
 
 /* ════════════════════════════════════
    MOBILE HAMBURGER

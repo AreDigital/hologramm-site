@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HOLOGRAMM — PRESSKIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cyan: #00e5ff;
+  --cyan-dim: rgba(0,229,255,0.07);
+  --cyan-mid: rgba(0,229,255,0.35);
+  --white: #d8e8ec;
+  --white-dim: rgba(216,232,236,0.45);
+  --bg: #020608;
+  --border: rgba(0,229,255,0.18);
+  --border-thin: rgba(0,229,255,0.12);
+  --grid: rgba(0,229,255,0.035);
+  --font-display: 'Orbitron', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background:var(--bg); color:var(--white);
+  font-family:var(--font-mono);
+  overflow-x:hidden; cursor:none;
+}
+a { text-decoration:none; color:inherit; }
+
+body::before {
+  content:''; position:fixed; inset:0; z-index:4; pointer-events:none;
+  background: linear-gradient(to right, rgba(2,6,8,0.7) 0%, transparent 12%, transparent 88%, rgba(2,6,8,0.7) 100%);
+}
+
+/* ── BG ── */
+#field { position:fixed; inset:0; z-index:0; pointer-events:none; }
+.grid-overlay {
+  position:fixed; inset:0; z-index:1; pointer-events:none;
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:80px 80px;
+  mask-image: radial-gradient(ellipse 90% 90% at 50% 50%, black 30%, transparent 100%);
+}
+.scanlines { position:fixed; inset:0; z-index:2; pointer-events:none; opacity:.3; background:repeating-linear-gradient(to bottom, transparent, transparent 2px, rgba(0,0,0,0.07) 2px, rgba(0,0,0,0.07) 4px); }
+.noise { position:fixed; inset:0; z-index:3; pointer-events:none; opacity:.022; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size:128px; }
+
+/* ── Cursor ── */
+#cursor { position:fixed; width:7px; height:7px; background:var(--cyan); border-radius:50%; pointer-events:none; z-index:9999; transform:translate(-50%,-50%); mix-blend-mode:screen; transition:width .15s,height .15s; }
+#cursor-ring { position:fixed; width:34px; height:34px; border:1px solid var(--cyan-mid); border-radius:50%; pointer-events:none; z-index:9998; transform:translate(-50%,-50%); transition:width .35s cubic-bezier(.23,1,.32,1),height .35s cubic-bezier(.23,1,.32,1),border-color .3s; }
+#cursor-glow { position:fixed; width:380px; height:380px; background:radial-gradient(circle, rgba(0,229,255,0.09) 0%, transparent 65%); pointer-events:none; z-index:9997; transform:translate(-50%,-50%); }
+body.hovering #cursor { width:11px; height:11px; }
+body.hovering #cursor-ring { width:52px; height:52px; border-color:var(--cyan); }
+
+/* ── Nav ── */
+nav { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(2,6,8,0.97); border-bottom:1px solid rgba(0,229,255,0.12); display:flex; align-items:stretch; justify-content:center; transition:transform .35s cubic-bezier(.23,1,.32,1), opacity .35s ease; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
+.nav-inner { width:100%; max-width:1080px; display:flex; align-items:center; justify-content:space-between; padding:18px 0; }
+.nav-logo { font-family:var(--font-display); font-weight:700; font-size:.88rem; letter-spacing:.25em; color:var(--white); margin-left:16px; }
+.nav-links { display:flex; gap:32px; list-style:none; }
+.nav-links a { font-size:.58rem; letter-spacing:.25em; color:rgba(216,232,236,0.55); transition:color .2s; position:relative; }
+.nav-links a:hover, .nav-links a.active { color:var(--cyan); }
+.nav-links a.active::after { content:''; position:absolute; bottom:-4px; left:0; right:0; height:1px; background:var(--cyan); }
+.nav-right { display:flex; align-items:center; gap:20px; }
+.lang-btn { font-family:var(--font-mono); font-size:.55rem; letter-spacing:.2em; color:var(--cyan); background:transparent; border:1px solid var(--border); padding:6px 14px; cursor:none; transition:background .25s,color .25s; }
+.lang-btn:hover { background:var(--cyan); color:var(--bg); }
+.nav-hamburger { display:none; flex-direction:column; gap:5px; cursor:none; }
+.nav-hamburger span { width:22px; height:1px; background:var(--white); display:block; }
+
+/* ── Page ── */
+.page-wrap { max-width:1080px; margin:0 auto; position:relative; z-index:10; padding:100px 0 40px; display:flex; flex-direction:column; gap:10px; }
+
+/* ── Section header ── */
+.presskit-header { text-align:center; padding:40px 0 32px; border:1px solid var(--border-thin); position:relative; }
+.sec-title-wrap { display:inline-flex; align-items:center; gap:16px; }
+.sec-bracket { font-size:1.8rem; color:var(--border); font-family:var(--font-mono); line-height:1; }
+.presskit-title { font-family:var(--font-display); font-weight:700; font-size:clamp(1.1rem,2.5vw,1.6rem); letter-spacing:.28em; }
+.presskit-sub { margin-top:10px; font-size:.58rem; letter-spacing:.3em; color:var(--cyan); }
+.presskit-pdf {
+  position:absolute; right:24px; top:50%; transform:translateY(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  border:1px solid var(--border-thin); padding:10px 18px;
+  cursor:none; transition:border-color .3s;
+}
+.presskit-pdf:hover { border-color:var(--cyan-mid); }
+.presskit-pdf-label { font-size:.52rem; letter-spacing:.18em; color:var(--white-dim); line-height:1.5; text-align:center; }
+.presskit-pdf-icon { font-size:.9rem; color:var(--cyan); opacity:.8; }
+
+/* ── Section wrap ── */
+.section-wrap { position:relative; z-index:10; border:1px solid var(--border-thin); }
+.section-index { display:none; }
+
+/* ── Block title (bracket style) ── */
+.block-title-wrap { display:inline-flex; align-items:center; gap:10px; margin-bottom:24px; }
+.block-bracket { font-size:1rem; color:var(--border-thin); font-family:var(--font-mono); }
+.block-title { font-family:var(--font-display); font-weight:500; font-size:.85rem; letter-spacing:.25em; }
+
+/* ══════════════════════════
+   SHARED SECTION HEADER (like home)
+══════════════════════════ */
+.sec-head { text-align:center; padding:48px 0 36px; }
+.sec-title-wrap { display:inline-flex; align-items:center; gap:16px; }
+.sec-bracket { font-size:1.8rem; color:var(--border); font-family:var(--font-mono); line-height:1; }
+.sec-title {
+  font-family:var(--font-display); font-weight:700;
+  font-size:clamp(1.1rem,2.5vw,1.6rem); letter-spacing:.28em;
+}
+.sec-sub { margin-top:10px; font-size:.72rem; letter-spacing:.22em; color:var(--cyan); }
+
+/* ══════════════════════════
+   02 — BIOGRAPHY
+══════════════════════════ */
+/* ══════════════════════════
+   02 — BIOGRAPHY
+══════════════════════════ */
+.bio-num {
+  font-size:.65rem; letter-spacing:.2em; color:var(--cyan);
+  display:flex; align-items:center; gap:8px;
+  height:32px; margin-bottom:8px;
+}
+.bio-num::after { content:''; flex:1; max-width:30px; height:1px; background:var(--border); }
+.bio-inner {
+  padding: 0 40px 48px;
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:40px; align-items:stretch;
+}
+.bio-text-col { display:flex; flex-direction:column; gap:18px; }
+.bio-para { font-size:.82rem; letter-spacing:.04em; line-height:2; color:var(--white-dim); text-align:justify; }
+.bio-para strong { color:var(--white); }
+
+/* Read more button */
+.bio-read-more {
+  display:inline-flex; align-items:center; gap:8px;
+  background:transparent; border:none; cursor:none;
+  color:var(--cyan); font-family:var(--font-mono);
+  font-size:.68rem; letter-spacing:.2em;
+  padding:0; margin-top:4px; transition:opacity .2s;
+}
+.bio-read-more:hover { opacity:.7; }
+.bio-read-arrow { transition:transform .3s; }
+.bio-read-more.expanded .bio-read-arrow { transform:rotate(90deg); }
+
+.bio-photo-2 { flex:none; height:280px; animation: fadeUp .6s ease forwards; }
+
+/* Photo col: padding-top offsets bio-num so photo starts at first paragraph */
+.bio-photo-col {
+  display:flex; flex-direction:column; gap:16px;
+  padding-top: 8px;
+}
+/* First photo: fills remaining height of the text column */
+.bio-photo {
+  width:100%; flex:1; min-height:200px;
+  background:linear-gradient(135deg,#030f14 0%,#051820 50%,#020a0d 100%);
+  border:1px solid var(--border-thin);
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; position:relative;
+}
+.bio-photo svg { width:100%; height:100%; position:absolute; inset:0; }
+.bio-photo-label {
+  position:absolute; bottom:12px; left:0; right:0;
+  text-align:center; font-size:.6rem; letter-spacing:.25em;
+  color:rgba(0,229,255,0.45);
+}
+.bio-photo-corners::before, .bio-photo-corners::after {
+  content:''; position:absolute; width:14px; height:14px;
+  border-color:var(--cyan-mid); border-style:solid;
+}
+.bio-photo-corners::before { top:0; left:0; border-width:1px 0 0 1px; }
+.bio-photo-corners::after  { bottom:0; right:0; border-width:0 1px 1px 0; }
+
+/* ══════════════════════════
+   03 — MEDIA
+══════════════════════════ */
+.media-inner { padding:0 40px 48px; }
+.media-grid {
+  display:grid; grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+.media-card {
+  border:1px solid var(--border-thin); cursor:none;
+  transition:border-color .3s; overflow:hidden;
+}
+.media-card:hover { border-color:var(--cyan-mid); }
+.media-card.active-card { border-color:var(--cyan); }
+.media-thumb {
+  width:100%; aspect-ratio:4/3;
+  background:linear-gradient(135deg,#041216 0%,#061a1f 60%,#040e11 100%);
+  display:flex; align-items:center; justify-content:center;
+  position:relative; overflow:hidden;
+}
+.media-thumb svg { width:80%; height:80%; opacity:.6; transition:.3s; }
+.media-card:hover .media-thumb svg { opacity:.9; transform:scale(1.04); }
+.media-play {
+  position:absolute; width:32px; height:32px; border-radius:50%;
+  border:1px solid rgba(216,232,236,0.4);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.6rem; color:var(--white);
+  background:rgba(2,6,8,0.5); transition:.2s;
+}
+.media-card:hover .media-play { border-color:var(--cyan); color:var(--cyan); }
+.media-info { padding:12px 14px; }
+.media-name { font-size:.7rem; letter-spacing:.15em; color:var(--white-dim); }
+.media-dur  { font-size:.62rem; color:rgba(216,232,236,0.3); margin-top:4px; }
+
+/* Carousel arrows */
+.media-dots { display:flex; justify-content:center; gap:8px; padding:24px 0 16px; }
+.media-dot { width:20px; height:1px; background:var(--border); transition:background .2s; cursor:none; }
+.media-dot.active { background:var(--cyan); }
+.media-arrow {
+  position:absolute; top:50%; transform:translateY(-120%);
+  font-size:1.6rem; color:var(--cyan-mid); cursor:none;
+  z-index:5; transition:color .2s;
+  background:rgba(2,6,8,0.7); padding:10px 8px;
+  border:1px solid var(--border-thin); line-height:1;
+  user-select:none;
+}
+.media-arrow:hover { color:var(--cyan); border-color:var(--cyan-mid); }
+.media-arrow-left  { left:-1px; }
+.media-arrow-right { right:-1px; }
+/* Drive link */
+.media-drive-link {
+  display:flex; align-items:center; justify-content:center; gap:14px;
+  font-size:.65rem; letter-spacing:.3em; color:var(--cyan);
+  padding: 0 0 36px; text-decoration:none; cursor:none;
+  transition:opacity .2s;
+}
+.media-drive-link:hover { opacity:.7; }
+.media-drive-link::before,.media-drive-link::after {
+  content:''; flex:1; max-width:60px; height:1px; background:var(--border);
+}
+
+/* ══════════════════════════
+   04 — TECHNICAL RIDER
+══════════════════════════ */
+.rider-inner {
+  padding:0 40px 48px;
+}
+.rider-cols { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+.rider-col { border:1px solid var(--border-thin); padding:28px 32px; background:linear-gradient(135deg,#041216 0%,#061a1f 60%,#040e11 100%); }
+.rider-col-title {
+  font-size:.72rem; letter-spacing:.25em; color:var(--cyan);
+  display:flex; align-items:center; gap:10px; margin-bottom:20px;
+}
+.rider-col-title svg { width:14px; height:14px; opacity:.7; flex-shrink:0; }
+.rider-list { list-style:none; display:flex; flex-direction:column; gap:12px; }
+.rider-list li {
+  font-size:.82rem; letter-spacing:.04em; color:var(--white-dim);
+  line-height:1.8; padding-left:18px; position:relative;
+}
+.rider-list li::before { content:'—'; position:absolute; left:0; color:var(--cyan); opacity:.5; font-size:.6rem; top:2px; }
+.rider-important {
+  margin-top:16px; padding:16px 20px;
+  border:1px solid rgba(0,229,255,0.08);
+  font-size:.78rem; letter-spacing:.04em; line-height:1.9;
+  color:rgba(216,232,236,0.4);
+}
+.rider-important span { color:var(--cyan); opacity:.7; }
+
+/* ══════════════════════════
+   05 — CONNECT
+══════════════════════════ */
+.connect-inner {
+  padding:40px 40px 48px;
+  display:grid; grid-template-columns:1fr 1fr 1fr;
+  gap:32px; align-items:center;
+}
+.connect-booking-label { font-size:.65rem; letter-spacing:.3em; color:var(--white-dim); margin-bottom:6px; }
+.connect-title-wrap { display:inline-flex; align-items:center; gap:10px; }
+.connect-title { font-family:var(--font-display); font-size:1rem; letter-spacing:.2em; }
+.connect-sub { font-size:.65rem; letter-spacing:.2em; color:var(--cyan); margin-top:8px; }
+
+.connect-email-col { display:flex; flex-direction:column; gap:12px; }
+.connect-email {
+  font-size:.78rem; letter-spacing:.1em; color:var(--cyan);
+  display:flex; align-items:center; gap:8px;
+}
+.connect-response { font-size:.65rem; letter-spacing:.1em; color:var(--white-dim); }
+
+.connect-socials { display:flex; justify-content:flex-end; align-items:center; gap:24px; }
+.social-item { display:flex; flex-direction:column; align-items:center; gap:8px; cursor:none; text-decoration:none; color:inherit; }
+.social-icon {
+  width:48px; height:48px; border:1px solid var(--border-thin); border-radius:4px;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--white); font-size:1.2rem; transition:.25s;
+  background:rgba(0,229,255,0.03);
+}
+.social-item:hover .social-icon { border-color:var(--cyan); color:var(--cyan); }
+.social-label { font-size:.56rem; letter-spacing:.15em; color:var(--white-dim); }
+.social-item:hover .social-label { color:var(--cyan); }
+
+/* ── Footer ── */
+.footer-bar { border-top:1px solid var(--border-thin); display:flex; justify-content:space-between; align-items:center; padding:14px 20px; font-size:.6rem; letter-spacing:.15em; color:rgba(216,232,236,0.25); }
+.footer-freq-bars { display:flex; align-items:flex-end; gap:2px; height:16px; }
+.fb { width:2px; background:var(--cyan); opacity:.35; border-radius:1px; animation:barPulse var(--d,.8s) ease-in-out infinite alternate; animation-delay:var(--dl,0s); }
+
+/* ── Reveal ── */
+.reveal { opacity:0; transform:translateY(22px); transition:opacity .9s ease, transform .9s ease; }
+.reveal.visible { opacity:1; transform:none; }
+
+@keyframes barPulse { from{height:2px;opacity:.15} to{height:var(--h,10px);opacity:.6} }
+@keyframes fadeUp   { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
+
+/* ── Responsive ── */
+@media(max-width:1120px){
+  .page-wrap { padding:100px 12px 40px; }
+  nav .nav-inner { padding:18px 16px; }
+}
+@media(max-width:900px){
+  .bio-inner { grid-template-columns:1fr; padding:0 16px 40px; }
+  .bio-photo-col { padding-top:0; }
+  .bio-photo { aspect-ratio:16/9; height:auto; }
+  .bio-photo-2 { height:auto; aspect-ratio:16/9; }
+  .rider-inner { padding:0 16px 40px; }
+  .rider-cols { grid-template-columns:1fr; }
+  .connect-inner { grid-template-columns:1fr; padding:24px 16px 40px; gap:20px; display:flex; flex-direction:column; align-items:center; }
+  .connect-socials { justify-content:center; flex-wrap:wrap; gap:16px; order:1; }
+  .connect-email-col { order:2; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .connect-email { justify-content:center; }
+  .connect-response { text-align:center; }
+  .connect-inner > .reveal:first-child { order:3; text-align:center; }
+  .media-inner { padding:0 16px 40px; }
+  .media-grid { grid-template-columns:repeat(2,1fr); }
+  .media-arrow { display:none; }
+  .presskit-pdf { position:static; transform:none; margin:12px auto 0; width:fit-content; padding:8px 14px; }
+  .presskit-pdf-label { font-size:.48rem; }
+  .presskit-pdf-icon { font-size:.8rem; }
+  .presskit-header { padding:32px 16px; }
+  .sec-title { font-size:clamp(.9rem,3.5vw,1.3rem); letter-spacing:.15em; }
+  .connect-socials { justify-content:center; flex-wrap:wrap; gap:16px; }
+}
+@media(max-width:768px){
+  .nav-inner { justify-content:center; position:relative; }
+  .nav-logo { position:absolute; left:50%; transform:translateX(-50%); }
+  .nav-right { margin-left:auto; }
+  .page-wrap { padding:90px 8px 32px; }
+  nav .nav-inner { padding:14px 12px; }
+  .nav-links { display:none; }
+  .nav-hamburger { display:flex; }
+  .media-grid { grid-template-columns:repeat(2,1fr); }
+  .rider-cols { grid-template-columns:1fr; }
+  .connect-socials { justify-content:center; gap:14px; }
+  .social-icon { width:40px; height:40px; }
+  .footer-bar { flex-direction:column; align-items:center; gap:6px; text-align:center; font-size:.45rem; }
+  .footer-freq-bars { order:1; }
+  .footer-bar span:first-child { order:2; }
+  .footer-bar span:last-child { order:3; margin-top:0; }
+  .bio-inner { gap:24px; }
+  .sec-sub { font-size:.52rem; letter-spacing:.1em; }
+}
+@media(max-width:480px){
+  .media-grid { grid-template-columns:1fr 1fr; }
+  .rider-cols { grid-template-columns:1fr; }
+  .bio-para { font-size:.75rem; }
+  .rider-list li { font-size:.75rem; }
+  .connect-socials { gap:10px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="field"></canvas>
+<div class="grid-overlay"></div>
+<div class="scanlines"></div>
+<div class="noise"></div>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div id="cursor-glow"></div>
+
+<!-- NAV -->
+<nav>
+<div class="nav-inner">
+  <a class="nav-logo" href="hologramm.html">HOLOGRAMM</a>
+  <ul class="nav-links">
+    <li><a href="hologramm.html" data-en="HOME" data-es="INICIO">HOME</a></li>
+    <li><a href="hologramm.html#sound" data-en="SOUND" data-es="SONIDO">SOUND</a></li>
+    <li><a href="hologramm.html#visual" data-en="VISUAL" data-es="VISUAL">VISUAL</a></li>
+    <li><a href="hologramm-presskit.html" class="active" data-en="PRESSKIT" data-es="PRESSKIT">PRESSKIT</a></li>
+    <li><a href="hologramm-signals.html" data-en="SIGNALS" data-es="SEÑALES">SIGNALS</a></li>
+    <li><a href="hologramm.html#connect" data-en="CONNECT" data-es="CONECTAR">CONNECT</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
+  </div>
+</div>
+</nav>
+
+<div class="page-wrap">
+
+  <!-- ── PRESSKIT HEADER ── -->
+  <div class="presskit-header reveal">
+    <div class="sec-title-wrap">
+      <span class="sec-bracket">[</span>
+      <h1 class="presskit-title" data-en="P R E S S K I T" data-es="P R E S S K I T">P R E S S K I T</h1>
+      <span class="sec-bracket">]</span>
+    </div>
+    <p class="presskit-sub" data-en="RESOURCES FOR MEDIA & BOOKINGS" data-es="RECURSOS PARA MEDIOS Y BOOKINGS">RESOURCES FOR MEDIA & BOOKINGS</p>
+    <a class="presskit-pdf" href="https://drive.google.com/drive/folders/1AiNa3oGzv5DWh9NYmnHXKEFtjYwVt4O9?usp=sharing" target="_blank">
+      <div class="presskit-pdf-label">DOWNLOAD<br>PDF</div>
+      <div class="presskit-pdf-icon">↓</div>
+    </a>
+  </div>
+
+  <!-- ══════════════════════════
+       02 — BIOGRAPHY
+  ══════════════════════════ -->
+  <div class="section-wrap" id="biography">
+    <div class="section-index">02<br><strong data-en="BIOGRAPHY" data-es="BIOGRAFÍA">BIOGRAPHY</strong></div>
+
+    <div class="sec-head reveal">
+      <div class="sec-title-wrap">
+        <span class="sec-bracket">[</span>
+        <h2 class="sec-title" data-en="BIOGRAPHY" data-es="BIOGRAFÍA">BIOGRAPHY</h2>
+        <span class="sec-bracket">]</span>
+        <button class="lang-btn" id="langBtn">ES</button>
+      </div>
+    </div>
+
+    <div class="bio-inner">
+      <!-- Text -->
+      <div class="bio-text-col reveal">
+
+        <!-- EN -->
+        <div class="bio-en">
+          <p class="bio-para"><strong>Andrés Ramírez AKA HOLOGRAMM</strong> is a DJ and audiovisual creator from Medellín, Colombia, with more than 10 years connected to the electronic scene and creative environments linked to techno, visual design, and digital exploration.</p>
+          <p class="bio-para" style="margin-top:14px">HOLOGRAMM was born as a project focused on the relationship between sound, texture, and perception, combining electronic music, generative visuals, reactive textures, particles, and audiovisual experimentation within a minimalist and immersive universe.</p>
+          <p class="bio-para" style="margin-top:14px">Currently, he is developing a creative laboratory where he explores the creation of hypnotic loops, sound atmospheres, audiovisual pieces, and original sonic concepts inspired by frequencies, oscillations, and sound-reactive systems. Part of his proposal consists of building original visuals, textures, and sonic structures that evolve in synchronization, allowing each piece to develop its own visual identity.</p>
+          <!-- Extended EN -->
+          <div class="bio-extra" style="display:none">
+            <p class="bio-para" style="margin-top:14px">At the same time, HOLOGRAMM continues developing original music productions focused on hypnotic techno and ambient textures, as part of the natural evolution of his artistic identity.</p>
+            <p class="bio-para" style="margin-top:14px"><strong>As a DJ</strong>, his sound moves between deep techno, minimal techno, acid, and hypnotic techno, exploring repetitive structures, immersive soundscapes, and contrasts between energy and contemplation.</p>
+            <p class="bio-para" style="margin-top:14px">Influenced by artists and projects such as <strong>Eric Prydz</strong> for his integration of music and visual narrative, <strong>The Chemical Brothers</strong> for their audiovisual imagination and creative energy, <strong>Richie Hawtin</strong> for his technological exploration and experimental vision of electronic performance, and <strong>Paul Kalkbrenner</strong> for his emotional sensitivity and organic interpretation within the live electronic act.</p>
+            <p class="bio-para" style="margin-top:14px">Beyond a traditional format, HOLOGRAMM functions as an audiovisual exploration space where sound can take form, transforming into signals, atmospheres, and textures in constant evolution.</p>
+          </div>
+        </div>
+
+        <!-- ES (hidden by default) -->
+        <div class="bio-es" style="display:none">
+          <p class="bio-para"><strong>Andrés Ramírez AKA HOLOGRAMM</strong> es un DJ y creador audiovisual de Medellín, Colombia, con más de 10 años de conexión con la escena electrónica y los entornos creativos ligados al techno, el diseño visual y la exploración digital.</p>
+          <p class="bio-para" style="margin-top:14px">HOLOGRAMM nace como un proyecto enfocado en la relación entre sonido, textura y percepción, combinando música electrónica, visuales generativos, texturas reactivas, partículas y experimentación audiovisual dentro de un universo minimalista e inmersivo.</p>
+          <p class="bio-para" style="margin-top:14px">Actualmente desarrolla un laboratorio creativo donde explora la creación de loops hipnóticos, atmósferas sonoras, piezas audiovisuales y conceptos sonoros originales inspirados en frecuencias, oscilaciones y sistemas reactivos al sonido. Parte de su propuesta consiste en construir visuales, texturas y estructuras sonoras originales que evolucionan en sincronía, buscando que cada pieza desarrolle una identidad visual propia.</p>
+          <!-- Extended ES -->
+          <div class="bio-extra-es" style="display:none">
+            <p class="bio-para" style="margin-top:14px">Al mismo tiempo, HOLOGRAMM va desarrollando producciones musicales originales enfocadas en el techno hipnótico y las texturas ambient, como parte de la evolución natural de su identidad artística.</p>
+            <p class="bio-para" style="margin-top:14px"><strong>Como DJ</strong>, su sonido se mueve entre el deep techno, minimal techno, acid y techno hipnótico, explorando estructuras repetitivas, paisajes envolventes y contrastes entre energía y contemplación.</p>
+            <p class="bio-para" style="margin-top:14px">Influenciado por artistas y proyectos como <strong>Eric Prydz</strong> y su integración entre música y narrativa visual, <strong>The Chemical Brothers</strong> por su imaginario audiovisual y energía creativa, <strong>Richie Hawtin</strong> por su exploración tecnológica y visión experimental del performance electrónico, y <strong>Paul Kalkbrenner</strong> por la sensibilidad emocional y la interpretación orgánica dentro del live electronic act.</p>
+            <p class="bio-para" style="margin-top:14px">Más allá de un formato tradicional, HOLOGRAMM funciona como un espacio de exploración audiovisual donde el sonido puede tomar forma, transformándose en señales, atmósferas y texturas en constante evolución.</p>
+          </div>
+        </div>
+
+        <!-- Read more button -->
+        <button class="bio-read-more" id="bioReadMore">
+          <span class="bio-read-label" data-en="Read more" data-es="Leer más">Read more</span>
+          <span class="bio-read-arrow">→</span>
+        </button>
+      </div>
+
+      <!-- Photo column -->
+      <div class="bio-photo-col reveal" style="transition-delay:.15s">
+        <!-- Photo 1 — always visible -->
+        <div class="bio-photo">
+          <div class="bio-photo-corners"></div>
+          <img src="https://res.cloudinary.com/djjz6wmfz/image/upload/v1778821381/FULL_7_w2cscg.png" alt="HOLOGRAMM — Studio Lab" style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;">
+          <p class="bio-photo-label" data-en="STUDIO LAB / HOLOGRAMM SYSTEM" data-es="ESTUDIO LAB / SISTEMA HOLOGRAMM">STUDIO LAB / HOLOGRAMM SYSTEM</p>
+        </div>
+
+        <!-- Photo 2 — appears when expanded -->
+        <div class="bio-photo bio-photo-2" id="bioPhoto2" style="display:none">
+          <div class="bio-photo-corners"></div>
+          <svg viewBox="0 0 600 450" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <radialGradient id="pg2" cx="50%" cy="50%" r="55%">
+                <stop offset="0%" stop-color="#00e5ff" stop-opacity=".12"/>
+                <stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <rect width="600" height="450" fill="#030c10"/>
+            <ellipse cx="300" cy="225" rx="260" ry="180" fill="url(#pg2)"/>
+            <!-- Orbital rings -->
+            <ellipse cx="300" cy="225" rx="220" ry="80" fill="none" stroke="#00e5ff" stroke-width=".5" opacity=".4"/>
+            <ellipse cx="300" cy="225" rx="160" ry="58" fill="none" stroke="#00e5ff" stroke-width=".4" opacity=".3"/>
+            <ellipse cx="300" cy="225" rx="100" ry="36" fill="none" stroke="#00e5ff" stroke-width=".3" opacity=".25"/>
+            <!-- Cross lines -->
+            <line x1="300" y1="80" x2="300" y2="370" stroke="#00e5ff" stroke-width=".3" opacity=".2"/>
+            <line x1="80" y1="225" x2="520" y2="225" stroke="#00e5ff" stroke-width=".3" opacity=".2"/>
+            <!-- Center glow -->
+            <circle cx="300" cy="225" r="8" fill="#00e5ff" opacity=".5"/>
+            <circle cx="300" cy="225" r="20" fill="none" stroke="#00e5ff" stroke-width=".5" opacity=".4"/>
+            <!-- Particles -->
+            <g fill="#00e5ff">
+              <circle r="2" cx="520" cy="225" opacity=".7"/>
+              <circle r="1.5" cx="80"  cy="225" opacity=".5"/>
+              <circle r="1" cx="200"  cy="155" opacity=".4"/>
+              <circle r="1.5" cx="400" cy="295" opacity=".4"/>
+              <circle r="1" cx="180"  cy="310" opacity=".3"/>
+              <circle r="1" cx="420"  cy="140" opacity=".35"/>
+              <circle r="2" cx="460"  cy="180" opacity=".4"/>
+              <circle r="1" cx="140"  cy="270" opacity=".3"/>
+            </g>
+          </svg>
+          <p class="bio-photo-label" data-en="HOLOGRAMM — LIVE SESSION" data-es="HOLOGRAMM — SESIÓN EN VIVO">HOLOGRAMM — LIVE SESSION</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════
+       03 — MEDIA
+  ══════════════════════════ -->
+  <div class="section-wrap" id="media">
+    <div class="section-index">03<br><strong data-en="MEDIA" data-es="MEDIA">MEDIA</strong></div>
+
+    <div class="sec-head reveal" style="position:relative;">
+      <div class="sec-title-wrap">
+        <span class="sec-bracket">[</span>
+        <h2 class="sec-title" data-en="MEDIA" data-es="MEDIA">MEDIA</h2>
+        <span class="sec-bracket">]</span>
+      </div>
+      <p class="sec-sub" data-en="PHOTOS / VIDEOS / FLYER RESOURCES" data-es="FOTOS / VIDEOS / RECURSOS PARA FLYERS">PHOTOS / VIDEOS / FLYER RESOURCES</p>
+      <a class="presskit-pdf" href="https://drive.google.com/drive/folders/1AiNa3oGzv5DWh9NYmnHXKEFtjYwVt4O9?usp=sharing" target="_blank">
+        <div class="presskit-pdf-label">DOWNLOAD<br>MEDIA</div>
+        <div class="presskit-pdf-icon">↓</div>
+      </a>
+    </div>
+
+    <div class="media-inner" style="padding-top:0; position:relative;">
+      <!-- Carousel arrows -->
+      <div class="media-arrow media-arrow-left" id="mediaArrowLeft">&#8249;</div>
+      <div class="media-arrow media-arrow-right" id="mediaArrowRight">&#8250;</div>
+
+      <div class="media-grid" id="mediaGrid">
+        <!-- Card 1 -->
+        <div class="media-card reveal active-card">
+          <div class="media-thumb">
+            <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 90 C30 55,70 75,110 50 C145 28,165 65,200 55" fill="none" stroke="#00e5ff" stroke-width=".8" opacity=".7"/>
+              <path d="M0 100 C40 70,80 88,120 65 C155 45,175 78,200 68" fill="none" stroke="#00e5ff" stroke-width=".4" opacity=".4"/>
+              <g fill="#00e5ff" opacity=".5"><circle r="2" cx="40" cy="80"/><circle r="1.5" cx="100" cy="58"/><circle r="2.5" cx="160" cy="65"/></g>
+            </svg>
+            <div class="media-play">▶</div>
+          </div>
+          <div class="media-info">
+            <div class="media-name">VISUAL_01.MP4</div>
+            <div class="media-dur">00:32</div>
+          </div>
+        </div>
+        <!-- Card 2 -->
+        <div class="media-card reveal" style="transition-delay:.07s">
+          <div class="media-thumb">
+            <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+              <defs><radialGradient id="mg2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#00e5ff" stop-opacity=".6"/><stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/></radialGradient></defs>
+              <circle cx="100" cy="75" r="55" fill="none" stroke="#00e5ff" stroke-width=".5" opacity=".5"/>
+              <circle cx="100" cy="75" r="38" fill="none" stroke="#00e5ff" stroke-width=".4" opacity=".4"/>
+              <circle cx="100" cy="75" r="22" fill="none" stroke="#00e5ff" stroke-width=".3" opacity=".3"/>
+              <circle cx="100" cy="75" r="5" fill="url(#mg2)"/>
+            </svg>
+            <div class="media-play">▶</div>
+          </div>
+          <div class="media-info">
+            <div class="media-name">VISUAL_02.MP4</div>
+            <div class="media-dur">00:28</div>
+          </div>
+        </div>
+        <!-- Card 3 -->
+        <div class="media-card reveal" style="transition-delay:.14s">
+          <div class="media-thumb">
+            <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#00e5ff" stroke-width=".5" opacity=".6">
+                <line x1="40" y1="0" x2="40" y2="150"/><line x1="70" y1="10" x2="70" y2="150"/>
+                <line x1="100" y1="0" x2="100" y2="140"/><line x1="130" y1="20" x2="130" y2="150"/>
+                <line x1="160" y1="0" x2="160" y2="130"/>
+              </g>
+              <rect x="70" y="55" width="60" height="40" rx="1" fill="none" stroke="#00e5ff" stroke-width=".4" opacity=".3"/>
+            </svg>
+            <div class="media-play">▶</div>
+          </div>
+          <div class="media-info">
+            <div class="media-name">LIVE_SET_01.MP4</div>
+            <div class="media-dur">01:04:12</div>
+          </div>
+        </div>
+        <!-- Card 4 -->
+        <div class="media-card reveal" style="transition-delay:.21s">
+          <div class="media-thumb">
+            <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="100,20 160,55 160,105 100,140 40,105 40,55" fill="none" stroke="#00e5ff" stroke-width=".5" opacity=".6"/>
+              <polygon points="100,38 147,65 147,100 100,127 53,100 53,65" fill="none" stroke="#00e5ff" stroke-width=".4" opacity=".4"/>
+              <polygon points="100,56 134,75 134,95 100,114 66,95 66,75" fill="none" stroke="#00e5ff" stroke-width=".3" opacity=".3"/>
+              <circle cx="100" cy="75" r="4" fill="#00e5ff" opacity=".5"/>
+            </svg>
+            <div class="media-play">▶</div>
+          </div>
+          <div class="media-info">
+            <div class="media-name">INSTALLATION_01.MP4</div>
+            <div class="media-dur">00:45</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="media-dots reveal" id="mediaDots" style="transition-delay:.3s">
+        <div class="media-dot active"></div>
+        <div class="media-dot"></div>
+        <div class="media-dot"></div>
+        <div class="media-dot"></div>
+      </div>
+
+      <a class="media-drive-link reveal" href="https://drive.google.com/drive/folders/1AiNa3oGzv5DWh9NYmnHXKEFtjYwVt4O9?usp=sharing" target="_blank" style="transition-delay:.4s" data-en="VIEW MORE ON DRIVE" data-es="VER MÁS EN DRIVE">VIEW MORE ON DRIVE</a>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════
+       04 — TECHNICAL RIDER
+  ══════════════════════════ -->
+  <div class="section-wrap" id="rider">
+    <div class="section-index">04<br><strong data-en="TECHNICAL RIDER" data-es="RIDER TÉCNICO">TECHNICAL<br>RIDER</strong></div>
+
+    <div class="sec-head reveal">
+      <div class="sec-title-wrap">
+        <span class="sec-bracket">[</span>
+        <h2 class="sec-title" data-en="TECHNICAL RIDER" data-es="RIDER TÉCNICO">TECHNICAL RIDER</h2>
+        <span class="sec-bracket">]</span>
+        <button class="lang-btn" id="langBtnRider">ES</button>
+      </div>
+      <p class="sec-sub" data-en="DJ SETUP / AUDIO / VISUAL / STAGE" data-es="DJ SETUP / AUDIO / VISUAL / ESCENARIO">DJ SETUP / AUDIO / VISUAL / STAGE</p>
+    </div>
+
+    <div class="rider-inner" style="padding-top:0">
+        <div class="rider-cols">
+          <!-- DJ Setup -->
+          <div class="rider-col reveal">
+            <div class="rider-col-title">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2"/><line x1="8" y1="2" x2="8" y2="0"/><line x1="8" y1="16" x2="8" y2="14"/></svg>
+              <span data-en="DJ SETUP" data-es="DJ SETUP">DJ SETUP</span>
+            </div>
+            <ul class="rider-list">
+              <li data-en="2–4 Pioneer CDJ-2000 Nexus / Nexus 2 or superior" data-es="2–4 Pioneer CDJ-2000 Nexus / Nexus 2 o superior">2–4 Pioneer CDJ-2000 Nexus / Nexus 2 or superior</li>
+              <li data-en="1 Mixer: Allen & Heath Xone:92 / Xone:96 or Pioneer DJM-900 / DJM-V10" data-es="1 Mixer: Allen & Heath Xone:92 / Xone:96 o Pioneer DJM-900 / DJM-V10">1 Mixer: Allen & Heath Xone:92 / Xone:96 or Pioneer DJM-900 / DJM-V10</li>
+            </ul>
+          </div>
+          <!-- Booth Monitoring -->
+          <div class="rider-col reveal" style="transition-delay:.08s">
+            <div class="rider-col-title">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="12" height="8" rx="1"/><line x1="5" y1="12" x2="5" y2="15"/><line x1="11" y1="12" x2="11" y2="15"/></svg>
+              <span data-en="BOOTH MONITORING" data-es="MONITOREO">BOOTH MONITORING</span>
+            </div>
+            <ul class="rider-list">
+              <li data-en="2 stereo booth monitors, minimum 250W" data-es="2 monitores de cabina estéreo, mínimo 250W">2 stereo booth monitors, minimum 250W</li>
+              <li data-en="1 active subwoofer" data-es="1 subwoofer activo">1 active subwoofer</li>
+              <li data-en="Booth monitors independently controllable from mixer booth output" data-es="Monitores controlables independientemente desde la salida booth del mixer">Booth monitors independently controllable from mixer booth output</li>
+            </ul>
+          </div>
+          <!-- Visual Setup -->
+          <div class="rider-col reveal" style="transition-delay:.16s">
+            <div class="rider-col-title">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="9" rx="1"/><line x1="5" y1="12" x2="5" y2="15"/><line x1="11" y1="12" x2="11" y2="15"/><line x1="3" y1="15" x2="13" y2="15"/></svg>
+              <span data-en="VISUAL SETUP" data-es="SETUP VISUAL">VISUAL SETUP</span>
+            </div>
+            <ul class="rider-list">
+              <li data-en="LED screen or projection system available" data-es="Pantalla LED o sistema de proyección disponible">LED screen or projection system available</li>
+              <li data-en="HDMI input available near the booth" data-es="Entrada HDMI disponible cerca del booth">HDMI input available near the booth</li>
+              <li data-en="Safe space for laptop and visual controllers" data-es="Espacio seguro para laptop y controladores visuales">Safe space for laptop and visual controllers</li>
+            </ul>
+          </div>
+          <!-- Power & Booth -->
+          <div class="rider-col reveal" style="transition-delay:.24s">
+            <div class="rider-col-title">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="8" y1="10" x2="8" y2="14"/></svg>
+              <span data-en="POWER & BOOTH" data-es="ENERGÍA Y BOOTH">POWER & BOOTH</span>
+            </div>
+            <ul class="rider-list">
+              <li data-en="3 AC power outlets (110V / 220V) near the booth" data-es="3 tomas de corriente AC (110V / 220V) cerca del booth">3 AC power outlets (110V / 220V) near the booth</li>
+              <li data-en="DJ booth table height: 90–100 cm from the floor" data-es="Altura de la mesa del DJ: 90–100 cm del suelo">DJ booth table height: 90–100 cm from the floor</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="rider-important reveal" style="margin-top:16px;transition-delay:.3s">
+          <span>// </span><span data-en="All equipment and connection cables must be in optimal working condition." data-es="Todos los equipos y cables de conexión deben encontrarse en óptimas condiciones de funcionamiento.">All equipment and connection cables must be in optimal working condition.</span>
+        </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════
+       05 — CONNECT
+  ══════════════════════════ -->
+  <div class="section-wrap" id="connect">
+    <div class="section-index">05<br><strong data-en="CONNECT BOOKINGS" data-es="CONTACTO">CONNECT<br>BOOKINGS</strong></div>
+
+    <div class="sec-head reveal">
+      <div class="sec-title-wrap">
+        <span class="sec-bracket">[</span>
+        <h2 class="sec-title" data-en="C O N N E C T" data-es="C O N E C T A R">C O N N E C T</h2>
+        <span class="sec-bracket">]</span>
+      </div>
+      <p class="sec-sub" data-en="BOOKINGS & INQUIRIES" data-es="BOOKINGS Y CONSULTAS">BOOKINGS & INQUIRIES</p>
+    </div>
+
+    <div class="connect-inner" style="padding-top:0">
+      <!-- Email -->
+      <div class="connect-email-col reveal">
+        <a class="connect-email" href="mailto:hologramm.live@gmail.com">hologramm.live@gmail.com</a>
+        <p class="connect-response" data-en="RESPONSE TIME 24–48H" data-es="TIEMPO DE RESPUESTA 24–48H">RESPONSE TIME 24–48H</p>
+      </div>
+
+      <!-- Socials -->
+      <div class="connect-socials reveal" style="transition-delay:.2s">
+        <!-- 1. Instagram -->
+        <a class="social-item" href="https://www.instagram.com/hologramm.live" target="_blank">
+          <div class="social-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          </div>
+          <span class="social-label">INSTAGRAM</span>
+        </a>
+        <!-- 2. SoundCloud -->
+        <a class="social-item" href="https://soundcloud.com/hologrammlive" target="_blank">
+          <div class="social-icon">
+            <svg width="28" height="14" viewBox="-271 345.8 256 111.2" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><g><path d="M-238.4,398.1c-0.8,0-1.4,0.6-1.5,1.5l-2.3,28l2.3,27.1c0.1,0.8,0.7,1.5,1.5,1.5c0.8,0,1.4-0.6,1.5-1.5l2.6-27.1l-2.6-28C-237,398.7-237.7,398.1-238.4,398.1z"/><path d="M-228.2,399.9c-0.9,0-1.7,0.7-1.7,1.7l-2.1,26l2.1,27.3c0.1,1,0.8,1.7,1.7,1.7c0.9,0,1.6-0.7,1.7-1.7l2.4-27.3l-2.4-26C-226.6,400.6-227.3,399.9-228.2,399.9z"/><path d="M-258.6,403.5c-0.5,0-1,0.4-1.1,1l-2.5,23l2.5,22.5c0.1,0.6,0.5,1,1.1,1c0.5,0,1-0.4,1.1-1l2.9-22.5l-2.9-23C-257.7,404-258.1,403.5-258.6,403.5z"/><path d="M-268.1,412.3c-0.5,0-1,0.4-1,1l-1.9,14.3l1.9,14c0.1,0.6,0.5,1,1,1s0.9-0.4,1-1l2.2-14l-2.2-14.2C-267.2,412.8-267.6,412.3-268.1,412.3z"/><path d="M-207.5,373.5c-1.2,0-2.1,0.9-2.2,2.1l-1.9,52l1.9,27.2c0.1,1.2,1,2.1,2.2,2.1s2.1-0.9,2.2-2.1l2.1-27.2l-2.1-52C-205.4,374.4-206.4,373.5-207.5,373.5z"/><path d="M-248.6,399c-0.7,0-1.2,0.5-1.3,1.3l-2.4,27.3l2.4,26.3c0.1,0.7,0.6,1.3,1.3,1.3c0.7,0,1.2-0.5,1.3-1.2l2.7-26.3l-2.7-27.3C-247.4,399.6-247.9,399-248.6,399z"/><path d="M-217.9,383.4c-1,0-1.9,0.8-1.9,1.9l-2,42.3l2,27.3c0.1,1.1,0.9,1.9,1.9,1.9s1.9-0.8,1.9-1.9l2.3-27.3l-2.3-42.3C-216,384.2-216.9,383.4-217.9,383.4z"/><path d="M-154.4,359.3c-1.8,0-3.2,1.4-3.2,3.2l-1.2,65l1.2,26.1c0,1.8,1.5,3.2,3.2,3.2c1.8,0,3.2-1.5,3.2-3.2l1.4-26.1l-1.4-65C-151.1,360.8-152.6,359.3-154.4,359.3z"/><path d="M-197.1,368.9c-1.3,0-2.3,1-2.4,2.4l-1.8,56.3l1.8,26.9c0,1.3,1.1,2.3,2.4,2.3s2.3-1,2.4-2.4l2-26.9l-2-56.3C-194.7,370-195.8,368.9-197.1,368.9z"/><path d="M-46.5,394c-4.3,0-8.4,0.9-12.2,2.4C-61.2,368-85,345.8-114,345.8c-7.1,0-14,1.4-20.1,3.8c-2.4,0.9-3,1.9-3,3.7v99.9c0,1.9,1.5,3.5,3.4,3.7c0.1,0,86.7,0,87.3,0c17.4,0,31.5-14.1,31.5-31.5C-15,408.1-29.1,394-46.5,394z"/><path d="M-143.6,353.2c-1.9,0-3.4,1.6-3.5,3.5l-1.4,70.9l1.4,25.7c0,1.9,1.6,3.4,3.5,3.4c1.9,0,3.4-1.6,3.5-3.5l1.5-25.8l-1.5-70.9C-140.2,354.8-141.7,353.2-143.6,353.2z"/><path d="M-186.5,366.8c-1.4,0-2.5,1.1-2.6,2.6l-1.6,58.2l1.6,26.7c0,1.4,1.2,2.6,2.6,2.6s2.5-1.1,2.6-2.6l1.8-26.7l-1.8-58.2C-184,367.9-185.1,366.8-186.5,366.8z"/><path d="M-175.9,368.1c-1.5,0-2.8,1.2-2.8,2.8l-1.5,56.7l1.5,26.5c0,1.6,1.3,2.8,2.8,2.8s2.8-1.2,2.8-2.8l1.7-26.5l-1.7-56.7C-173.1,369.3-174.3,368.1-175.9,368.1z"/><path d="M-165.2,369.9c-1.7,0-3,1.3-3,3l-1.4,54.7l1.4,26.3c0,1.7,1.4,3,3,3c1.7,0,3-1.3,3-3l1.5-26.3l-1.5-54.7C-162.2,371.3-163.5,369.9-165.2,369.9z"/></g></svg>
+          </div>
+          <span class="social-label">SOUNDCLOUD</span>
+        </a>
+        <!-- 3. YouTube -->
+        <a class="social-item" href="https://www.youtube.com/@hologrammlive" target="_blank">
+          <div class="social-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 00-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 00.527 6.205a31.247 31.247 0 00-.522 5.805 31.247 31.247 0 00.522 5.783 3.007 3.007 0 002.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 002.088-2.088 31.247 31.247 0 00.5-5.783 31.247 31.247 0 00-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>
+          </div>
+          <span class="social-label">YOUTUBE</span>
+        </a>
+        <!-- 4. TikTok -->
+        <a class="social-item" href="https://www.tiktok.com/@hologramm.live" target="_blank">
+          <div class="social-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.23 8.23 0 004.83 1.56V6.79a4.85 4.85 0 01-1.06-.1z"/></svg>
+          </div>
+          <span class="social-label">TIK TOK</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-bar">
+    <span data-en="© HOLOGRAMM 2025 / ALL RIGHTS RESERVED" data-es="© HOLOGRAMM 2025 / TODOS LOS DERECHOS RESERVADOS">© HOLOGRAMM 2025 / ALL RIGHTS RESERVED</span>
+    <div class="footer-freq-bars" id="footerBars"></div>
+    <span data-en="AUDIOVISUAL SYSTEM / FREQUENCY IN MOTION" data-es="SISTEMA AUDIOVISUAL / FRECUENCIA EN MOVIMIENTO">AUDIOVISUAL SYSTEM / FREQUENCY IN MOTION</span>
+  </div>
+
+</div><!-- /.page-wrap -->
+
+<script>
+/* ── Particle field ── */
+const canvas = document.getElementById('field');
+const ctx = canvas.getContext('2d');
+let W, H;
+const mouse = { x:-9999, y:-9999 };
+const N = 210, CDIST = 145, MREP = 130;
+let pts = [];
+function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize();
+function mkPt(){ return { x:Math.random()*W, y:Math.random()*H, vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35, r:Math.random()*1.3+.4, o:Math.random()*.5+.28 }; }
+for(let i=0;i<N;i++) pts.push(mkPt());
+function loop(){
+  ctx.clearRect(0,0,W,H);
+  for(let i=0;i<pts.length;i++){
+    for(let j=i+1;j<pts.length;j++){
+      const a=pts[i],b=pts[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<CDIST){ ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.strokeStyle=`rgba(0,229,255,${(1-d/CDIST)*.14})`; ctx.lineWidth=.45; ctx.stroke(); }
+    }
+  }
+  pts.forEach(p=>{
+    const dx=p.x-mouse.x,dy=p.y-mouse.y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<MREP){ const f=(1-d/MREP)*.022; p.vx+=(dx/d)*f*W*.006; p.vy+=(dy/d)*f*H*.006; }
+    p.vx*=.982; p.vy*=.982;
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0||p.x>W) p.vx*=-1;
+    if(p.y<0||p.y>H) p.vy*=-1;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(0,229,255,${p.o})`; ctx.fill();
+  });
+  requestAnimationFrame(loop);
+}
+loop();
+window.addEventListener('resize', resize);
+
+/* ── Cursor ── */
+const cur=document.getElementById('cursor'), ring=document.getElementById('cursor-ring'), glow=document.getElementById('cursor-glow');
+let cx=0,cy=0,rx=0,ry=0;
+window.addEventListener('mousemove',e=>{
+  cx=e.clientX; cy=e.clientY; mouse.x=cx; mouse.y=cy;
+  cur.style.left=cx+'px'; cur.style.top=cy+'px';
+  glow.style.left=cx+'px'; glow.style.top=cy+'px';
+});
+(function trackRing(){ rx+=(cx-rx)*.11; ry+=(cy-ry)*.11; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(trackRing); })();
+document.querySelectorAll('button,a,.media-card,.rider-download,.social-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('hovering'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('hovering'));
+});
+
+/* ── Nav scroll hide/show ── */
+let lastScroll=0; const navEl=document.querySelector('nav');
+window.addEventListener('scroll',()=>{ const c=window.scrollY; if(c>lastScroll&&c>80){navEl.classList.add('nav-hidden');}else{navEl.classList.remove('nav-hidden');} lastScroll=c<=0?0:c; },{passive:true});
+
+/* ── Footer bars ── */
+const fb=document.getElementById('footerBars');
+[10,14,8,12,16,10,14,8].forEach((h,i)=>{
+  const b=document.createElement('div'); b.className='fb';
+  b.style.setProperty('--h',h+'px');
+  b.style.setProperty('--d',(0.4+Math.random()*.5)+'s');
+  b.style.setProperty('--dl',(Math.random()*.4)+'s');
+  fb.appendChild(b);
+});
+
+/* ── Scroll reveal ── */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); } });
+},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+/* ── Read more bio toggle ── */
+let bioExpanded = false;
+const readMoreBtn = document.getElementById('bioReadMore');
+const bioPhoto2  = document.getElementById('bioPhoto2');
+readMoreBtn.addEventListener('click', ()=>{
+  bioExpanded = !bioExpanded;
+  document.querySelectorAll('.bio-extra, .bio-extra-es').forEach(el=>{
+    el.style.display = bioExpanded ? 'block' : 'none';
+  });
+  bioPhoto2.style.display = bioExpanded ? 'block' : 'none';
+  const label = readMoreBtn.querySelector('.bio-read-label');
+  label.textContent = bioExpanded
+    ? (lang === 'en' ? 'Read less' : 'Leer menos')
+    : (lang === 'en' ? 'Read more' : 'Leer más');
+  readMoreBtn.classList.toggle('expanded', bioExpanded);
+});
+
+/* ── Language toggle — bio and rider only ── */
+let lang = 'en';
+function toggleLang(){
+  lang = lang==='en' ? 'es' : 'en';
+  const label = lang==='en' ? 'ES' : 'EN';
+  document.querySelectorAll('.lang-btn').forEach(b => b.textContent = label);
+  document.querySelector('.bio-en').style.display = lang==='en' ? 'block' : 'none';
+  document.querySelector('.bio-es').style.display = lang==='es' ? 'block' : 'none';
+  document.querySelectorAll('.rider-list li[data-en]').forEach(el=>{ el.textContent = lang==='en' ? el.dataset.en : el.dataset.es; });
+  document.querySelectorAll('.rider-col-title span[data-en]').forEach(el=>{ el.textContent = lang==='en' ? el.dataset.en : el.dataset.es; });
+  document.querySelectorAll('.rider-important span[data-en]').forEach(el=>{ el.textContent = lang==='en' ? el.dataset.en : el.dataset.es; });
+  const readLabel = readMoreBtn.querySelector('.bio-read-label');
+  readLabel.textContent = bioExpanded
+    ? (lang==='en' ? 'Read less' : 'Leer menos')
+    : (lang==='en' ? 'Read more' : 'Leer más');
+}
+document.getElementById('langBtn').addEventListener('click', toggleLang);
+document.getElementById('langBtnRider').addEventListener('click', toggleLang);
+
+/* ── Hamburger ── */
+document.getElementById('hamburger').addEventListener('click',()=>{
+  const nl=document.querySelector('.nav-links');
+  nl.style.display=nl.style.display==='flex'?'none':'flex';
+  nl.style.flexDirection='column'; nl.style.position='absolute';
+  nl.style.top='60px'; nl.style.right='16px';
+  nl.style.background='rgba(2,6,8,0.97)';
+  nl.style.border='1px solid rgba(0,229,255,0.12)';
+  nl.style.padding='16px 24px'; nl.style.gap='16px'; nl.style.zIndex='200';
+});
+
+/* ── Media dots & carousel arrows — with active card ── */
+const mediaDots  = document.querySelectorAll('#mediaDots .media-dot');
+const mediaCards = document.querySelectorAll('#mediaGrid .media-card');
+let activeMediaDot = 0;
+mediaCards[0].classList.add('active-card');
+function setMediaDot(i){
+  mediaDots[activeMediaDot].classList.remove('active');
+  mediaCards[activeMediaDot].classList.remove('active-card');
+  activeMediaDot = (i + mediaDots.length) % mediaDots.length;
+  mediaDots[activeMediaDot].classList.add('active');
+  mediaCards[activeMediaDot].classList.add('active-card');
+}
+document.getElementById('mediaArrowLeft').addEventListener('click',  ()=> setMediaDot(activeMediaDot - 1));
+document.getElementById('mediaArrowRight').addEventListener('click', ()=> setMediaDot(activeMediaDot + 1));
+mediaDots.forEach((dot,i)=> dot.addEventListener('click', ()=> setMediaDot(i)));
+mediaCards.forEach((card,i)=> card.addEventListener('click', ()=> setMediaDot(i)));
+
+/* Hover for arrows */
+document.querySelectorAll('.media-arrow, .media-drive-link, .presskit-pdf').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('hovering'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('hovering'));
+});
+</script>
+</body>
+</html>

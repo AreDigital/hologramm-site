@@ -376,7 +376,7 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
     <li><a href="index.html#visual" data-en="VISUAL" data-es="VISUAL">VISUAL</a></li>
     <li><a href="presskit.html" class="active" data-en="PRESSKIT" data-es="PRESSKIT">PRESSKIT</a></li>
     <li><a href="signals.html" data-en="SIGNALS" data-es="SEÑALES">SIGNALS</a></li>
-    <li><a href="index.html#connect" data-en="CONNECT" data-es="CONECTAR">CONNECT</a></li>
+    <li><a href="#connect" data-en="CONNECT" data-es="CONECTAR">CONNECT</a></li>
   </ul>
   <div class="nav-right">
     <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
@@ -791,6 +791,27 @@ window.addEventListener('mousemove',e=>{
 document.querySelectorAll('button,a,.media-card,.rider-download,.social-item').forEach(el=>{
   el.addEventListener('mouseenter',()=>document.body.classList.add('hovering'));
   el.addEventListener('mouseleave',()=>document.body.classList.remove('hovering'));
+});
+
+/* ── Smooth scroll for internal anchors ── */
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const href = a.getAttribute('href');
+    if(href === '#') return;
+    e.preventDefault();
+    const t = document.querySelector(href);
+    if(t) t.scrollIntoView({behavior:'smooth'});
+  });
+});
+
+/* ── Auto scroll to section if flagged ── */
+window.addEventListener('load', ()=>{
+  const target = sessionStorage.getItem('scrollTo');
+  if(target){
+    sessionStorage.removeItem('scrollTo');
+    const el = document.getElementById(target);
+    if(el) setTimeout(()=> el.scrollIntoView({behavior:'smooth'}), 300);
+  }
 });
 
 /* ── Nav scroll hide/show ── */

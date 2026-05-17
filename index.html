@@ -1235,24 +1235,28 @@ document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 /* ════════════════════════════════════
    NAV HIDE ON SCROLL DOWN / SHOW ON UP
 ════════════════════════════════════ */
-let lastScroll = 0;
+let lastScroll = window.scrollY;
 const navEl = document.querySelector('nav');
 window.addEventListener('scroll', ()=>{
   const cur = window.scrollY;
-  if(cur > lastScroll && cur > 80){
+  if(cur > lastScroll && cur > 120){
     navEl.classList.add('nav-hidden');
-  } else {
+  } else if(cur < lastScroll){
     navEl.classList.remove('nav-hidden');
   }
-  lastScroll = cur <= 0 ? 0 : cur;
+  lastScroll = cur;
 }, { passive: true });
 
-
+// Always show nav and reset scroll reference when clicking nav links
 document.querySelectorAll('a[href^="#"]').forEach(a=>{
   a.addEventListener('click',e=>{
     e.preventDefault();
     const t=document.querySelector(a.getAttribute('href'));
-    if(t) t.scrollIntoView({behavior:'smooth'});
+    navEl.classList.remove('nav-hidden');
+    if(t){
+      t.scrollIntoView({behavior:'smooth'});
+      setTimeout(()=>{ lastScroll = window.scrollY; }, 700);
+    }
     document.querySelectorAll('.nav-links a').forEach(l=>l.classList.remove('active'));
     a.classList.add('active');
   });
@@ -1297,11 +1301,13 @@ burger.addEventListener('click',()=>{
     navLinks.style.display='none';
   }
 });
-/* Close menu when a link is clicked */
+/* Close menu when a link is clicked — only on mobile */
 navLinks.querySelectorAll('a').forEach(a=>{
   a.addEventListener('click',()=>{
-    menuOpen=false;
-    navLinks.style.display='none';
+    if(window.innerWidth <= 768){
+      menuOpen=false;
+      navLinks.style.display='none';
+    }
   });
 });
 

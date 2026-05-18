@@ -307,9 +307,10 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
 }
 @media(max-width:900px){
   .bio-inner { grid-template-columns:1fr; padding:0 16px 40px; }
-  .bio-photo-col { padding-top:0; }
-  .bio-photo { aspect-ratio:16/9; height:auto; }
-  .bio-photo-2 { height:auto; aspect-ratio:16/9; }
+  .bio-photo-col { padding-top:0; order:-1; }
+  .bio-photo { aspect-ratio:4/3; height:auto; }
+  .bio-photo-2 { display:none !important; }
+  .bio-text-col { order:1; }
   .rider-inner { padding:0 16px 40px; }
   .rider-cols { grid-template-columns:1fr; }
   .connect-inner { grid-template-columns:1fr; padding:24px 16px 40px; gap:20px; display:flex; flex-direction:column; align-items:center; }
@@ -843,7 +844,10 @@ readMoreBtn.addEventListener('click', ()=>{
   document.querySelectorAll('.bio-extra, .bio-extra-es').forEach(el=>{
     el.style.display = bioExpanded ? 'block' : 'none';
   });
-  bioPhoto2.style.display = bioExpanded ? 'block' : 'none';
+  /* Only show second photo on desktop */
+  if(window.innerWidth > 900){
+    bioPhoto2.style.display = bioExpanded ? 'block' : 'none';
+  }
   const label = readMoreBtn.querySelector('.bio-read-label');
   label.textContent = bioExpanded
     ? (lang === 'en' ? 'Read less' : 'Leer menos')

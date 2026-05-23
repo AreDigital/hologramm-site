@@ -226,13 +226,13 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
 }
 .sig-arrow {
   position:absolute; top: 42%; transform:translateY(-50%);
-  font-size:1.6rem; color:var(--cyan-mid); cursor:none;
-  z-index:5; transition:color .2s;
-  background:rgba(2,6,8,0.7); padding:10px 8px;
-  border:1px solid var(--border-thin); line-height:1;
+  font-size:1.8rem; color:var(--cyan); cursor:none;
+  z-index:5; transition:color .2s, background .2s;
+  background:rgba(0,229,255,0.08); padding:10px 10px;
+  border:1px solid var(--cyan-mid); line-height:1;
   user-select:none;
 }
-.sig-arrow:hover { color:var(--cyan); border-color:var(--cyan-mid); }
+.sig-arrow:hover { color:var(--cyan); background:rgba(0,229,255,0.18); border-color:var(--cyan); }
 .sig-arrow.left { left:0; }
 .sig-arrow.right { right:0; }
 
@@ -302,7 +302,7 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
   .nav-logo { position:absolute; left:50%; transform:translateX(-50%); }
   .nav-right { margin-left:auto; }
   .page-wrap { padding:90px 8px 32px; }
-  nav .nav-inner { padding:14px 12px; }
+  nav .nav-inner { padding:22px 12px; }
   .nav-links { display:none; }
   .nav-hamburger { display:flex; }
   .signals-hero { margin:0 8px; }

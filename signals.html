@@ -310,7 +310,13 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
   .signals-hero-thumb { aspect-ratio:16/9; }
   .carousel-wrap { margin:8px 8px 0; }
   .signals-grid { grid-template-columns:1fr 1fr; gap:8px; }
-  .sig-arrow { display:none; }
+  .sig-arrow {
+    display:flex; align-items:center;
+    font-size:1.4rem; padding:8px 6px;
+    background:rgba(0,229,255,0.08);
+    border:1px solid var(--cyan-mid);
+    color:var(--cyan);
+  }
   .sec-title { font-size:clamp(.9rem,4vw,1.3rem); letter-spacing:.15em; }
   .sec-sub { font-size:.78rem; }
   .footer-bar { flex-direction:column; align-items:center; gap:6px; text-align:center; font-size:.45rem; }
@@ -572,20 +578,14 @@ const heroLabel  = document.querySelector('.signal-hero-label');
 const heroDur    = document.querySelector('.signal-hero-dur');
 let activeIdx    = 0;
 
-/* Each card's SVG content for preview swap */
 const previewSVGs = Array.from(cards).map(c => c.querySelector('.thumb-svg').outerHTML);
-const heroOrigSVG = heroThumb.querySelector('svg:not(.thumb-svg)').outerHTML;
 
 function activateCard(idx) {
-  /* clamp */
   idx = (idx + cards.length) % cards.length;
   activeIdx = idx;
-
-  /* update card highlight */
   cards.forEach(c => c.classList.remove('active-card'));
   cards[idx].classList.add('active-card');
 
-  /* update hero preview with fade */
   const name = cards[idx].dataset.name;
   const dur  = cards[idx].dataset.dur;
   const svg  = previewSVGs[idx];
@@ -594,7 +594,6 @@ function activateCard(idx) {
   setTimeout(()=>{
     heroLabel.textContent = name;
     heroDur.textContent   = dur;
-    /* Replace background SVG with card's thumb */
     const existing = heroThumb.querySelector('svg');
     if(existing) existing.remove();
     const wrapper = document.createElement('div');
@@ -605,16 +604,29 @@ function activateCard(idx) {
     heroThumb.insertBefore(wrapper, heroThumb.firstChild);
     heroThumb.classList.remove('switching');
   }, 250);
+
+  /* On mobile: show 2 cards at a time — scroll grid */
+  if(window.innerWidth <= 768){
+    const step = Math.floor(idx / 2) * 2;
+    cards.forEach((c, i) => {
+      c.style.display = (i >= step && i < step + 2) ? '' : 'none';
+    });
+  } else {
+    cards.forEach(c => c.style.display = '');
+  }
 }
 
 /* Card click */
-cards.forEach((card, i) => {
-  card.addEventListener('click', () => activateCard(i));
-});
+cards.forEach((card, i) => card.addEventListener('click', () => activateCard(i)));
 
 /* Arrows */
 document.getElementById('sigArrowLeft').addEventListener('click',  () => activateCard(activeIdx - 1));
 document.getElementById('sigArrowRight').addEventListener('click', () => activateCard(activeIdx + 1));
+
+/* Init */
+if(window.innerWidth <= 768){
+  cards.forEach((c, i) => { if(i >= 2) c.style.display = 'none'; });
+}
 
 /* Hover cursor for arrows */
 document.querySelectorAll('.sig-arrow').forEach(el=>{

@@ -255,19 +255,19 @@ nav.nav-hidden {
   background-size:100% 100%; background-repeat:no-repeat;
   opacity:0; z-index:2; pointer-events:none;
 }
-.hero-logo-glitch::before { animation:glitchImg1 6s infinite; mix-blend-mode:screen; filter:hue-rotate(180deg) saturate(3); }
-.hero-logo-glitch::after  { animation:glitchImg2 6s infinite; mix-blend-mode:screen; filter:hue-rotate(0deg) saturate(3); }
+.hero-logo-glitch::before { animation:glitchImg1 3s infinite; mix-blend-mode:screen; filter:hue-rotate(180deg) saturate(3); }
+.hero-logo-glitch::after  { animation:glitchImg2 3s infinite; mix-blend-mode:screen; filter:hue-rotate(0deg) saturate(3); }
 @keyframes glitchImg1 {
-  0%,90%,100% { opacity:0; transform:none; }
-  91% { opacity:.7; transform:translate(-3px,1px) skewX(-2deg); clip-path:inset(20% 0 50% 0); }
-  93% { opacity:.5; transform:translate(2px,-1px) skewX(1deg); clip-path:inset(60% 0 10% 0); }
-  95% { opacity:0; }
+  0%,78%,100% { opacity:0; transform:none; }
+  79% { opacity:.7; transform:translate(-3px,1px) skewX(-2deg); clip-path:inset(20% 0 50% 0); }
+  81% { opacity:.5; transform:translate(2px,-1px) skewX(1deg); clip-path:inset(60% 0 10% 0); }
+  83% { opacity:0; }
 }
 @keyframes glitchImg2 {
-  0%,92%,100% { opacity:0; transform:none; }
-  93% { opacity:.6; transform:translate(3px,-2px) skewX(2deg); clip-path:inset(10% 0 70% 0); }
-  95% { opacity:.4; transform:translate(-2px,1px) skewX(-1deg); clip-path:inset(50% 0 20% 0); }
-  97% { opacity:0; }
+  0%,80%,100% { opacity:0; transform:none; }
+  81% { opacity:.6; transform:translate(3px,-2px) skewX(2deg); clip-path:inset(10% 0 70% 0); }
+  83% { opacity:.4; transform:translate(-2px,1px) skewX(-1deg); clip-path:inset(50% 0 20% 0); }
+  85% { opacity:0; }
 }
 
 .hero-eyebrow {

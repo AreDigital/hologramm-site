@@ -247,6 +247,29 @@ nav.nav-hidden {
   color:rgba(0,229,255,0.3); line-height:2.4;
   text-align:right;
 }
+/* ── Hero logo glitch ── */
+.hero-logo-glitch { position:relative; display:inline-block; }
+.hero-logo-glitch::before, .hero-logo-glitch::after {
+  content:''; position:absolute; inset:0;
+  background-image:url('https://res.cloudinary.com/djjz6wmfz/image/upload/v1779609222/logo_principal_rp9m9q.png');
+  background-size:100% 100%; background-repeat:no-repeat;
+  opacity:0; z-index:2; pointer-events:none;
+}
+.hero-logo-glitch::before { animation:glitchImg1 6s infinite; mix-blend-mode:screen; filter:hue-rotate(180deg) saturate(3); }
+.hero-logo-glitch::after  { animation:glitchImg2 6s infinite; mix-blend-mode:screen; filter:hue-rotate(0deg) saturate(3); }
+@keyframes glitchImg1 {
+  0%,90%,100% { opacity:0; transform:none; }
+  91% { opacity:.7; transform:translate(-3px,1px) skewX(-2deg); clip-path:inset(20% 0 50% 0); }
+  93% { opacity:.5; transform:translate(2px,-1px) skewX(1deg); clip-path:inset(60% 0 10% 0); }
+  95% { opacity:0; }
+}
+@keyframes glitchImg2 {
+  0%,92%,100% { opacity:0; transform:none; }
+  93% { opacity:.6; transform:translate(3px,-2px) skewX(2deg); clip-path:inset(10% 0 70% 0); }
+  95% { opacity:.4; transform:translate(-2px,1px) skewX(-1deg); clip-path:inset(50% 0 20% 0); }
+  97% { opacity:0; }
+}
+
 .hero-eyebrow {
   font-size:.6rem; letter-spacing:.4em;
   color:var(--white-dim); margin-bottom:10px;
@@ -760,7 +783,9 @@ nav.nav-hidden {
   <div class="ruler-left">20<br>50</div>
 
   <h1 class="hero-title">
-    <img src="https://res.cloudinary.com/djjz6wmfz/image/upload/v1779609222/logo_principal_rp9m9q.png" alt="HOLOGRAMM" style="width:clamp(280px,55vw,640px); height:auto; display:block; margin:0 auto;">
+    <div class="hero-logo-glitch">
+      <img src="https://res.cloudinary.com/djjz6wmfz/image/upload/v1779609222/logo_principal_rp9m9q.png" alt="HOLOGRAMM" style="width:clamp(280px,55vw,640px); height:auto; display:block; margin:0 auto; position:relative; z-index:1;">
+    </div>
   </h1>
 
   <p class="hero-audiovisual" data-en="AUDIOVISUAL SYSTEM" data-es="SISTEMA AUDIOVISUAL">AUDIOVISUAL SYSTEM</p>

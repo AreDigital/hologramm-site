@@ -322,9 +322,15 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
   .connect-email { justify-content:center; }
   .connect-response { text-align:center; }
   .connect-inner > .reveal:first-child { order:3; text-align:center; }
-  .media-inner { padding:0 16px 40px; }
-  .media-grid { grid-template-columns:repeat(2,1fr); }
-  .media-arrow { display:none; }
+  .media-inner { padding:0 16px 40px; position:relative; }
+  .media-grid { grid-template-columns:1fr 1fr; margin:0 32px; }
+  .media-arrow {
+    display:flex; align-items:center;
+    font-size:1.4rem; padding:8px 6px;
+    background:rgba(0,229,255,0.08);
+    border:1px solid var(--cyan-mid);
+    color:var(--cyan); top:35%; transform:translateY(-50%);
+  }
   .presskit-pdf { position:static; transform:none; margin:12px auto 0; width:fit-content; padding:8px 14px; }
   .presskit-pdf-label { font-size:.48rem; }
   .presskit-pdf-icon { font-size:.8rem; }
@@ -340,7 +346,7 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
   nav .nav-inner { padding:22px 12px; }
   .nav-links { display:none; }
   .nav-hamburger { display:flex; }
-  .media-grid { grid-template-columns:repeat(2,1fr); }
+  .media-grid { grid-template-columns:1fr 1fr; }
   .rider-cols { grid-template-columns:1fr; }
   .connect-socials { justify-content:center; gap:14px; }
   .social-icon { width:40px; height:40px; }
@@ -895,17 +901,30 @@ const mediaDots  = document.querySelectorAll('#mediaDots .media-dot');
 const mediaCards = document.querySelectorAll('#mediaGrid .media-card');
 let activeMediaDot = 0;
 mediaCards[0].classList.add('active-card');
+
+function updateMediaVisibility(){
+  if(window.innerWidth <= 900){
+    const step = Math.floor(activeMediaDot / 2) * 2;
+    mediaCards.forEach((c,i) => { c.style.display = (i >= step && i < step + 2) ? '' : 'none'; });
+  } else {
+    mediaCards.forEach(c => { c.style.display = ''; });
+  }
+}
+
 function setMediaDot(i){
   mediaDots[activeMediaDot].classList.remove('active');
   mediaCards[activeMediaDot].classList.remove('active-card');
   activeMediaDot = (i + mediaDots.length) % mediaDots.length;
   mediaDots[activeMediaDot].classList.add('active');
   mediaCards[activeMediaDot].classList.add('active-card');
+  updateMediaVisibility();
 }
 document.getElementById('mediaArrowLeft').addEventListener('click',  ()=> setMediaDot(activeMediaDot - 1));
 document.getElementById('mediaArrowRight').addEventListener('click', ()=> setMediaDot(activeMediaDot + 1));
 mediaDots.forEach((dot,i)=> dot.addEventListener('click', ()=> setMediaDot(i)));
 mediaCards.forEach((card,i)=> card.addEventListener('click', ()=> setMediaDot(i)));
+window.addEventListener('resize', updateMediaVisibility);
+updateMediaVisibility();
 
 /* Hover for arrows */
 document.querySelectorAll('.media-arrow, .media-drive-link, .presskit-pdf').forEach(el=>{

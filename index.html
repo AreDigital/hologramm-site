@@ -763,7 +763,7 @@ nav.nav-hidden {
       <h2 class="sec-title" data-en="V I S U A L" data-es="V I S U A L">V I S U A L</h2>
       <span class="sec-bracket">]</span>
     </div>
-    <p class="sec-sub" data-en="AUDIO REACTIVE VISUALS / MOTION / INSTALLATIONS" data-es="VISUALES REACTIVOS / MOVIMIENTO / INSTALACIONES">AUDIO REACTIVE VISUALS / MOTION / INSTALLATIONS</p>
+    <p class="sec-sub" data-en="VISUAL LOOPS / MOTION / 4K" data-es="VISUAL LOOPS / MOTION / 4K">VISUAL LOOPS / MOTION / 4K</p>
   </div>
 
   <div class="media-inner" style="padding-top:0; position:relative;">
@@ -787,10 +787,10 @@ nav.nav-hidden {
               <line x1="20" y1="10" x2="180" y2="140"/><line x1="20" y1="140" x2="180" y2="10"/>
             </g>
           </svg>
-          <img class="thumb-img" src="https://res.cloudinary.com/djjz6wmfz/image/upload/v1791936603/01_chfnpc.png" alt="VISUAL_001" loading="lazy" onerror="this.remove()">
+          <img class="thumb-img" src="https://res.cloudinary.com/djjz6wmfz/image/upload/v1791936603/01_chfnpc.png" alt="BLOOM" loading="lazy" onerror="this.remove()">
         </div>
         <div class="signal-info">
-          <div><div class="signal-name">VISUAL_001</div><div class="signal-dur">01:24</div></div>
+          <div><div class="signal-name">BLOOM</div><div class="signal-dur">00:15</div></div>
           <div class="signal-play">▶</div>
         </div>
       </div>
@@ -812,10 +812,10 @@ nav.nav-hidden {
               <line x1="160" y1="0" x2="160" y2="150"/>
             </g>
           </svg>
-          <img class="thumb-img" src="https://res.cloudinary.com/djjz6wmfz/image/upload/v1791936603/02_iljp3e.png" alt="VISUAL_002" loading="lazy" onerror="this.remove()">
+          <img class="thumb-img" src="https://res.cloudinary.com/djjz6wmfz/image/upload/v1791936603/02_iljp3e.png" alt="ALTER EGO" loading="lazy" onerror="this.remove()">
         </div>
         <div class="signal-info">
-          <div><div class="signal-name">VISUAL_002</div><div class="signal-dur">01:37</div></div>
+          <div><div class="signal-name">ALTER EGO</div><div class="signal-dur">00:15</div></div>
           <div class="signal-play">▶</div>
         </div>
       </div>
@@ -832,10 +832,10 @@ nav.nav-hidden {
               <circle r="1" cx="40" cy="80"/><circle r="1.5" cx="160" cy="72"/>
             </g>
           </svg>
-          <img class="thumb-img" src="https://res.cloudinary.com/djjz6wmfz/image/upload/v1791936604/03_draadu.png" alt="VISUAL_003" loading="lazy" onerror="this.remove()">
+          <img class="thumb-img" src="https://res.cloudinary.com/djjz6wmfz/image/upload/v1791936604/03_draadu.png" alt="FRACTURE" loading="lazy" onerror="this.remove()">
         </div>
         <div class="signal-info">
-          <div><div class="signal-name">VISUAL_003</div><div class="signal-dur">01:18</div></div>
+          <div><div class="signal-name">FRACTURE</div><div class="signal-dur">00:15</div></div>
           <div class="signal-play">▶</div>
         </div>
       </div>
@@ -857,10 +857,10 @@ nav.nav-hidden {
               <line x1="30" y1="110" x2="90" y2="130"/><line x1="160" y1="70" x2="120" y2="110"/>
             </g>
           </svg>
-          <img class="thumb-img" src="https://res.cloudinary.com/djjz6wmfz/image/upload/v1791936603/04_cxmmnu.png" alt="VISUAL_004" loading="lazy" onerror="this.remove()">
+          <img class="thumb-img" src="https://res.cloudinary.com/djjz6wmfz/image/upload/v1791936603/04_cxmmnu.png" alt="PHANTOM" loading="lazy" onerror="this.remove()">
         </div>
         <div class="signal-info">
-          <div><div class="signal-name">VISUAL_004</div><div class="signal-dur">01:53</div></div>
+          <div><div class="signal-name">PHANTOM</div><div class="signal-dur">00:15</div></div>
           <div class="signal-play">▶</div>
         </div>
       </div>
@@ -1095,7 +1095,7 @@ function vimeoEmbed(url){
   if(!m) return null;
   const h = m[2] || (url.match(/[?&]h=([a-z0-9]+)/i) || [])[1];
   return 'https://player.vimeo.com/video/' + m[1] +
-         '?autoplay=1&color=00e5ff&title=0&byline=0&portrait=0' + (h ? '&h=' + h : '');
+         '?autoplay=1&muted=1&color=00e5ff&title=0&byline=0&portrait=0' + (h ? '&h=' + h : '');
 }
 function openVisual(url){
   const src = vimeoEmbed(url);

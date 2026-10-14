@@ -936,7 +936,7 @@ nav.nav-hidden {
     <form class="join-form" id="joinForm" novalidate>
       <div class="join-row">
         <input class="join-input" type="email" name="email" placeholder="EMAIL" autocomplete="email" required>
-        <input class="join-input" type="tel" name="whatsapp" placeholder="WHATSAPP (OPTIONAL)" autocomplete="tel">
+        <input class="join-input" type="tel" name="whatsapp" placeholder="WHATSAPP" autocomplete="tel" required>
         <button class="join-btn" type="submit" id="joinBtn">JOIN</button>
       </div>
       <input class="join-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -1254,6 +1254,10 @@ joinForm.addEventListener('submit', e=>{
   if(!EMAIL_RE.test(email)) return joinMsg('ENTER A VALID EMAIL', true);
   const domain = email.split('@')[1];
   if(DOMAIN_TYPOS[domain]) return joinSuggest(email.split('@')[0] + '@' + DOMAIN_TYPOS[domain]);
+  const whatsapp = f.whatsapp.value.trim();
+  const digits = whatsapp.replace(/\D/g, '');
+  if(!/^\+?[\d\s\-().]+$/.test(whatsapp) || digits.length < 7 || digits.length > 15)
+    return joinMsg('ENTER A VALID WHATSAPP', true);
   if(!f.consent.checked) return joinMsg('PLEASE ACCEPT TO CONTINUE', true);
   if(!JOIN_URL) return joinMsg('NOT CONNECTED YET', true);
 
@@ -1261,7 +1265,7 @@ joinForm.addEventListener('submit', e=>{
   joinMsg('SENDING...');
   const data = new URLSearchParams({
     email: email,
-    whatsapp: f.whatsapp.value.trim(),
+    whatsapp: whatsapp,
     page: location.pathname || '/'
   });
   fetch(JOIN_URL, { method:'POST', mode:'no-cors', body:data })

@@ -514,6 +514,39 @@ nav.nav-hidden {
 }
 .vmodal-close:hover { background:rgba(0,229,255,0.18); border-color:var(--cyan); }
 
+/* ══════════════════════════════════════
+   04 — JOIN THE SIGNAL (subscribe)
+══════════════════════════════════════ */
+.nw { white-space:nowrap; }
+.join-inner { padding: 0 40px 48px; max-width:860px; margin:0 auto; }
+.join-form { display:flex; flex-direction:column; gap:14px; }
+.join-row { display:grid; grid-template-columns: 1.3fr 1fr auto; gap:10px; }
+.join-input {
+  font-family:var(--font-mono); font-size:.72rem; letter-spacing:.14em;
+  color:var(--white); background:rgba(4,18,22,0.7);
+  border:1px solid var(--border-thin); padding:14px 16px;
+  outline:none; cursor:none; width:100%;
+  transition:border-color .25s, background .25s;
+}
+.join-input::placeholder { color:rgba(238,245,247,0.45); }
+.join-input:focus { border-color:var(--cyan); background:rgba(0,229,255,0.05); }
+.join-btn {
+  font-family:var(--font-mono); font-size:.72rem; letter-spacing:.3em;
+  color:var(--cyan); background:rgba(0,229,255,0.08);
+  border:1px solid var(--cyan); padding:14px 30px; cursor:none;
+  transition:background .25s, color .25s;
+}
+.join-btn:hover { background:var(--cyan); color:var(--bg); }
+.join-btn:disabled { opacity:.5; }
+.join-consent {
+  display:flex; align-items:center; gap:10px; cursor:none;
+  font-size:.6rem; letter-spacing:.12em; color:var(--white-dim);
+}
+.join-consent input { accent-color:var(--cyan); width:14px; height:14px; cursor:none; flex-shrink:0; }
+.join-hp { position:absolute; left:-9999px; width:1px; height:1px; opacity:0; }
+.join-status { min-height:1.2em; font-size:.62rem; letter-spacing:.2em; text-align:center; color:var(--cyan); }
+.join-status.error { color:#ff6b81; }
+
 /* Footer bar */
 .footer-bar {
   border-top:1px solid var(--border-thin);
@@ -590,6 +623,12 @@ nav.nav-hidden {
   /* Visual modal */
   .vmodal { padding:12px; }
   .vmodal-close { top:-44px; }
+
+  /* Join */
+  .join-inner { padding:0 12px 36px; }
+  .join-row { grid-template-columns:1fr; }
+  .join-btn { width:100%; }
+  .join-consent { align-items:flex-start; }
 
   /* Section heads */
   .sec-title { font-size: clamp(.9rem,4vw,1.3rem); letter-spacing:.15em; }
@@ -879,6 +918,36 @@ nav.nav-hidden {
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     04 — JOIN THE SIGNAL
+══════════════════════════════════════ -->
+<div class="section-wrap" id="join">
+  <div class="sec-head reveal">
+    <div class="sec-title-wrap">
+      <span class="sec-bracket">[</span>
+      <h2 class="sec-title"><span class="nw">J O I N</span>&nbsp; <span class="nw">T H E</span>&nbsp; <span class="nw">S I G N A L</span></h2>
+      <span class="sec-bracket">]</span>
+    </div>
+    <p class="sec-sub">RELEASES / SETS / VISUALS / DATES</p>
+  </div>
+
+  <div class="join-inner reveal">
+    <form class="join-form" id="joinForm" novalidate>
+      <div class="join-row">
+        <input class="join-input" type="email" name="email" placeholder="EMAIL" autocomplete="email" required>
+        <input class="join-input" type="tel" name="whatsapp" placeholder="WHATSAPP (OPTIONAL)" autocomplete="tel">
+        <button class="join-btn" type="submit" id="joinBtn">JOIN</button>
+      </div>
+      <input class="join-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <label class="join-consent">
+        <input type="checkbox" name="consent" required>
+        <span>I agree to receive updates from HOLOGRAMM</span>
+      </label>
+      <p class="join-status" id="joinStatus" aria-live="polite"></p>
+    </form>
+  </div>
+</div>
+
 <!-- Footer -->
 <div class="footer-bar">
   <span data-en="© HOLOGRAMM 2025 / ALL RIGHTS RESERVED" data-es="© HOLOGRAMM 2025 / TODOS LOS DERECHOS RESERVADOS">© HOLOGRAMM 2025 / ALL RIGHTS RESERVED</span>
@@ -1042,7 +1111,7 @@ window.addEventListener('mousemove',e=>{
   ring.style.left=rx+'px'; ring.style.top=ry+'px';
   requestAnimationFrame(trackRing);
 })();
-document.querySelectorAll('button,a,.signal-card,.connect-item,.play-circle,.signal-play,.carousel-arrow').forEach(el=>{
+document.querySelectorAll('button,a,.signal-card,.connect-item,.play-circle,.signal-play,.carousel-arrow,.join-consent').forEach(el=>{
   el.addEventListener('mouseenter',()=>document.body.classList.add('hovering'));
   el.addEventListener('mouseleave',()=>document.body.classList.remove('hovering'));
 });
@@ -1128,6 +1197,41 @@ const obs=new IntersectionObserver(entries=>{
   });
 },{threshold:.12});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+/* ════════════════════════════════════
+   JOIN THE SIGNAL — subscribe form
+   Paste the Apps Script web app URL below when it's ready
+════════════════════════════════════ */
+const JOIN_URL = 'https://script.google.com/macros/s/AKfycbz12rXYmUB4QOr3FLD3dZ-v6AVo_I_ZuA8mQow6iojN3IYt-x3J6Fn8UjEfhgTxYbfW/exec';
+const joinForm   = document.getElementById('joinForm');
+const joinBtn    = document.getElementById('joinBtn');
+const joinStatus = document.getElementById('joinStatus');
+
+function joinMsg(text, isError){
+  joinStatus.textContent = text;
+  joinStatus.classList.toggle('error', !!isError);
+}
+joinForm.addEventListener('submit', e=>{
+  e.preventDefault();
+  const f = joinForm.elements;
+  if(f.website.value) return;                                   /* bot trap */
+  const email = f.email.value.trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return joinMsg('ENTER A VALID EMAIL', true);
+  if(!f.consent.checked) return joinMsg('PLEASE ACCEPT TO CONTINUE', true);
+  if(!JOIN_URL) return joinMsg('NOT CONNECTED YET', true);
+
+  joinBtn.disabled = true;
+  joinMsg('SENDING...');
+  const data = new URLSearchParams({
+    email: email,
+    whatsapp: f.whatsapp.value.trim(),
+    page: location.pathname || '/'
+  });
+  fetch(JOIN_URL, { method:'POST', mode:'no-cors', body:data })
+    .then(()=>{ joinForm.reset(); joinMsg('SIGNAL RECEIVED // YOU ARE IN'); })
+    .catch(()=> joinMsg('TRANSMISSION FAILED — TRY AGAIN', true))
+    .finally(()=>{ joinBtn.disabled = false; });
+});
 
 /* ════════════════════════════════════
    NAV HIDE ON SCROLL DOWN / SHOW ON UP

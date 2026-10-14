@@ -474,107 +474,44 @@ nav.nav-hidden {
 /* Active card highlight */
 .signal-card.active-card { border-color:var(--cyan); }
 .signal-card.active-card .signal-play { background:var(--cyan); color:var(--bg); border-color:var(--cyan); }
-.visual-main {
-  margin: 0 40px;
-  border:1px solid var(--border-thin);
-  position:relative;
-}.visual-main-thumb {
-  width:100%; aspect-ratio:16/7;
-  background:linear-gradient(135deg,#030d11 0%,#051318 50%,#020a0d 100%);
-  display:flex; align-items:center; justify-content:center;
-  position:relative; overflow:hidden;
-}
-.visual-main-label {
-  position:absolute; bottom:12px; left:16px;
-  font-size:.55rem; letter-spacing:.2em; color:rgba(216,232,236,0.4);
-}
-.visual-main-dur {
-  position:absolute; bottom:12px; right:16px;
-  font-size:.55rem; letter-spacing:.12em; color:rgba(216,232,236,0.4);
-}
-.play-circle {
-  width:52px; height:52px; border-radius:50%;
-  border:1px solid var(--white-dim);
-  display:flex; align-items:center; justify-content:center;
-  font-size:.9rem; color:var(--white); cursor:none;
-  transition:.25s; background:rgba(2,6,8,0.5);
-}
-.play-circle:hover { border-color:var(--cyan); color:var(--cyan); }
-.visual-thumbs {
-  display:grid; grid-template-columns:repeat(4,1fr);
-  gap:10px;
-  border:none;
-  margin-top:10px;
-  position:relative;
-}
-.vis-thumb {
-  aspect-ratio:4/3;
-  background:linear-gradient(135deg,#041216 0%,#06181d 100%);
-  border:1px solid var(--border-thin);
-  display:flex; align-items:center; justify-content:center;
-  overflow:hidden; cursor:none; position:relative;
-}
-.vis-thumb:last-child { border-right:1px solid var(--border-thin); }
-.vis-thumb .thumb-svg { width:80%; height:80%; opacity:.55; transition:.3s; }
-.vis-thumb:hover .thumb-svg { opacity:.9; }
-.vis-thumb.active-thumb::after {
-  content:''; position:absolute; bottom:0; left:0; right:0;
-  height:2px; background:var(--cyan);
-}
-/* Carousel arrows */
-.carousel-arrow {
-  position:absolute; top:50%; transform:translateY(-50%);
-  font-size:1rem; color:var(--white-dim); cursor:none;
-  z-index:5; transition:color .2s;
-  background:rgba(2,6,8,0.6); padding:8px 6px;
-  border:1px solid var(--border-thin);
-}
-.carousel-arrow:hover { color:var(--cyan); }
-.carousel-arrow.left { left:-1px; }
-.carousel-arrow.right { right:-1px; }
-.vimeo-link {
-  text-align:center; padding: 24px 0 36px;
-  font-size:.58rem; letter-spacing:.3em; color:var(--cyan);
-  display:flex; align-items:center; justify-content:center; gap:14px;
-}
-.vimeo-link::before,.vimeo-link::after {
-  content:''; flex:1; max-width:60px; height:1px; background:var(--border);
-}
 
-/* ══════════════════════════════════════
-   05 — CONNECT
-══════════════════════════════════════ */
-#connect {
-  min-height: auto;
-  padding: 0;
+/* VISUAL cards — 16:9 with real thumbnail (SVG stays as fallback behind) */
+#visualGrid .signal-thumb { aspect-ratio:16/9; }
+#visualGrid .thumb-img {
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; display:block; z-index:1;
+  opacity:.85; transition: opacity .3s, transform .4s;
 }
-.connect-inner {
-  padding: 0 40px 48px;
+#visualGrid .signal-card:hover .thumb-img { opacity:1; transform:scale(1.04); }
+
+/* VISUAL modal — Vimeo lightbox */
+.vmodal {
+  position:fixed; inset:0; z-index:9000;
+  background:rgba(2,6,8,0.92);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  display:none; align-items:center; justify-content:center;
+  padding:24px;
 }
-.connect-booking {
-  font-size:.55rem; letter-spacing:.3em; color:var(--white-dim); margin-bottom:4px;
-  text-align:center;
+.vmodal.open { display:flex; animation:vFade .3s ease; }
+@keyframes vFade { from{opacity:0} to{opacity:1} }
+.vmodal-box {
+  position:relative; width:100%;
+  max-width:min(1080px, calc((100vh - 120px) * 16 / 9));
+  border:1px solid var(--cyan-mid); background:#000;
 }
-.connect-icons {
-  display:flex; justify-content:center; gap:60px;
-  padding: 32px 0 28px;
-  flex-wrap:wrap;
+.vmodal-frame { position:relative; width:100%; aspect-ratio:16/9; }
+.vmodal-frame iframe {
+  position:absolute; inset:0; width:100%; height:100%;
+  border:0; display:block;
 }
-.connect-item {
-  display:flex; flex-direction:column; align-items:center; gap:12px;
-  cursor:none; text-decoration:none; color:inherit;
+.vmodal-close {
+  position:absolute; top:-46px; right:-1px;
+  width:36px; height:36px;
+  background:rgba(0,229,255,0.08); border:1px solid var(--cyan-mid);
+  color:var(--cyan); font-family:var(--font-mono); font-size:.9rem;
+  cursor:none; transition:background .2s, border-color .2s;
 }
-.connect-icon {
-  width:50px; height:50px;
-  display:flex; align-items:center; justify-content:center;
-  font-size:1.3rem; color:var(--white);
-  border:1px solid var(--border-thin); border-radius:4px;
-  transition: border-color .25s, color .25s;
-  background:rgba(0,229,255,0.03);
-}
-.connect-item:hover .connect-icon { border-color:var(--cyan); color:var(--cyan); }
-.connect-label { font-size:.52rem; letter-spacing:.2em; color:var(--white-dim); }
-.connect-item:hover .connect-label { color:var(--cyan); }
+.vmodal-close:hover { background:rgba(0,229,255,0.18); border-color:var(--cyan); }
 
 /* Footer bar */
 .footer-bar {
@@ -647,6 +584,10 @@ nav.nav-hidden {
   .media-arrow { display:none; }
   .media-dots { margin-top:8px; }
   .media-inner { padding:0 12px 32px; }
+
+  /* Visual modal */
+  .vmodal { padding:12px; }
+  .vmodal-close { top:-44px; }
 
   /* Section heads */
   .sec-title { font-size: clamp(.9rem,4vw,1.3rem); letter-spacing:.15em; }
@@ -830,7 +771,8 @@ nav.nav-hidden {
     <div class="media-arrow media-arrow-right" id="visualArrowRight">&#8250;</div>
 
     <div class="signals-grid" id="visualGrid">
-      <div class="signal-card reveal">
+      <!-- VISUAL 01 — replace THUMB_URL_1 (Cloudinary) and VIMEO_URL_1 -->
+      <div class="signal-card reveal" data-vimeo="VIMEO_URL_1">
         <div class="signal-thumb">
           <svg class="thumb-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
             <defs><radialGradient id="rg1b" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#00e5ff" stop-opacity=".6"/><stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/></radialGradient></defs>
@@ -845,6 +787,7 @@ nav.nav-hidden {
               <line x1="20" y1="10" x2="180" y2="140"/><line x1="20" y1="140" x2="180" y2="10"/>
             </g>
           </svg>
+          <img class="thumb-img" src="THUMB_URL_1" alt="VISUAL_001" loading="lazy" onerror="this.remove()">
         </div>
         <div class="signal-info">
           <div><div class="signal-name">VISUAL_001</div><div class="signal-dur">01:24</div></div>
@@ -852,7 +795,8 @@ nav.nav-hidden {
         </div>
       </div>
 
-      <div class="signal-card reveal" style="transition-delay:.08s">
+      <!-- VISUAL 02 — replace THUMB_URL_2 (Cloudinary) and VIMEO_URL_2 -->
+      <div class="signal-card reveal" data-vimeo="VIMEO_URL_2" style="transition-delay:.08s">
         <div class="signal-thumb">
           <svg class="thumb-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
             <g stroke="#00e5ff" stroke-width=".6" opacity=".7">
@@ -868,6 +812,7 @@ nav.nav-hidden {
               <line x1="160" y1="0" x2="160" y2="150"/>
             </g>
           </svg>
+          <img class="thumb-img" src="THUMB_URL_2" alt="VISUAL_002" loading="lazy" onerror="this.remove()">
         </div>
         <div class="signal-info">
           <div><div class="signal-name">VISUAL_002</div><div class="signal-dur">01:37</div></div>
@@ -875,7 +820,8 @@ nav.nav-hidden {
         </div>
       </div>
 
-      <div class="signal-card reveal" style="transition-delay:.16s">
+      <!-- VISUAL 03 — replace THUMB_URL_3 (Cloudinary) and VIMEO_URL_3 -->
+      <div class="signal-card reveal" data-vimeo="VIMEO_URL_3" style="transition-delay:.16s">
         <div class="signal-thumb">
           <svg class="thumb-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 100 C30 60,60 80,100 55 C140 30,170 70,200 50" fill="none" stroke="#00e5ff" stroke-width="1" opacity=".8"/>
@@ -886,6 +832,7 @@ nav.nav-hidden {
               <circle r="1" cx="40" cy="80"/><circle r="1.5" cx="160" cy="72"/>
             </g>
           </svg>
+          <img class="thumb-img" src="THUMB_URL_3" alt="VISUAL_003" loading="lazy" onerror="this.remove()">
         </div>
         <div class="signal-info">
           <div><div class="signal-name">VISUAL_003</div><div class="signal-dur">01:18</div></div>
@@ -893,7 +840,8 @@ nav.nav-hidden {
         </div>
       </div>
 
-      <div class="signal-card reveal" style="transition-delay:.24s">
+      <!-- VISUAL 04 — replace THUMB_URL_4 (Cloudinary) and VIMEO_URL_4 -->
+      <div class="signal-card reveal" data-vimeo="VIMEO_URL_4" style="transition-delay:.24s">
         <div class="signal-thumb">
           <svg class="thumb-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
             <g fill="#00e5ff">
@@ -909,6 +857,7 @@ nav.nav-hidden {
               <line x1="30" y1="110" x2="90" y2="130"/><line x1="160" y1="70" x2="120" y2="110"/>
             </g>
           </svg>
+          <img class="thumb-img" src="THUMB_URL_4" alt="VISUAL_004" loading="lazy" onerror="this.remove()">
         </div>
         <div class="signal-info">
           <div><div class="signal-name">VISUAL_004</div><div class="signal-dur">01:53</div></div>
@@ -924,7 +873,7 @@ nav.nav-hidden {
       <div class="media-dot"></div>
     </div>
 
-    <div class="view-all-link reveal" data-en="VIEW ALL VISUALS" data-es="VER TODOS LOS VISUALES">VIEW ALL VISUALS</div>
+    <a href="shop.html" class="view-all-link reveal" data-en="VIEW MORE IN SHOP" data-es="VER MÁS EN LA TIENDA">VIEW MORE IN SHOP</a>
   </div>
 </div>
 
@@ -936,6 +885,18 @@ nav.nav-hidden {
 </div>
 
 </div><!-- /.page-wrap -->
+
+<!-- ══════════════════════════════════════
+     VISUAL MODAL — Vimeo lightbox
+══════════════════════════════════════ -->
+<div class="vmodal" id="vModal" aria-hidden="true">
+  <div class="vmodal-box">
+    <button class="vmodal-close" id="vModalClose" aria-label="Close">✕</button>
+    <div class="vmodal-frame">
+      <iframe id="vModalFrame" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ════════════════════════════════════
@@ -1116,29 +1077,44 @@ visualCards[0].classList.add('active-card');
 document.getElementById('visualArrowLeft').addEventListener('click',  ()=> setVisualDot(activeVisualDot - 1));
 document.getElementById('visualArrowRight').addEventListener('click', ()=> setVisualDot(activeVisualDot + 1));
 visualDots.forEach((dot,i)=> dot.addEventListener('click', ()=> setVisualDot(i)));
-visualCards.forEach((card,i)=> card.addEventListener('click', ()=> setVisualDot(i)));
+visualCards.forEach((card,i)=> card.addEventListener('click', ()=>{
+  setVisualDot(i);
+  openVisual(card.dataset.vimeo);
+}));
 
 /* ════════════════════════════════════
-   MEDIA CAROUSEL — with active card
+   VISUAL MODAL — Vimeo lightbox
 ════════════════════════════════════ */
-const mediaDotEls  = document.querySelectorAll('#mediaDots .media-dot');
-const mediaCardEls = document.querySelectorAll('#mediaGrid .signal-card');
+const vModal      = document.getElementById('vModal');
+const vModalFrame = document.getElementById('vModalFrame');
 
-if(mediaDotEls.length && mediaCardEls.length){
-  let activeMediaDot = 0;
-  mediaCardEls[0].classList.add('active-card');
-  function setMediaDot(i){
-    mediaDotEls[activeMediaDot].classList.remove('active');
-    mediaCardEls[activeMediaDot].classList.remove('active-card');
-    activeMediaDot = (i + mediaDotEls.length) % mediaDotEls.length;
-    mediaDotEls[activeMediaDot].classList.add('active');
-    mediaCardEls[activeMediaDot].classList.add('active-card');
-  }
-  document.getElementById('mediaArrowLeft')?.addEventListener('click',  ()=> setMediaDot(activeMediaDot - 1));
-  document.getElementById('mediaArrowRight')?.addEventListener('click', ()=> setMediaDot(activeMediaDot + 1));
-  mediaDotEls.forEach((dot,i)=> dot.addEventListener('click', ()=> setMediaDot(i)));
-  mediaCardEls.forEach((card,i)=> card.addEventListener('click', ()=> setMediaDot(i)));
+/* Accepts vimeo.com/ID, vimeo.com/ID/HASH or player.vimeo.com/video/ID?h=HASH */
+function vimeoEmbed(url){
+  if(!url) return null;
+  const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/([a-z0-9]+))?/i);
+  if(!m) return null;
+  const h = m[2] || (url.match(/[?&]h=([a-z0-9]+)/i) || [])[1];
+  return 'https://player.vimeo.com/video/' + m[1] +
+         '?autoplay=1&color=00e5ff&title=0&byline=0&portrait=0' + (h ? '&h=' + h : '');
 }
+function openVisual(url){
+  const src = vimeoEmbed(url);
+  if(!src) return;
+  vModalFrame.src = src;
+  vModal.classList.add('open');
+  vModal.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+}
+function closeVisual(){
+  vModal.classList.remove('open');
+  vModal.setAttribute('aria-hidden','true');
+  vModalFrame.src = '';
+  document.body.style.overflow = '';
+  document.body.classList.remove('hovering');
+}
+document.getElementById('vModalClose').addEventListener('click', closeVisual);
+vModal.addEventListener('click', e=>{ if(e.target === vModal) closeVisual(); });
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && vModal.classList.contains('open')) closeVisual(); });
 
 
 const obs=new IntersectionObserver(entries=>{
@@ -1230,22 +1206,6 @@ navLinks.querySelectorAll('a').forEach(a=>{
   });
 });
 
-/* ════════════════════════════════════
-   VISUAL CAROUSEL
-════════════════════════════════════ */
-const thumbs=document.querySelectorAll('.vis-thumb');
-let activeThumb=0;
-function setThumb(i){
-  thumbs[activeThumb].classList.remove('active-thumb');
-  activeThumb=i; thumbs[i].classList.add('active-thumb');
-}
-document.querySelector('.carousel-arrow.left').addEventListener('click',()=>{
-  setThumb((activeThumb-1+thumbs.length)%thumbs.length);
-});
-document.querySelector('.carousel-arrow.right').addEventListener('click',()=>{
-  setThumb((activeThumb+1)%thumbs.length);
-});
-thumbs.forEach((t,i)=>t.addEventListener('click',()=>setThumb(i)));
 </script>
 </body>
 </html>

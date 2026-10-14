@@ -546,6 +546,7 @@ nav.nav-hidden {
 .join-hp { position:absolute; left:-9999px; width:1px; height:1px; opacity:0; }
 .join-status { min-height:1.2em; font-size:.62rem; letter-spacing:.2em; text-align:center; color:var(--cyan); }
 .join-status.error { color:#ff6b81; }
+.join-fix { font:inherit; letter-spacing:inherit; color:inherit; background:none; border:none; padding:0; cursor:none; text-decoration:underline; text-underline-offset:3px; }
 
 /* Footer bar */
 .footer-bar {
@@ -1207,6 +1208,39 @@ const joinForm   = document.getElementById('joinForm');
 const joinBtn    = document.getElementById('joinBtn');
 const joinStatus = document.getElementById('joinStatus');
 
+/* Strict format: no spaces, valid characters, real ending like .com / .co */
+const EMAIL_RE = /^[a-z0-9._%+\-]+@[a-z0-9\-]+(\.[a-z0-9\-]+)*\.[a-z]{2,}$/i;
+
+/* Common domain typos → correct domain */
+const DOMAIN_TYPOS = {
+  'gamil.com':'gmail.com','gmial.com':'gmail.com','gmal.com':'gmail.com','gmai.com':'gmail.com',
+  'gmil.com':'gmail.com','gnail.com':'gmail.com','gmaill.com':'gmail.com','gmail.co':'gmail.com',
+  'gmail.con':'gmail.com','gmail.cm':'gmail.com','gmail.om':'gmail.com','gmail.comm':'gmail.com',
+  'hotmial.com':'hotmail.com','hotmal.com':'hotmail.com','hotmai.com':'hotmail.com','hotmil.com':'hotmail.com',
+  'hotamil.com':'hotmail.com','hotmail.co':'hotmail.com','hotmail.con':'hotmail.com','hotmail.cm':'hotmail.com',
+  'outlok.com':'outlook.com','outloo.com':'outlook.com','outlook.co':'outlook.com','outlook.con':'outlook.com',
+  'yahooo.com':'yahoo.com','yaho.com':'yahoo.com','yahoo.con':'yahoo.com','yahoo.cm':'yahoo.com',
+  'iclod.com':'icloud.com','icoud.com':'icloud.com','icloud.co':'icloud.com','icloud.con':'icloud.com'
+};
+
+/* Shows "DID YOU MEAN @...?" — clicking it fixes the email */
+function joinSuggest(fixed){
+  joinStatus.textContent = '';
+  joinStatus.classList.add('error');
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'join-fix';
+  b.textContent = 'DID YOU MEAN @' + fixed.split('@')[1].toUpperCase() + '?';
+  b.addEventListener('mouseenter',()=>document.body.classList.add('hovering'));
+  b.addEventListener('mouseleave',()=>document.body.classList.remove('hovering'));
+  b.addEventListener('click',()=>{
+    joinForm.elements.email.value = fixed;
+    document.body.classList.remove('hovering');
+    joinMsg('');
+  });
+  joinStatus.appendChild(b);
+}
+
 function joinMsg(text, isError){
   joinStatus.textContent = text;
   joinStatus.classList.toggle('error', !!isError);
@@ -1215,8 +1249,11 @@ joinForm.addEventListener('submit', e=>{
   e.preventDefault();
   const f = joinForm.elements;
   if(f.website.value) return;                                   /* bot trap */
-  const email = f.email.value.trim();
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return joinMsg('ENTER A VALID EMAIL', true);
+  const email = f.email.value.trim().toLowerCase();
+  f.email.value = email;
+  if(!EMAIL_RE.test(email)) return joinMsg('ENTER A VALID EMAIL', true);
+  const domain = email.split('@')[1];
+  if(DOMAIN_TYPOS[domain]) return joinSuggest(email.split('@')[0] + '@' + DOMAIN_TYPOS[domain]);
   if(!f.consent.checked) return joinMsg('PLEASE ACCEPT TO CONTINUE', true);
   if(!JOIN_URL) return joinMsg('NOT CONNECTED YET', true);
 

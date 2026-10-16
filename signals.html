@@ -342,32 +342,11 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
 .play-circle { z-index:3; }
 .signal-hero-label, .signal-hero-dur { z-index:3; }
 
-/* ── Vimeo modal ── */
-.vmodal {
-  position:fixed; inset:0; z-index:9000;
-  background:rgba(2,6,8,0.92);
-  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
-  display:none; align-items:center; justify-content:center;
-  padding:24px;
-}
-.vmodal.open { display:flex; animation:vFade .3s ease; }
-@keyframes vFade { from{opacity:0} to{opacity:1} }
-.vmodal-box {
-  position:relative; width:100%;
-  max-width:min(1080px, calc((100vh - 120px) * 16 / 9));
-  border:1px solid var(--cyan-mid); background:#000;
-}
-.vmodal-frame { position:relative; width:100%; aspect-ratio:16/9; }
-.vmodal-frame iframe { position:absolute; inset:0; width:100%; height:100%; border:0; display:block; }
-.vmodal-close {
-  position:absolute; top:-46px; right:-1px;
-  width:36px; height:36px;
-  background:rgba(0,229,255,0.08); border:1px solid var(--cyan-mid);
-  color:var(--cyan); font-family:var(--font-mono); font-size:.9rem;
-  cursor:none; transition:background .2s, border-color .2s;
-}
-.vmodal-close:hover { background:rgba(0,229,255,0.18); border-color:var(--cyan); }
-@media(max-width:768px){ .vmodal { padding:12px; } .vmodal-close { top:-44px; } }
+/* ── Inline Vimeo player (inside the big window) ── */
+.hero-player { position:absolute; inset:0; width:100%; height:100%; border:0; z-index:4; background:#000; }
+.signals-hero-thumb.playing .play-circle,
+.signals-hero-thumb.playing .signal-hero-label,
+.signals-hero-thumb.playing .signal-hero-dur { display:none; }
 </style>
 </head>
 <body>
@@ -556,16 +535,6 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
 
 </div><!-- /.page-wrap -->
 
-<!-- VIMEO MODAL -->
-<div class="vmodal" id="vModal" aria-hidden="true">
-  <div class="vmodal-box">
-    <button class="vmodal-close" id="vModalClose" aria-label="Close">✕</button>
-    <div class="vmodal-frame">
-      <iframe id="vModalFrame" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-    </div>
-  </div>
-</div>
-
 <script>
 /* ── Particle field ── */
 const canvas = document.getElementById('field');
@@ -634,6 +603,7 @@ const thumbs = [];
 
 function activateCard(idx) {
   idx = (idx + cards.length) % cards.length;
+  stopVideo();
   activeIdx = idx;
   cards.forEach(c => c.classList.remove('active-card'));
   cards[idx].classList.add('active-card');
@@ -679,9 +649,7 @@ cards.forEach((card, i) => card.addEventListener('click', () => activateCard(i))
 document.getElementById('sigArrowLeft').addEventListener('click',  () => activateCard(activeIdx - 1));
 document.getElementById('sigArrowRight').addEventListener('click', () => activateCard(activeIdx + 1));
 
-/* ── Vimeo: modal (autoplay with sound) ── */
-const vModal      = document.getElementById('vModal');
-const vModalFrame = document.getElementById('vModalFrame');
+/* ── Vimeo: plays inside the big window (with sound) ── */
 function vimeoEmbed(url){
   if(!url) return null;
   const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/([a-z0-9]+))?/i);
@@ -690,28 +658,28 @@ function vimeoEmbed(url){
   return 'https://player.vimeo.com/video/' + m[1] +
          '?autoplay=1&color=00e5ff&title=0&byline=0&portrait=0' + (h ? '&h=' + h : '');
 }
-function openVisual(url){
-  const src = vimeoEmbed(url);
+function stopVideo(){
+  const f = heroThumb.querySelector('.hero-player');
+  if(f) f.remove();
+  heroThumb.classList.remove('playing');
+}
+function playVideo(idx){
+  if(idx !== activeIdx) activateCard(idx);
+  const src = vimeoEmbed(cards[idx].dataset.vimeo);
   if(!src) return;
-  vModalFrame.src = src;
-  vModal.classList.add('open');
-  vModal.setAttribute('aria-hidden','false');
-  document.body.style.overflow = 'hidden';
+  stopVideo();
+  const f = document.createElement('iframe');
+  f.className = 'hero-player';
+  f.allow = 'autoplay; fullscreen; picture-in-picture';
+  f.allowFullscreen = true;
+  f.src = src;
+  heroThumb.appendChild(f);
+  heroThumb.classList.add('playing');
 }
-function closeVisual(){
-  vModal.classList.remove('open');
-  vModal.setAttribute('aria-hidden','true');
-  vModalFrame.src = '';
-  document.body.style.overflow = '';
-  document.body.classList.remove('hovering');
-}
-document.getElementById('vModalClose').addEventListener('click', closeVisual);
-vModal.addEventListener('click', e=>{ if(e.target === vModal) closeVisual(); });
-document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && vModal.classList.contains('open')) closeVisual(); });
 
 /* Play: big hero button plays the active video, card ▶ plays its own */
-document.querySelector('.play-circle').addEventListener('click', () => openVisual(cards[activeIdx].dataset.vimeo));
-cards.forEach(card => card.querySelector('.signal-play').addEventListener('click', () => openVisual(card.dataset.vimeo)));
+document.querySelector('.play-circle').addEventListener('click', () => playVideo(activeIdx));
+cards.forEach((card, i) => card.querySelector('.signal-play').addEventListener('click', e => { e.stopPropagation(); playVideo(i); }));
 
 /* Thumbnail + duration pulled from Vimeo (SVG stays if it fails) */
 cards.forEach((card, i) => {
@@ -734,7 +702,7 @@ cards.forEach((card, i) => {
       if(i === activeIdx){
         heroLabel.textContent = card.dataset.name;
         heroDur.textContent = card.dataset.dur;
-        if(thumbs[i]) activateCard(i);
+        if(thumbs[i] && !heroThumb.classList.contains('playing')) activateCard(i);
       }
     })
     .catch(() => {});

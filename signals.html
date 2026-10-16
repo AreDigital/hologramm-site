@@ -329,6 +329,45 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
 @media(max-width:480px){
   .signals-grid { grid-template-columns:1fr 1fr; }
 }
+
+/* ── Real Vimeo thumbnails (SVG stays as fallback) ── */
+.signal-thumb { aspect-ratio:16/9; }
+.signal-thumb .thumb-img {
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit:cover; display:block; z-index:1;
+  opacity:.85; transition: opacity .3s, transform .4s;
+}
+.signal-card:hover .thumb-img { opacity:1; transform:scale(1.04); }
+.signals-hero-thumb .hero-prev img { width:100%; height:100%; object-fit:cover; opacity:.9; }
+.play-circle { z-index:3; }
+.signal-hero-label, .signal-hero-dur { z-index:3; }
+
+/* ── Vimeo modal ── */
+.vmodal {
+  position:fixed; inset:0; z-index:9000;
+  background:rgba(2,6,8,0.92);
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  display:none; align-items:center; justify-content:center;
+  padding:24px;
+}
+.vmodal.open { display:flex; animation:vFade .3s ease; }
+@keyframes vFade { from{opacity:0} to{opacity:1} }
+.vmodal-box {
+  position:relative; width:100%;
+  max-width:min(1080px, calc((100vh - 120px) * 16 / 9));
+  border:1px solid var(--cyan-mid); background:#000;
+}
+.vmodal-frame { position:relative; width:100%; aspect-ratio:16/9; }
+.vmodal-frame iframe { position:absolute; inset:0; width:100%; height:100%; border:0; display:block; }
+.vmodal-close {
+  position:absolute; top:-46px; right:-1px;
+  width:36px; height:36px;
+  background:rgba(0,229,255,0.08); border:1px solid var(--cyan-mid);
+  color:var(--cyan); font-family:var(--font-mono); font-size:.9rem;
+  cursor:none; transition:background .2s, border-color .2s;
+}
+.vmodal-close:hover { background:rgba(0,229,255,0.18); border-color:var(--cyan); }
+@media(max-width:768px){ .vmodal { padding:12px; } .vmodal-close { top:-44px; } }
 </style>
 </head>
 <body>
@@ -407,8 +446,8 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
         </g>
       </svg>
       <div class="play-circle">▶</div>
-      <div class="signal-hero-label">SIGNAL_001</div>
-      <div class="signal-hero-dur">01:24</div>
+      <div class="signal-hero-label">SIGNAL FORM</div>
+      <div class="signal-hero-dur"></div>
     </div>
   </div>
 
@@ -418,7 +457,7 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
     <div class="sig-arrow right" id="sigArrowRight">&#8250;</div>
 
     <div class="signals-grid" id="signalsGrid">
-      <div class="signal-card active-card reveal" data-index="0" data-name="SIGNAL_001" data-dur="01:24">
+      <div class="signal-card active-card reveal" data-index="0" data-name="SIGNAL FORM" data-dur="" data-vimeo="https://vimeo.com/1236476047">
         <div class="signal-thumb">
           <svg class="thumb-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
             <defs><radialGradient id="rg1" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#00e5ff" stop-opacity=".6"/><stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/></radialGradient></defs>
@@ -435,12 +474,12 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
           </svg>
         </div>
         <div class="signal-info">
-          <div><div class="signal-name">SIGNAL_001</div><div class="signal-dur">01:24</div></div>
+          <div><div class="signal-name">SIGNAL FORM</div><div class="signal-dur"></div></div>
           <div class="signal-play">▶</div>
         </div>
       </div>
 
-      <div class="signal-card reveal" data-index="1" data-name="SIGNAL_002" data-dur="01:37" style="transition-delay:.08s">
+      <div class="signal-card reveal" data-index="1" data-name="NODOSCOPE" data-dur="" data-vimeo="https://vimeo.com/1236476045" style="transition-delay:.08s">
         <div class="signal-thumb">
           <svg class="thumb-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
             <g stroke="#00e5ff" stroke-width=".6" opacity=".7">
@@ -457,12 +496,12 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
           </svg>
         </div>
         <div class="signal-info">
-          <div><div class="signal-name">SIGNAL_002</div><div class="signal-dur">01:37</div></div>
+          <div><div class="signal-name">NODOSCOPE</div><div class="signal-dur"></div></div>
           <div class="signal-play">▶</div>
         </div>
       </div>
 
-      <div class="signal-card reveal" data-index="2" data-name="SIGNAL_003" data-dur="01:18" style="transition-delay:.16s">
+      <div class="signal-card reveal" data-index="2" data-name="RED FREQUENCY" data-dur="" data-vimeo="https://vimeo.com/1236476048" style="transition-delay:.16s">
         <div class="signal-thumb">
           <svg class="thumb-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 100 C30 60,60 80,100 55 C140 30,170 70,200 50" fill="none" stroke="#00e5ff" stroke-width="1" opacity=".8"/>
@@ -474,12 +513,12 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
           </svg>
         </div>
         <div class="signal-info">
-          <div><div class="signal-name">SIGNAL_003</div><div class="signal-dur">01:18</div></div>
+          <div><div class="signal-name">RED FREQUENCY</div><div class="signal-dur"></div></div>
           <div class="signal-play">▶</div>
         </div>
       </div>
 
-      <div class="signal-card reveal" data-index="3" data-name="SIGNAL_004" data-dur="01:53" style="transition-delay:.24s">
+      <div class="signal-card reveal" data-index="3" data-name="ASCII MATTER" data-dur="" data-vimeo="https://vimeo.com/1236476046" style="transition-delay:.24s">
         <div class="signal-thumb">
           <svg class="thumb-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
             <g fill="#00e5ff">
@@ -496,7 +535,7 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
           </svg>
         </div>
         <div class="signal-info">
-          <div><div class="signal-name">SIGNAL_004</div><div class="signal-dur">01:53</div></div>
+          <div><div class="signal-name">ASCII MATTER</div><div class="signal-dur"></div></div>
           <div class="signal-play">▶</div>
         </div>
       </div>
@@ -516,6 +555,16 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
 </div>
 
 </div><!-- /.page-wrap -->
+
+<!-- VIMEO MODAL -->
+<div class="vmodal" id="vModal" aria-hidden="true">
+  <div class="vmodal-box">
+    <button class="vmodal-close" id="vModalClose" aria-label="Close">✕</button>
+    <div class="vmodal-frame">
+      <iframe id="vModalFrame" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ── Particle field ── */
@@ -581,6 +630,7 @@ const heroDur    = document.querySelector('.signal-hero-dur');
 let activeIdx    = 0;
 
 const previewSVGs = Array.from(cards).map(c => c.querySelector('.thumb-svg').outerHTML);
+const thumbs = [];
 
 function activateCard(idx) {
   idx = (idx + cards.length) % cards.length;
@@ -596,13 +646,17 @@ function activateCard(idx) {
   setTimeout(()=>{
     heroLabel.textContent = name;
     heroDur.textContent   = dur;
-    const existing = heroThumb.querySelector('svg');
-    if(existing) existing.remove();
+    heroThumb.querySelectorAll(':scope > svg, :scope > .hero-prev').forEach(el => el.remove());
     const wrapper = document.createElement('div');
+    wrapper.className = 'hero-prev';
     wrapper.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;';
-    wrapper.innerHTML = svg;
-    const newSvg = wrapper.querySelector('svg');
-    newSvg.style.cssText = 'width:60%;height:60%;opacity:.7;';
+    if(thumbs[idx]){
+      wrapper.innerHTML = '<img src="' + thumbs[idx] + '" alt="' + name + '">';
+    } else {
+      wrapper.innerHTML = svg;
+      const newSvg = wrapper.querySelector('svg');
+      newSvg.style.cssText = 'width:60%;height:60%;opacity:.7;';
+    }
     heroThumb.insertBefore(wrapper, heroThumb.firstChild);
     heroThumb.classList.remove('switching');
   }, 250);
@@ -624,6 +678,67 @@ cards.forEach((card, i) => card.addEventListener('click', () => activateCard(i))
 /* Arrows */
 document.getElementById('sigArrowLeft').addEventListener('click',  () => activateCard(activeIdx - 1));
 document.getElementById('sigArrowRight').addEventListener('click', () => activateCard(activeIdx + 1));
+
+/* ── Vimeo: modal (autoplay with sound) ── */
+const vModal      = document.getElementById('vModal');
+const vModalFrame = document.getElementById('vModalFrame');
+function vimeoEmbed(url){
+  if(!url) return null;
+  const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/([a-z0-9]+))?/i);
+  if(!m) return null;
+  const h = m[2] || (url.match(/[?&]h=([a-z0-9]+)/i) || [])[1];
+  return 'https://player.vimeo.com/video/' + m[1] +
+         '?autoplay=1&color=00e5ff&title=0&byline=0&portrait=0' + (h ? '&h=' + h : '');
+}
+function openVisual(url){
+  const src = vimeoEmbed(url);
+  if(!src) return;
+  vModalFrame.src = src;
+  vModal.classList.add('open');
+  vModal.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+}
+function closeVisual(){
+  vModal.classList.remove('open');
+  vModal.setAttribute('aria-hidden','true');
+  vModalFrame.src = '';
+  document.body.style.overflow = '';
+  document.body.classList.remove('hovering');
+}
+document.getElementById('vModalClose').addEventListener('click', closeVisual);
+vModal.addEventListener('click', e=>{ if(e.target === vModal) closeVisual(); });
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && vModal.classList.contains('open')) closeVisual(); });
+
+/* Play: big hero button plays the active video, card ▶ plays its own */
+document.querySelector('.play-circle').addEventListener('click', () => openVisual(cards[activeIdx].dataset.vimeo));
+cards.forEach(card => card.querySelector('.signal-play').addEventListener('click', () => openVisual(card.dataset.vimeo)));
+
+/* Thumbnail + duration pulled from Vimeo (SVG stays if it fails) */
+cards.forEach((card, i) => {
+  fetch('https://vimeo.com/api/oembed.json?width=1280&url=' + encodeURIComponent(card.dataset.vimeo))
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(d => {
+      if(d.duration){
+        const t = String(Math.floor(d.duration/60)).padStart(2,'0') + ':' + String(d.duration%60).padStart(2,'0');
+        card.dataset.dur = t;
+        card.querySelector('.signal-dur').textContent = t;
+      }
+      if(d.thumbnail_url){
+        thumbs[i] = d.thumbnail_url;
+        const img = document.createElement('img');
+        img.className = 'thumb-img'; img.alt = card.dataset.name; img.loading = 'lazy';
+        img.onerror = () => img.remove();
+        img.src = d.thumbnail_url;
+        card.querySelector('.signal-thumb').appendChild(img);
+      }
+      if(i === activeIdx){
+        heroLabel.textContent = card.dataset.name;
+        heroDur.textContent = card.dataset.dur;
+        if(thumbs[i]) activateCard(i);
+      }
+    })
+    .catch(() => {});
+});
 
 /* Init */
 if(window.innerWidth <= 768){

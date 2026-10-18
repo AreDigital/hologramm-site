@@ -706,7 +706,7 @@ input[type=range]::-webkit-slider-thumb,.bb-range::-webkit-slider-thumb,.bb-gran
         <div id="mob-fx-actions">
           <button onclick="resetAll()"       style="border:1px solid var(--s);color:var(--s)">■ RESET</button>
           <button id="mob-freeze" onclick="toggleFreeze()" style="border:1px solid rgba(167,139,250,0.5);color:rgba(167,139,250,0.7)">❄ FREEZE</button>
-          <button onclick="toggleFullscreen()" style="border:1px solid rgba(0,255,224,0.2);color:rgba(0,255,224,0.3)">⛶ FULL</button>
+          <button onclick="toggleFullscreen()" style="border:1px solid rgba(0,255,224,0.5);color:rgba(0,255,224,0.85)">⛶ FULL</button>
         </div>
 
       </div>
@@ -2149,6 +2149,22 @@ function mobGeoColorHTML(){
     }).join('') + '</div></div>';
 }
 
+// Selecciona una capa sin reconstruir el mixer (para no cortar el arrastre de un fader)
+function mobSelLayerSoft(idx){
+  if(idx === mobLayerIdx || !layers[idx]) return;
+  mobLayerIdx = idx;
+  document.querySelectorAll('.mob-lbtn').forEach(function(b,i){ b.classList.toggle('active', i === idx); });
+  mobUpdateHeader();
+  const g = document.querySelector('#mx-dyn .mx-geo');
+  if(g){ const t = document.createElement('div'); t.innerHTML = mobGeoColorHTML(); g.replaceWith(t.firstChild); }
+  document.querySelectorAll('#mx-dyn .mx-col .bb-fw').forEach(function(fw,i){
+    const c = COLS[layers[i].ci % COLS.length].h, on = (i === idx);
+    fw.classList.toggle('mx-sel', on);
+    fw.style.borderColor = on ? c : '';
+    fw.style.boxShadow = on ? '0 0 0 1px '+c+'66,0 0 12px '+c+'33' : '';
+  });
+}
+
 function mobUpdateHeader(){
   const L = layers[mobLayerIdx];
   if(!L) return;
@@ -2176,6 +2192,9 @@ function mobToggleMixer(){
 }
 function mobMixToggle(id){
   togL(id);
+  // Al pulsar ON/OFF de un fader, se selecciona su botón CAPA
+  const idx = layers.findIndex(function(L){ return L.id === id; });
+  if(idx >= 0) mobSelLayer(idx);
   mobBuildMixer();
   mobUpdateHeader();
 }
@@ -2198,7 +2217,8 @@ function mobBuildMixer(){
     const col = COLS[L.ci % COLS.length].h;
     const op = L.on ? 1 : 0.4;
     const pct = Math.round((L.opacity ?? 1) * 100);
-    h += '<div class="mx-col"><div class="bb-fw">'
+    const sel = (i === mobLayerIdx);
+    h += '<div class="mx-col"><div class="bb-fw'+(sel?' mx-sel':'')+'" style="'+(sel?'border-color:'+col+';box-shadow:0 0 0 1px '+col+'66,0 0 12px '+col+'33':'')+'">'
       + '<button class="bb-fon" style="color:'+col+';border-color:'+col+';opacity:'+op+'" onclick="mobMixToggle('+L.id+')">'+(L.on?'ON':'OFF')+'</button>'
       + '<div class="mx-hit" data-i="'+i+'"><div class="bb-ft" id="mx-ft-'+i+'">'
       + '<div class="bb-ff" id="mx-ff-'+i+'" style="height:'+pct+'%;background:'+col+';opacity:'+(L.on?0.35:0.15)+'"></div>'
@@ -2218,7 +2238,7 @@ function mobBuildMixer(){
       const r = tr.getBoundingClientRect();
       mobMixSet(i, Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height)));
     };
-    hit.addEventListener('pointerdown', function(e){ hit._drag = true; if(layers[i]) layers[i]._drag = true; hit.setPointerCapture(e.pointerId); set(e); });
+    hit.addEventListener('pointerdown', function(e){ hit._drag = true; if(layers[i]) layers[i]._drag = true; mobSelLayerSoft(i); hit.setPointerCapture(e.pointerId); set(e); });
     hit.addEventListener('pointermove', function(e){ if(hit._drag) set(e); });
     hit.addEventListener('pointerup',   function(){ hit._drag = false; if(layers[i]) layers[i]._drag = false; });
     hit.addEventListener('pointercancel', function(){ hit._drag = false; if(layers[i]) layers[i]._drag = false; });

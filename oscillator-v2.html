@@ -533,6 +533,16 @@ html body input[type=range]::-moz-range-thumb{width:32px;height:20px;border-radi
 .mtab.active{background:rgba(255,255,255,0.04)}
 }
 </style>
+<style id="slider-pc-fino">
+/* PC: manija más delicada, del tamaño de la del mixer */
+@media (min-width:861px){
+html body input[type=range]{height:16px!important}
+html body input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px}
+html body input[type=range]::-moz-range-track{height:4px;border-radius:2px}
+html body input[type=range]::-webkit-slider-thumb{width:24px!important;height:14px!important;margin-top:-5px!important;border-radius:3px!important;background:linear-gradient(90deg,transparent 11px,rgba(0,0,0,.55) 11px,rgba(0,0,0,.55) 13px,transparent 13px),linear-gradient(rgba(255,255,255,.45),rgba(0,0,0,.28)),var(--p)!important;box-shadow:0 2px 5px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.22)!important}
+html body input[type=range]::-moz-range-thumb{width:24px;height:14px;border-radius:3px}
+}
+</style>
 </head>
 <body>
 <canvas id="c"></canvas>

@@ -1,0 +1,2587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NODOSCOPE v2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#020408;--p:#00ffe0;--s:#ff3cac;--a:#ffe600;--panel:rgba(0,8,18,0.92)}
+body{background:var(--bg);color:var(--p);font-family:'Share Tech Mono',monospace;overflow:hidden;width:100vw;height:100vh;user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%}
+
+/* PANEL */
+#panel{position:fixed;left:0;top:0;bottom:0;width:280px;background:var(--panel);border-right:1px solid rgba(0,255,224,0.15);backdrop-filter:blur(16px);display:flex;flex-direction:column;z-index:20}
+#panel-l{position:fixed;right:0;top:0;bottom:0;width:280px;background:var(--panel);border-left:1px solid rgba(0,255,224,0.15);backdrop-filter:blur(16px);display:flex;flex-direction:column;z-index:20}#ph{padding:16px 16px 10px;border-bottom:1px solid rgba(0,255,224,0.1)}
+#ph h1{font-family:'Orbitron',sans-serif;font-size:15px;font-weight:900;letter-spacing:4px;color:var(--p);text-shadow:0 0 20px var(--p)}
+#ph p{font-size:8px;letter-spacing:2px;color:rgba(0,255,224,0.3);margin-top:3px}
+#scroll{flex:1;overflow-y:auto;padding:8px 0;display:flex;flex-direction:column;gap:3px}
+#scroll::-webkit-scrollbar{width:2px}
+#scroll::-webkit-scrollbar-thumb{background:var(--p)}
+.panel-scroll{flex:1;overflow-y:auto;padding:8px 0;display:flex;flex-direction:column;gap:3px}
+.panel-scroll::-webkit-scrollbar{width:2px}
+.lcard-extra-top{margin-top:8px}
+.lcard{border:1px solid rgba(0,255,224,0.08);transition:border-color .2s}
+.lcard.on{border-color:rgba(0,255,224,0.25)}
+.lcard .lhdr{opacity:0.35;transition:opacity .2s}
+.lcard.on .lhdr{opacity:1}
+
+/* CONTROLES */
+.slbl{font-size:9px;letter-spacing:3px;color:rgba(0,255,224,0.3);padding:8px 0 4px;border-bottom:1px solid rgba(0,255,224,0.07);margin-bottom:3px;margin-top:3px}
+.ctrl{display:flex;flex-direction:column;gap:9px;padding:4px 12px}.crow{display:flex;justify-content:space-between;align-items:center}
+.ctrl label{font-size:11px;letter-spacing:1px;color:rgba(0,255,224,0.6)}
+.val{font-size:11px;color:var(--a);min-width:36px;text-align:right}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:rgba(0,255,224,0.12);border-radius:1px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--p);box-shadow:0 0 6px var(--p);cursor:pointer}
+
+/* CAPAS */
+.lcard{border:1px solid rgba(255,255,255,0.07);border-radius:2px;margin-bottom:5px;margin-left:12px;margin-right:12px}
+.lcard.on{border-color:rgba(0,255,224,0.2)}
+.lhdr{display:flex;align-items:center;gap:5px;padding:7px 8px;cursor:pointer}
+.lbody{padding:0 0 8px}
+.slbl{font-size:9px;letter-spacing:3px;color:rgba(0,255,224,0.3);padding:8px 12px 4px;border-bottom:1px solid rgba(0,255,224,0.07);margin-bottom:3px;margin-top:3px}
+.ldot{width:9px;height:9px;border-radius:50%;flex-shrink:0;cursor:pointer;border:1px solid transparent}
+.lname{font-size:10px;letter-spacing:2px;flex:1}
+.ltog{background:transparent;border:1px solid currentColor;font-family:'Share Tech Mono',monospace;font-size:9px;padding:3px 7px;cursor:pointer}
+.ltog.off{opacity:0.35}
+.lrst{background:transparent;border:1px solid rgba(0,255,224,0.3);color:rgba(0,255,224,0.5);font-family:'Share Tech Mono',monospace;font-size:9px;padding:3px 6px;cursor:pointer;margin-left:2px}
+.lrst:hover{border-color:var(--p);color:var(--p)}
+.lrm{background:transparent;border:1px solid rgba(255,60,60,0.4);color:rgba(255,60,60,0.5);font-family:'Share Tech Mono',monospace;font-size:9px;padding:3px 6px;cursor:pointer;margin-left:2px}
+.larr{font-size:9px;margin:0 2px;opacity:0.5}
+
+/* PALETA DE COLORES */
+.col-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:4px;box-sizing:border-box;padding:2px 4px 2px 12px}
+.col-swatch{height:24px;border-radius:2px;cursor:pointer;transition:all .15s;opacity:0.7}
+.col-swatch:hover{opacity:1;transform:scaleY(1.1)}
+.col-swatch.active{opacity:1;outline:2px solid rgba(255,255,255,0.8);outline-offset:1px}
+.ltabs{display:flex;gap:2px;padding:0 12px 6px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:6px}
+.ltab{flex:1;background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;padding:5px 2px;cursor:pointer;text-align:center;transition:all .15s}
+.ltab.active{background:rgba(255,255,255,0.07);color:#fff;border-color:rgba(255,255,255,0.35)}
+.ltab-content{display:none;flex-direction:column;gap:3px}
+.ltab-content.active{display:flex}
+.lsec{font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.2);padding:7px 12px 4px;border-bottom:1px solid rgba(255,255,255,0.05);margin-bottom:4px;margin-top:5px}
+
+/* BOTONES GEOMETRIA */
+.geo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-bottom:4px;padding:0 12px}
+.gb{background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);font-family:'Share Tech Mono',monospace;font-size:9px;padding:6px 2px;cursor:pointer;text-align:center;transition:all .15s}
+.gb.active,.gb:hover{background:rgba(255,255,255,0.08);color:#fff;border-color:rgba(255,255,255,0.35)}
+
+/* BOTONES BANDA */
+.band-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:4px;padding:0 12px}
+.bb{background:transparent;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.3);font-family:'Share Tech Mono',monospace;font-size:9px;padding:5px 2px;cursor:pointer;text-align:center}
+.bb.active{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.4)}
+
+/* TOGGLE EFECTO */
+.efx-toggle{width:100%;background:transparent;font-family:'Share Tech Mono',monospace;font-size:10px;padding:6px 12px;cursor:pointer;margin-bottom:4px;letter-spacing:1px;border-radius:1px;text-align:left;box-sizing:border-box}
+.efx-toggle.off{opacity:0.4}
+
+/* BOTONES GENERALES */
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.btn{background:transparent;border:1px solid var(--p);color:var(--p);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;padding:9px;cursor:pointer;width:100%;transition:all .15s}
+.btn:hover{background:rgba(0,255,224,0.07)}
+.btn.full{grid-column:1/-1}
+.btn.danger{border-color:var(--s);color:var(--s)}
+.btn.warn{border-color:var(--a);color:var(--a)}
+#bottom{padding:10px 12px;border-top:1px solid rgba(0,255,224,0.1);display:flex;flex-direction:column;gap:5px}
+
+/* MODO BPM */
+.bmode-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:5px}
+.bmode{background:transparent;border:1px solid rgba(0,255,224,0.15);color:rgba(0,255,224,0.35);font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:6px 2px;cursor:pointer;text-align:center}
+.bmode.active{background:rgba(0,255,224,0.08);border-color:var(--p);color:var(--p)}
+.bmode.off-btn{border-color:rgba(255,60,172,0.2);color:rgba(255,60,172,0.35)}
+.bmode.off-btn.active{background:rgba(255,60,172,0.08);border-color:var(--s);color:var(--s)}
+
+/* MIDI MAP mode */
+body.midi-mapping .midi-wrap{position:relative;cursor:crosshair}
+body.midi-mapping .midi-wrap::after{content:'';position:absolute;inset:0;background:rgba(255,200,0,0.08);border:1px solid rgba(255,200,0,0.4);border-radius:2px;pointer-events:none;z-index:100}
+body.midi-mapping .midi-wrap.waiting::after{background:rgba(255,200,0,0.25);border-color:#ffc800;box-shadow:0 0 8px #ffc800}
+body.midi-mapping .midi-wrap.mapped::after{background:rgba(0,255,100,0.1);border-color:rgba(0,255,100,0.4)}
+
+/* BARRA INFERIOR — 3 columnas iguales solo en el centro */
+#bottombar{position:fixed;bottom:0;left:280px;right:280px;height:244px;background:rgba(2,4,8,0.98);border-top:1px solid rgba(0,255,224,0.15);backdrop-filter:blur(16px);z-index:10;display:flex;box-sizing:border-box}
+.bb-col{flex:1;display:flex;flex-direction:column;justify-content:center;gap:7px;padding:34px 16px 48px}
+.bb-col+.bb-col{border-left:1px solid rgba(0,255,224,0.08)}
+.bb-col-title{font-size:7px;letter-spacing:3px;color:rgba(0,255,224,0.22);margin-bottom:1px}
+.bb-row{display:flex;align-items:center;gap:8px}
+.bb-lbl{font-size:9px;letter-spacing:2px;color:rgba(0,255,224,0.4);white-space:nowrap;flex-shrink:0}
+.bb-ctx{display:flex;align-items:center;gap:6px;flex:1}
+.bb-range{-webkit-appearance:none;flex:1;height:2px;background:rgba(0,255,224,0.15);border-radius:1px;outline:none;cursor:pointer}
+.bb-range::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--p);box-shadow:0 0 5px var(--p);cursor:pointer}
+#bpm-val-b{font-size:26px;font-family:'Orbitron',sans-serif;font-weight:700;color:var(--a);letter-spacing:2px;min-width:52px;flex-shrink:0;line-height:1}
+#beat-dot-b{width:9px;height:9px;border-radius:50%;background:rgba(0,255,224,0.15);flex-shrink:0;transition:all 0.05s}
+#vu-bar{display:flex;gap:2px;align-items:flex-end;height:24px;flex:1}
+#vu-bar .vb{flex:1;background:var(--p);border-radius:1px 1px 0 0;min-height:2px}
+#bb-tap-btn{background:transparent;border:2px solid var(--p);color:var(--p);font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:3px;padding:7px;cursor:pointer;width:100%;transition:all .1s}
+#bb-tap-btn:active{background:rgba(0,255,224,0.12);transform:scale(0.97)}
+.bb-btn-audio{background:transparent;border:1px solid var(--p);color:var(--p);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;padding:6px;cursor:pointer;width:100%;transition:all .15s}
+.bb-btn-audio:hover,.bb-btn-audio.live{background:rgba(0,255,224,0.1)}
+.bb-gsep{width:100%;height:1px;background:rgba(0,255,224,0.06);margin:2px 0}
+.bb-gctrl{display:flex;align-items:center;gap:7px}
+.bb-glbl{font-size:8px;letter-spacing:1px;color:rgba(0,255,224,0.4);min-width:68px;flex-shrink:0}
+.bb-grange{-webkit-appearance:none;flex:1;height:2px;background:rgba(0,255,224,0.15);border-radius:1px;outline:none;cursor:pointer}
+.bb-grange::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--p);box-shadow:0 0 5px var(--p);cursor:pointer}
+.bb-tog{background:transparent;border:1px solid rgba(0,255,224,0.2);color:rgba(0,255,224,0.35);font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;padding:4px 8px;cursor:pointer;flex-shrink:0;transition:all .15s}
+.bb-tog.on{border-color:var(--p);color:var(--p);background:rgba(0,255,224,0.07)}
+.bb-act{background:transparent;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;padding:6px;cursor:pointer;width:100%;transition:all .15s;text-align:center}
+.bb-act.reset{border:1px solid var(--s);color:var(--s)}
+.bb-act.freeze{border:1px solid rgba(167,139,250,0.5);color:rgba(167,139,250,0.7)}
+.bb-act.freeze.on{background:rgba(167,139,250,0.1)}
+.bb-act.fs{border:1px solid rgba(0,255,224,0.2);color:rgba(0,255,224,0.3)}
+/* FADERS */
+.bb-faders{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 0 48px;border-left:1px solid rgba(0,255,224,0.08);border-right:1px solid rgba(0,255,224,0.08)}
+.bb-faders-row{display:flex;align-items:flex-end;justify-content:center;gap:28px}
+.bb-fw{display:flex;flex-direction:column;align-items:center;gap:10px}
+.bb-fn{font-size:9px;letter-spacing:2px}
+.bb-fon{width:42px;height:18px;border:1px solid currentColor;background:transparent;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.bb-ft{width:8px;height:90px;background:rgba(0,255,224,0.07);border-radius:4px;position:relative;cursor:pointer;user-select:none}
+.bb-ff{position:absolute;bottom:0;left:0;right:0;border-radius:4px;opacity:0.35}
+.bb-fth{position:absolute;width:26px;height:6px;border-radius:3px;left:50%;transform:translateX(-50%);cursor:grab}
+.bb-fpct{font-size:8px;color:var(--a)}
+/* ocultar HUD viejo */
+#vu{display:none}#bpm-hud{display:none}#fps{display:none}#status{display:none}
+/* canvas: solo respeta barra inferior, los paneles van encima */
+canvas{position:fixed;left:280px;right:280px;top:0;bottom:244px;width:calc(100% - 560px);height:calc(100% - 244px)}
+/* HUD de estado — esquina superior izquierda del área central */
+#hud-status{position:fixed;left:292px;top:10px;z-index:15;display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:2px;color:rgba(0,255,224,0.3)}
+#hud-dot{width:6px;height:6px;border-radius:50%;background:rgba(0,255,224,0.15);transition:all .3s;flex-shrink:0}
+#hud-dot.live{background:var(--p);box-shadow:0 0 8px var(--p)}
+#hud-dot.warn{background:var(--a)}
+#hud-fps{position:fixed;right:292px;top:10px;z-index:15;font-size:9px;letter-spacing:2px;color:rgba(0,255,224,0.18)}
+.srow{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:1px;color:rgba(0,255,224,0.3)}
+.dot{width:5px;height:5px;border-radius:50%;background:rgba(0,255,224,0.15);transition:all .3s;flex-shrink:0}
+.dot.live{background:var(--p);box-shadow:0 0 6px var(--p);animation:pulse 1s infinite}
+.dot.warn{background:var(--a)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* VU + BPM */
+#vu{position:fixed;left:14px;bottom:14px;z-index:10;display:flex;gap:2px;align-items:flex-end;height:45px}
+.vb{width:3px;background:var(--p);border-radius:1px 1px 0 0;min-height:2px}
+#bpm-hud{position:fixed;left:14px;bottom:68px;z-index:10;display:flex;align-items:center;gap:7px}
+#beat-dot{width:7px;height:7px;border-radius:50%;background:rgba(0,255,224,0.15);transition:all 0.05s;flex-shrink:0}
+#bpm-lbl{font-size:11px;letter-spacing:2px;color:rgba(0,255,224,0.35)}
+#fps{position:fixed;left:14px;bottom:88px;font-size:9px;letter-spacing:2px;color:rgba(0,255,224,0.18);z-index:10}
+
+/* ══════════════════════════════════════
+   MOBILE  ≤ 860px
+   Panel fijo de 280px en la parte inferior.
+   Pestañas FORMA · MOV · FX internas.
+   Solo muestra la capa activa (selector).
+   Canvas ocupa el resto arriba.
+══════════════════════════════════════ */
+#mob { display:none }
+
+@media (max-width:860px) {
+  :root{--mobh:clamp(300px,50vh,460px)}
+
+  /* Ocultar todo lo de escritorio */
+  #panel, #panel-l, #bottombar,
+  #hud-status, #hud-fps { display:none !important }
+
+  /* Canvas: ocupa todo menos el panel fijo */
+  canvas {
+    position:fixed !important;
+    left:0 !important; right:0 !important;
+    top:0 !important; bottom:var(--mobh) !important;
+    width:100% !important;
+    height:calc(100% - var(--mobh)) !important;
+  }
+
+  /* Panel móvil fijo */
+  #mob {
+    display:flex;
+    flex-direction:column;
+    position:fixed;
+    bottom:0; left:0; right:0;
+    height:var(--mobh);
+    background:rgba(2,4,10,0.97);
+    border-top:1px solid rgba(0,255,224,0.15);
+    backdrop-filter:blur(16px);
+    z-index:30;
+    overflow:hidden;
+  }
+
+  /* ── Fila superior: selector capa + tabs ── */
+  #mob-top {
+    display:flex;
+    align-items:center;
+    height:38px;
+    flex-shrink:0;
+    border-bottom:1px solid rgba(0,255,224,0.1);
+    padding:0 10px;
+    gap:8px;
+  }
+
+  /* Selector de capa activa */
+  #mob-layer-sel {
+    display:flex;
+    gap:4px;
+    flex-shrink:0;
+  }
+  .mob-lbtn {
+    background:transparent;
+    border:1px solid rgba(0,255,224,0.15);
+    color:rgba(0,255,224,0.3);
+    font-family:'Share Tech Mono',monospace;
+    font-size:9px; letter-spacing:1px;
+    padding:3px 8px; cursor:pointer;
+    transition:all .15s;
+  }
+  .mob-lbtn.active {
+    border-color:var(--p);
+    color:var(--p);
+    background:rgba(0,255,224,0.07);
+  }
+
+  /* Dot de color de la capa */
+  #mob-layer-dot {
+    width:8px; height:8px; border-radius:50%;
+    flex-shrink:0;
+    transition:background .2s, box-shadow .2s;
+  }
+
+  /* ON/OFF toggle de la capa */
+  #mob-layer-tog {
+    background:transparent;
+    border:1px solid rgba(0,255,224,0.2);
+    color:rgba(0,255,224,0.35);
+    font-family:'Share Tech Mono',monospace;
+    font-size:8px; letter-spacing:1px;
+    padding:3px 7px; cursor:pointer;
+    flex-shrink:0; transition:all .15s;
+    margin-left:auto;
+  }
+  #mob-layer-tog.on { border-color:var(--p); color:var(--p) }
+
+  /* ── Pestañas ── */
+  #mob-tabs {
+    display:flex;
+    height:32px;
+    flex-shrink:0;
+    border-bottom:1px solid rgba(0,255,224,0.08);
+  }
+  .mtab {
+    flex:1; background:transparent; border:none;
+    border-right:1px solid rgba(0,255,224,0.06);
+    color:rgba(0,255,224,0.28);
+    font-family:'Share Tech Mono',monospace;
+    font-size:9px; letter-spacing:2px;
+    cursor:pointer; transition:all .15s;
+  }
+  .mtab:last-child { border-right:none }
+  .mtab.active {
+    color:var(--p);
+    background:rgba(0,255,224,0.04);
+    border-bottom:2px solid var(--p);
+  }
+
+  /* ── Área de contenido scrollable ── */
+  #mob-content {
+    flex:1;
+    overflow-y:auto;
+    padding:8px 12px 32px;
+    scrollbar-width:thin;
+    scrollbar-color:var(--p) transparent;
+  }
+  #mob-content::-webkit-scrollbar { width:2px }
+  #mob-content::-webkit-scrollbar-thumb { background:var(--p) }
+
+  /* Paneles internos */
+  .mpanel { display:none; flex-direction:column; gap:6px }
+  .mpanel.active { display:flex }
+
+  /* Reusar estilos del desktop dentro del móvil */
+  #mob-content .ctrl { padding:0 }
+  #mob-content .lsec {
+    font-size:8px; letter-spacing:2px;
+    color:rgba(0,255,224,0.22);
+    padding:4px 0 3px;
+    border-bottom:1px solid rgba(0,255,224,0.06);
+    margin-bottom:2px; margin-top:4px;
+  }
+  #mob-content .geo-grid { padding:0; margin-bottom:2px }
+  #mob-content .band-grid { padding:0; margin-bottom:2px }
+  #mob-content .col-grid  { padding:0 }
+  #mob-content input[type=range] { height:3px }
+  #mob-content input[type=range]::-webkit-slider-thumb {
+    width:20px; height:20px; /* más grande para touch */
+  }
+  #mob-content .crow label { font-size:10px }
+  #mob-content .val { font-size:11px }
+
+  /* Panel FX — layout especial */
+  #mob-fx-inner {
+    display:flex; flex-direction:column; gap:5px;
+  }
+  #mob-fx-inner .bb-gctrl { gap:8px }
+  #mob-fx-inner .bb-glbl { min-width:68px; font-size:8px }
+  #mob-fx-inner .bb-grange::-webkit-slider-thumb {
+    width:20px; height:20px;
+  }
+  #mob-fx-top {
+    display:flex; gap:6px; align-items:center;
+  }
+  #mob-beat-dot {
+    width:9px; height:9px; border-radius:50%;
+    background:rgba(0,255,224,0.15);
+    transition:all .05s; flex-shrink:0;
+  }
+  #mob-bpm-val {
+    font-family:'Orbitron',sans-serif;
+    font-size:20px; font-weight:700;
+    color:var(--a); letter-spacing:2px; min-width:44px;
+  }
+  #mob-tap-btn {
+    flex:1; background:transparent;
+    border:2px solid var(--p); color:var(--p);
+    font-family:'Share Tech Mono',monospace;
+    font-size:10px; letter-spacing:2px;
+    padding:3px; cursor:pointer; transition:all .1s;
+  }
+  #mob-tap-btn:active { background:rgba(0,255,224,0.12); transform:scale(.97) }
+  #mob-audio-btn {
+    background:transparent; border:1px solid var(--p); color:var(--p);
+    font-family:'Share Tech Mono',monospace; font-size:10px;
+    letter-spacing:2px; padding:4px; cursor:pointer; width:100%;
+    transition:all .15s;
+  }
+  #mob-audio-btn.live { background:rgba(0,255,224,0.1) }
+  #mob-fx-actions {
+    display:flex; gap:4px;
+  }
+  #mob-fx-actions button {
+    flex:1; background:transparent;
+    font-family:'Share Tech Mono',monospace;
+    font-size:8px; letter-spacing:1px;
+    padding:4px 2px; cursor:pointer; text-align:center;
+    transition:all .15s;
+  }
+  #mob-fx-inner .bmode { padding:4px 2px; font-size:8px }
+  .mtab { letter-spacing:1px }
+  #mob-content .ltabs { padding:0 0 6px }
+}
+</style>
+
+<style id="pro-theme">
+/* ===== TEMA PRO (vista previa) ===== */
+:root{--panel:rgba(11,14,18,0.97);--line:rgba(255,255,255,0.07);--txt:#c8d0d9;--mut:#6f7884;--ui:'Inter','Segoe UI',system-ui,-apple-system,Roboto,sans-serif}
+#panel,#panel-l{background:var(--panel);border-color:var(--line);backdrop-filter:none}
+#bottombar{background:rgba(8,10,13,0.98);border-top:1px solid var(--line)}
+.bb-col+.bb-col,.bb-faders{border-color:var(--line)}
+/* tarjetas */
+.lcard{background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:8px;margin:0 10px 8px}
+.lcard.on{border-color:rgba(255,255,255,0.13)}
+/* secciones */
+.lsec,#mob-content .lsec{font-family:var(--ui);font-size:10px;font-weight:600;letter-spacing:1.6px;color:var(--mut);border-bottom:none;padding:16px 12px 6px;margin:0}
+#mob-content .lsec{padding:16px 2px 6px}
+/* sliders */
+.ctrl,#mob-content .ctrl{gap:9px;padding:7px 12px}
+#mob-content .ctrl{padding:7px 2px}
+.ctrl label,#mob-content .crow label{font-family:var(--ui);font-size:11px;font-weight:500;letter-spacing:.2px;color:var(--txt)}
+.val,#mob-content .val{font-family:'Share Tech Mono',monospace;font-size:11px;color:#fff;opacity:.85}
+input[type=range],#mob-content input[type=range],.bb-range,.bb-grange{height:2px;background:rgba(255,255,255,0.14);border-radius:2px}
+input[type=range]::-webkit-slider-thumb,.bb-range::-webkit-slider-thumb,.bb-grange::-webkit-slider-thumb,#mob-content input[type=range]::-webkit-slider-thumb,#mob-fx-inner .bb-grange::-webkit-slider-thumb{width:14px;height:14px;background:#fff;border:2px solid var(--p);box-shadow:0 0 0 4px rgba(0,255,224,0.10)}
+/* botones */
+.ltab,.gb,.bb,.bmode,.lrst,.ltog,.lrm,.bb-tog,.bb-act,.btn,.efx-toggle,.bb-fon{font-family:var(--ui);font-size:10px;font-weight:500;letter-spacing:.6px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,0.035);color:var(--mut);padding:7px 6px}
+.lrst{padding:4px 8px;margin-left:4px}
+.ltab:hover,.gb:hover,.bb:hover,.bmode:hover,.lrst:hover{color:#fff;border-color:rgba(255,255,255,0.22)}
+.ltab.active,.gb.active,.bb.active,.bmode.active,.bb-tog.on,.lrst.active{background:rgba(0,255,224,0.12);border-color:rgba(0,255,224,0.5);color:#e9fffc}
+.bmode.off-btn{border-color:var(--line);color:var(--mut)}
+.bmode.off-btn.active{background:rgba(255,60,172,0.12);border-color:rgba(255,60,172,0.5);color:#ffd9ee}
+.efx-toggle{width:calc(100% - 24px);margin:4px 12px;text-align:center;padding:8px}
+#mob-content .efx-toggle{width:100%;margin:4px 0}
+.efx-toggle.off{opacity:1;color:var(--mut)!important;border-color:var(--line)!important}
+/* segmentados */
+.ltabs,.bmode-grid{gap:0;padding:0;margin:6px 12px;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:rgba(255,255,255,0.03)}
+#mob-content .ltabs,#mob-fx-inner .bmode-grid{margin:6px 0}
+.ltabs .ltab,.bmode-grid .bmode{border:none;border-radius:0;border-right:1px solid var(--line);background:transparent}
+.ltabs .ltab:last-child,.bmode-grid .bmode:last-child{border-right:none}
+.ltabs .ltab.active,.bmode-grid .bmode.active{background:rgba(0,255,224,0.14)}
+.geo-grid,.band-grid{gap:5px;padding:0 12px}
+#mob-content .geo-grid,#mob-content .band-grid{padding:0}
+/* principales */
+#bb-tap-btn,#mob-tap-btn{font-family:var(--ui);font-weight:600;font-size:11px;letter-spacing:2.5px;border:1px solid rgba(0,255,224,0.55);border-radius:8px;background:rgba(0,255,224,0.10);color:#eafffc}
+#bb-tap-btn:active,#mob-tap-btn:active{background:rgba(0,255,224,0.22)}
+.bb-btn-audio,#mob-audio-btn{font-family:var(--ui);font-weight:500;font-size:10px;letter-spacing:2px;border:1px solid rgba(0,255,224,0.35);border-radius:8px;background:rgba(0,255,224,0.05);color:#cffaf5}
+.bb-act.reset{color:#ff8fc6;border-color:rgba(255,60,172,0.35)}
+.bb-act.freeze{color:#b9a8ff;border-color:rgba(167,139,250,0.35)}
+.bb-act.fs{color:var(--mut)}
+#mob-fx-actions button{font-family:var(--ui);font-weight:500;font-size:9px;letter-spacing:.6px;border-radius:6px;background:rgba(255,255,255,0.035);padding:7px 2px}
+.bb-glbl,.bb-lbl{font-family:var(--ui);font-size:9px;letter-spacing:1px;color:var(--mut)}
+/* mobile */
+#mob-tabs{border-bottom:1px solid var(--line)}
+.mtab{font-family:var(--ui);font-size:10px;font-weight:600;letter-spacing:1.4px;color:var(--mut);border-right:none}
+.mtab.active{color:#fff;background:transparent;border-bottom:2px solid var(--p)}
+#mob-content{padding:6px 16px calc(56px + env(safe-area-inset-bottom));-webkit-mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(to bottom,#000 calc(100% - 22px),transparent)}
+#mob-top{height:46px;padding:0 12px;gap:10px;border-bottom:1px solid var(--line)}
+#mob-layer-sel{flex:1;gap:6px}
+.mob-lbtn{flex:1;font-family:var(--ui);font-size:10px;font-weight:500;letter-spacing:.8px;padding:8px 2px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,0.035);color:var(--mut)}
+.mob-lbtn.active{background:rgba(0,255,224,0.12);border-color:rgba(0,255,224,0.5);color:#e9fffc}
+#mob-layer-tog{font-family:var(--ui);font-size:10px;font-weight:600;letter-spacing:1px;padding:8px 14px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,0.035);color:var(--mut);margin-left:0}
+#mob-layer-tog.on{background:rgba(0,255,224,0.12);border-color:rgba(0,255,224,0.5);color:#e9fffc}
+#mob-fx-inner{gap:8px}
+.mpanel{gap:2px}
+</style>
+<style id="fader-pro">
+/* ===== FADERS PRO (opción A) ===== */
+.bb-faders-row{gap:8px;align-items:stretch}
+.bb-fw{background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:10px 8px 8px;gap:10px}
+.bb-fon{width:42px;height:20px;border-radius:5px;background:rgba(255,255,255,0.04);font-family:var(--ui);font-weight:600;font-size:9px;letter-spacing:.8px}
+.bb-ft{width:12px;height:96px;background:rgba(255,255,255,0.06);border-radius:3px;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06),inset 0 2px 4px rgba(0,0,0,.5);overflow:visible}
+.bb-ft::before{content:'';position:absolute;left:-8px;right:-8px;top:0;bottom:-1px;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(255,255,255,0.22) 0,rgba(255,255,255,0.22) 1px,transparent 1px,transparent 24px);-webkit-mask:linear-gradient(90deg,#000 0 6px,transparent 6px calc(100% - 6px),#000 calc(100% - 6px));mask:linear-gradient(90deg,#000 0 6px,transparent 6px calc(100% - 6px),#000 calc(100% - 6px))}
+.bb-ff{border-radius:3px;background-image:linear-gradient(to top,rgba(0,0,0,.35),rgba(255,255,255,.14))!important}
+.bb-fth{width:28px;height:14px;border-radius:3px;transform:translate(-50%,4.5px);background-image:linear-gradient(rgba(255,255,255,.45),rgba(0,0,0,.28))!important;box-shadow:0 2px 6px rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,255,255,.25)!important}
+.bb-fth::after{content:'';position:absolute;left:5px;right:5px;top:50%;height:2px;margin-top:-1px;background:rgba(0,0,0,.55);border-radius:1px}
+.bb-fpct{font-family:'Share Tech Mono',monospace;font-size:10px;color:#dfe6ee!important}
+@media (min-width:1700px){
+  .bb-faders-row{gap:14px}
+  .bb-fw{padding:10px 14px 8px}
+  .bb-fon{width:46px}
+  .bb-ft::before{left:-10px;right:-10px}
+  .bb-fth{width:32px}
+}
+</style>
+<style id="mob-audio-air">
+/* ===== AUDIO móvil: más respiro ===== */
+#mob-fx-inner{gap:9px;padding-top:2px}
+#mob-fx-top{gap:10px}
+#mob-tap-btn{padding:8px 8px;font-size:11px;letter-spacing:3px}
+#mob-fx-inner .bmode-grid{margin:2px 0 0}
+#mob-fx-inner .bmode{padding:8px 2px;font-size:9px}
+#mob-audio-btn{padding:8px 8px}
+#mob-fx-inner>div[style*="height:1px"]{margin:2px 0 0}
+#mob-fx-inner>div[style*="GLOBAL"],#mob-fx-inner>div[style*="letter-spacing:3px"]{margin-bottom:0!important}
+#mob-fx-inner .bb-gctrl{gap:12px;padding:3px 0}
+#mob-fx-inner .bb-glbl{font-size:10px;min-width:78px}
+#mob-fx-actions{gap:8px;margin-top:2px}
+#mob-fx-actions button{padding:9px 4px;font-size:10px}
+</style>
+<style id="mob-mixer">
+/* ===== MIXER móvil: botón fijo + faders ===== */
+#mob-mixer-wrap{position:absolute;left:0;right:0;bottom:0;padding:20px 12px 12px;background:linear-gradient(to top,rgba(2,4,10,0.98) 55%,rgba(2,4,10,0));pointer-events:none;z-index:5}
+#mob-mixer-btn{pointer-events:auto;width:100%;height:40px;font-family:var(--ui);font-weight:600;font-size:11px;letter-spacing:3px;color:#e9fffc;background:rgba(0,255,224,0.12);border:1px solid rgba(0,255,224,0.55);border-radius:8px;box-shadow:0 0 0 3px rgba(0,255,224,0.06);cursor:pointer;transition:all .15s}
+#mob-mixer-btn.on{background:rgba(0,255,224,0.28);box-shadow:0 0 14px rgba(0,255,224,0.25)}
+#mob.mixon #mob-content{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+#mob-content{padding-bottom:calc(76px + env(safe-area-inset-bottom));-webkit-mask-image:none;mask-image:none}
+#mp-mix .bb-faders-row{justify-content:center;align-items:stretch;gap:10px;padding:4px 14px 0;width:100%}
+#mp-mix .bb-fw{flex:1;min-width:0;padding:12px 6px 10px;gap:12px}
+#mp-mix .bb-fon{width:100%;max-width:60px;height:28px;font-size:10px;border-radius:6px}
+#mp-mix .bb-ft{width:16px;height:max(64px,calc(var(--mobh) - 333px));border-radius:4px}
+#mp-mix .mx-geo{display:flex;flex-direction:column;gap:5px;padding:2px 2px 8px}
+#mp-mix .mx-geo .lsec{margin:2px 0 0;padding:0;font-size:9px}
+#mp-mix .mx-geo .geo-grid{padding:0;gap:5px;margin:0}
+#mp-mix .mx-geo .gb{padding:7px 2px;font-size:9px}
+#mp-mix .mx-geo .col-grid{padding:0;gap:6px;margin:10px 0 0;grid-template-columns:repeat(7,1fr)}
+#mp-mix .mx-geo .col-swatch{height:20px}
+#mp-mix .bb-fw{gap:8px;padding-top:8px;padding-bottom:6px}
+#mp-mix .bb-ft::before{left:-14px;right:-14px;-webkit-mask:linear-gradient(90deg,#000 0 9px,transparent 9px calc(100% - 9px),#000 calc(100% - 9px));mask:linear-gradient(90deg,#000 0 9px,transparent 9px calc(100% - 9px),#000 calc(100% - 9px))}
+#mp-mix .bb-ff{border-radius:4px}
+#mp-mix .bb-fth{width:42px;height:20px;border-radius:4px;transform:translate(-50%,7.5px)}
+#mp-mix .bb-fth::after{left:7px;right:7px;height:3px;margin-top:-1.5px}
+#mp-mix .bb-fpct{font-size:12px}
+.mx-col{display:flex;flex-direction:column;gap:8px;min-width:72px}
+.mx-col .bb-fw{flex:1}
+.bb-auto{display:flex;gap:3px;width:100%;justify-content:center}
+.bb-aut,.bb-aus{height:20px;padding:0;font-family:var(--ui);font-weight:600;font-size:8px;letter-spacing:0;border-radius:5px;border:1px solid var(--line);background:rgba(255,255,255,0.04);color:var(--mut);cursor:pointer}
+.bb-aut{flex:1;min-width:0}
+.bb-aus{width:17px;font-size:12px;font-weight:500;line-height:1}
+.bb-aut.on{background:rgba(0,255,224,0.14);border-color:rgba(0,255,224,0.55);color:#e9fffc}
+#mp-mix .mx-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+#mp-mix .mx-col .bb-fw{flex:1}
+#mp-mix .bb-auto{gap:3px}
+#mp-mix .bb-aut,#mp-mix .bb-aus{height:26px;border-radius:6px}
+#mp-mix .bb-aut{font-size:9px}
+#mp-mix .bb-aus{width:20px;font-size:15px}
+#mp-mix .bb-faders-row{gap:6px;padding:4px 8px 0}
+.mx-hit{padding:0 24px;margin:0 -24px;touch-action:none;position:relative}
+</style>
+<style id="capa-btn">
+.lhdr{gap:7px;padding:8px 10px}
+.lhdr .lname{flex:1;text-align:center;font-family:var(--ui);font-size:12px;font-weight:600;letter-spacing:1.5px;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:rgba(255,255,255,0.035);transition:background .15s,border-color .15s}
+.lhdr .lname:hover{background:rgba(255,255,255,0.07)}
+.lcard.on .lhdr .lname{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.16)}
+.lhdr .ltog,.lhdr .lrst{padding:9px 11px;font-size:11px}
+</style>
+<style id="mob-capa-color">
+#mob-top{--lc:#00ffe0}
+.mob-lbtn.active{background:color-mix(in srgb,var(--lc) 16%,transparent);border-color:var(--lc);color:var(--lc)}
+#mob-layer-tog.on{background:color-mix(in srgb,var(--lc) 16%,transparent);border-color:var(--lc);color:var(--lc)}
+</style>
+<style id="mob-col-wide">
+@media (max-width:860px){#mob-content .col-grid{grid-template-columns:repeat(7,1fr);gap:8px;width:100%}}
+</style>
+<style id="pc-col-wide">
+@media (min-width:861px){#panel .col-grid,#panel-l .col-grid{grid-template-columns:repeat(7,1fr);gap:8px;padding:2px 12px}}
+</style>
+<style id="pc-global-air">
+@media (min-width:861px){.bb-global .bb-gctrl{margin:6px 0}
+#bottombar .bb-col:not(.bb-global){gap:12px}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="status">
+  <div class="srow"><div class="dot" id="dot-a"></div><span id="lbl-a">SIN AUDIO</span></div>
+</div>
+<div id="fps">-- FPS</div>
+<div id="bpm-hud"><div id="beat-dot"></div><span id="bpm-lbl">-- BPM</span></div>
+<div id="vu"></div>
+<div id="hud-status"><div id="hud-dot"></div><span id="hud-lbl">SIN AUDIO</span></div>
+<div id="hud-fps">-- FPS</div>
+
+<div id="panel-l">
+  <div id="scroll-l" class="panel-scroll">
+    <div id="layers-ui-l"></div>
+  </div>
+</div>
+
+<div id="panel">
+  <div id="scroll">
+    <div id="layers-ui-r"></div>
+  </div>
+</div>
+
+<!-- BARRA INFERIOR -->
+<div id="bottombar">
+
+    <!-- COL 1: BEAT SYNC -->
+  <div class="bb-col">
+    <div class="bb-col-title">BEAT SYNC</div>
+    <div class="bb-row">
+      <div id="beat-dot-b"></div>
+      <span id="bpm-val-b">--</span>
+      <span class="bb-lbl">BPM</span>
+    </div>
+    <button id="bb-tap-btn" onclick="setBPMMode('tap');tapBPM()">⬤ &nbsp; TAP</button>
+    <div class="bb-row">
+      <button id="bm-auto" class="bmode active" onclick="setBPMMode('auto')">AUTO</button>
+      <button id="bm-tap"  class="bmode" onclick="setBPMMode('tap')">TAP</button>
+      <button id="bm-manual"  class="bmode" onclick="setBPMMode('manual')">MAN</button>
+      <button id="bm-off"  class="bmode off-btn" onclick="setBPMMode('off')">OFF</button>
+    </div>
+    <div class="bb-row">
+      <div id="bpm-auto-ui" class="bb-ctx">
+        <span class="bb-lbl">SENS</span>
+        <span class="val" id="v-thr">0.15</span>
+        <input type="range" class="bb-range" min="0.02" max="0.5" step="0.01" value="0.15" oninput="BPM.thr=+this.value;document.getElementById('v-thr').textContent=(+this.value).toFixed(2)">
+      </div>
+      <div id="bpm-tap-ui" class="bb-ctx" style="display:none">
+        <span id="tap-hint" class="bb-lbl">sigue golpeando...</span>
+      </div>
+      <div id="bpm-man-ui" class="bb-ctx" style="display:none">
+        <span class="bb-lbl">BPM</span>
+        <span class="val" id="v-manbpm">120</span>
+        <input type="range" class="bb-range" min="60" max="200" value="120" oninput="setManualBPM(+this.value)">
+      </div>
+    </div>
+    <button class="bb-btn-audio" id="bb-audio-btn" onclick="startAudio()">▶ AUDIO</button>
+  </div>
+
+  <!-- COL 2: FADERS -->
+  <div class="bb-faders">
+    <div class="bb-faders-row" id="faders-container">
+      <!-- generado por JS -->
+    </div>
+  </div>
+
+  <!-- COL 3: GLOBAL + ACCIONES -->
+  <div class="bb-col bb-global">
+    <div class="bb-col-title">GLOBAL</div>
+    <div class="bb-gctrl">
+      <span class="bb-glbl">RADIO</span>
+      <input type="range" class="bb-grange" min="5" max="95" value="25" oninput="G.rad=+this.value;document.getElementById('v-r').textContent=this.value+'%'" ondblclick="this.value=25;G.rad=25;document.getElementById('v-r').textContent='25%'" onclick="if(midiMapMode)startMidiLearn(this,{type:'global',param:'rad'})">
+      <span class="val" id="v-r">25%</span>
+    </div>
+    <div class="bb-gctrl">
+      <span class="bb-glbl">VELOCIDAD</span>
+      <input type="range" class="bb-grange" min="0.05" max="3" step="0.05" value="1" oninput="G.speed=+this.value;document.getElementById('v-spd').textContent=(+this.value).toFixed(2)" ondblclick="this.value=1;G.speed=1;document.getElementById('v-spd').textContent='1.00'" onclick="if(midiMapMode)startMidiLearn(this,{type:'global',param:'speed'})">
+      <span class="val" id="v-spd">1.00</span>
+    </div>
+    <div class="bb-gctrl">
+      <span class="bb-glbl">SUAVIDAD</span>
+      <input type="range" class="bb-grange" min="0.1" max="0.99" step="0.01" value="0.8" oninput="G.smooth=+this.value;document.getElementById('v-sm').textContent=(+this.value).toFixed(2)" ondblclick="this.value=0.8;G.smooth=0.8;document.getElementById('v-sm').textContent='0.80'" onclick="if(midiMapMode)startMidiLearn(this,{type:'global',param:'smooth'})">
+      <span class="val" id="v-sm">0.80</span>
+    </div>
+    <div class="bb-gsep"></div>
+    <div style="display:flex;gap:4px">
+      <button class="bb-act reset" onclick="resetAll()" style="flex:1">■ RESET</button>
+      <button class="bb-act freeze" id="bb-freeze" onclick="toggleFreeze()" style="flex:1">❄ FREEZE</button>
+      <button class="bb-act fs" onclick="toggleFullscreen()" style="flex:1">⛶ FULL</button>
+    </div>
+    <div style="display:flex;gap:4px">
+      <button class="bb-act" id="midi-map-btn" onclick="toggleMidiMap()" style="border:1px solid rgba(255,200,0,0.4);color:rgba(255,200,0,0.6);flex:1">⬡ MIDI MAP</button>
+      <button class="bb-act" onclick="midiMapping={};saveMidiMapping();document.querySelectorAll('[id^=midi-capa]').forEach(b=>{b.style.color='rgba(255,200,0,0.5)';b.textContent='MAP';})" style="border:1px solid rgba(255,60,60,0.4);color:rgba(255,60,60,0.5);flex:1" title="Borrar todos los mapeos">✕ MIDI</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════ PANEL MÓVIL ══════════ -->
+<div id="mob" class="mixon">
+
+  <!-- Fila superior: selector de capa + ON/OFF -->
+  <div id="mob-top">
+    <div id="mob-layer-dot"></div>
+    <div id="mob-layer-sel">
+      <button class="mob-lbtn active" onclick="mobSelLayer(0)">CAPA 1</button>
+      <button class="mob-lbtn"        onclick="mobSelLayer(1)">CAPA 2</button>
+      <button class="mob-lbtn"        onclick="mobSelLayer(2)">CAPA 3</button>
+      <button class="mob-lbtn"        onclick="mobSelLayer(3)">CAPA 4</button>
+    </div>
+    <button id="mob-layer-tog" class="on" onclick="mobTogLayer()">ON</button>
+  </div>
+
+  <!-- Pestañas -->
+  <div id="mob-tabs">
+    <button class="mtab" onclick="mobTab('audio')">GLOBAL</button>
+    <button class="mtab"        onclick="mobTab('forma')">FORMA</button>
+    <button class="mtab"        onclick="mobTab('mov')">MOV</button>
+    <button class="mtab"        onclick="mobTab('fx')">FX</button>
+  </div>
+
+  <!-- Contenido -->
+  <div id="mob-content">
+
+    <!-- FORMA -->
+    <div class="mpanel" id="mp-forma">
+      <!-- generado por mobRender() -->
+    </div>
+
+    <!-- MOV -->
+    <div class="mpanel" id="mp-mov">
+      <!-- generado por mobRender() -->
+    </div>
+
+    <!-- FX -->
+    <div class="mpanel" id="mp-fx">
+      <!-- generado por mobRender() -->
+    </div>
+
+    <!-- AUDIO -->
+    <div class="mpanel" id="mp-audio">
+      <div id="mob-fx-inner">
+
+        <div id="mob-fx-top">
+          <div id="mob-beat-dot"></div>
+          <span id="mob-bpm-val">--</span>
+          <span style="font-size:9px;letter-spacing:2px;color:rgba(0,255,224,0.35)">BPM</span>
+          <button id="mob-tap-btn" onclick="setBPMMode('tap');tapBPM()">⬤ TAP</button>
+        </div>
+
+        <div class="bmode-grid" style="margin-bottom:0">
+          <button class="bmode active" id="mob-bm-auto" onclick="setBPMMode('auto');mobSyncBPM()">AUTO</button>
+          <button class="bmode"        id="mob-bm-tap"  onclick="setBPMMode('tap');mobSyncBPM()">TAP</button>
+          <button class="bmode"        id="mob-bm-man"  onclick="setBPMMode('manual');mobSyncBPM()">MAN</button>
+          <button class="bmode off-btn" id="mob-bm-off" onclick="setBPMMode('off');mobSyncBPM()">OFF</button>
+        </div>
+
+        <button id="mob-audio-btn" onclick="startAudio();setTimeout(mobSyncAudio,400)">▶ AUDIO</button>
+
+        <div style="height:1px;background:rgba(0,255,224,0.07)"></div>
+
+        <div style="font-size:7px;letter-spacing:3px;color:rgba(0,255,224,0.2);margin-bottom:2px">GLOBAL</div>
+
+        <div class="bb-gctrl">
+          <span class="bb-glbl">RADIO</span>
+          <input type="range" class="bb-grange" min="5" max="95" value="25"
+            oninput="G.rad=+this.value;document.getElementById('mob-vr').textContent=this.value+'%'">
+          <span class="val" id="mob-vr">25%</span>
+        </div>
+        <div class="bb-gctrl">
+          <span class="bb-glbl">VELOCIDAD</span>
+          <input type="range" class="bb-grange" min="0.05" max="3" step="0.05" value="1"
+            oninput="G.speed=+this.value;document.getElementById('mob-vspd').textContent=(+this.value).toFixed(2)">
+          <span class="val" id="mob-vspd">1.00</span>
+        </div>
+        <div class="bb-gctrl">
+          <span class="bb-glbl">SUAVIDAD</span>
+          <input type="range" class="bb-grange" min="0.1" max="0.99" step="0.01" value="0.8"
+            oninput="G.smooth=+this.value;document.getElementById('mob-vsm').textContent=(+this.value).toFixed(2)">
+          <span class="val" id="mob-vsm">0.80</span>
+        </div>
+
+        <div id="mob-fx-actions">
+          <button onclick="resetAll()"       style="border:1px solid var(--s);color:var(--s)">■ RESET</button>
+          <button id="mob-freeze" onclick="toggleFreeze()" style="border:1px solid rgba(167,139,250,0.5);color:rgba(167,139,250,0.7)">❄ FREEZE</button>
+          <button onclick="toggleFullscreen()" style="border:1px solid rgba(0,255,224,0.2);color:rgba(0,255,224,0.3)">⛶ FULL</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MIXER -->
+    <div class="mpanel active" id="mp-mix"></div>
+
+  </div><!-- /mob-content -->
+  <div id="mob-mixer-wrap" style="display:none"><button id="mob-mixer-btn" class="on" onclick="mobToggleMixer()">MIXER</button></div>
+</div><!-- /mob -->
+
+<script>
+const canvas=document.getElementById('c');
+let ctx=canvas.getContext('2d');
+const LAYER_CV={}; // canvas propio por capa (estela individual)
+const MOB_BP = 860;
+function isMob(){ return window.innerWidth <= MOB_BP; }
+function resize(){
+  if(isMob()){
+    const m=document.getElementById('mob');
+    canvas.width  = innerWidth;
+    canvas.height = innerHeight - ((m&&m.offsetHeight)||280);
+  } else {
+    const bb=document.getElementById('bottombar');
+    canvas.width  = innerWidth  - 560;
+    canvas.height = innerHeight - ((bb&&bb.offsetHeight)||244);
+  }
+}
+resize(); window.addEventListener('resize', resize);
+
+// GLOBAL
+const G={rad:25,trail:0,rotX:0,rotY:0,rotZ:0,smooth:0.8,speed:1,
+  strobe:0,strobeInt:0.4,zoomDecay:0.78,beatPulse:0,beatInt:0.25};
+let aX=0,aY=0,aZ=0,time=0;
+
+// AUDIO
+let analyser=null,dataArray=null,audioCtx=null;
+let sBands={sub:0,bass:0,mid:0,hi:0};
+
+async function startAudio(){
+  if(analyser) return; // ya activo
+  try{
+    audioCtx=new AudioContext();
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    const src=audioCtx.createMediaStreamSource(stream);
+    analyser=audioCtx.createAnalyser();
+    analyser.fftSize=2048;
+    src.connect(analyser);
+    dataArray=new Uint8Array(analyser.frequencyBinCount);
+    syncAudioBtns('● AUDIO', true);
+    document.getElementById('hud-dot').className='live';
+    document.getElementById('hud-lbl').textContent='AUDIO ACTIVO';
+    buildVU();
+    renderUI();
+    if(typeof mobRender==='function') mobRender();
+  }catch(e){
+    syncAudioBtns('✕ ERROR', false, true);
+    document.getElementById('hud-dot').className='warn';
+    document.getElementById('hud-lbl').textContent='ERROR MICRÓFONO';
+  }
+}
+
+// Pulso al ritmo del BPM: SUB y BAJO cada beat, MED al doble, AGU al cuádruple
+const BAND_PULSE_MULT={sub:1,bass:1,mid:2,hi:4};
+function bpmPulse(band,now){
+  if(!band||BPM.bpm<=0) return 0;
+  const period=60000/BPM.bpm;
+  const phase=(((now-BPM.lastStrobeTime)/period)*(BAND_PULSE_MULT[band]||1))%1;
+  return Math.exp(-phase*4);
+}
+function toggleLayerAudio(id){
+  const L=getL(id); if(!L) return;
+  if(!analyser){ L.audioOn=true; startAudio(); return; }
+  L.audioOn=(L.audioOn===false);
+  renderUI();
+  if(typeof mobRender==='function') mobRender();
+}
+
+function syncAudioBtns(text, live, error){
+  ['bb-audio-btn','mob-audio-btn'].forEach(function(id){
+    const b = document.getElementById(id);
+    if(!b) return;
+    b.textContent = text;
+    if(live){ b.classList.add('live'); b.style.borderColor=''; b.style.color=''; }
+    if(error){ b.style.borderColor='var(--s)'; b.style.color='var(--s)'; }
+  });
+  // también los botones de frecuencia en capas del desktop (tienen id dinámico)
+  if(error){
+    document.querySelectorAll('[id^="btn-audio-freq-"],#mob-btn-audio-freq').forEach(function(b){
+      b.textContent = text; b.style.borderColor='var(--s)'; b.style.color='var(--s)';
+    });
+  }
+}
+
+function readAudio(){
+  if(!analyser)return;
+  analyser.getByteFrequencyData(dataArray);
+  const bin=audioCtx.sampleRate/analyser.fftSize;
+  let ss=0,sn=0,bs=0,bn=0,ms=0,mn=0,hs=0,hn=0;
+  for(let i=0;i<dataArray.length;i++){
+    const f=i*bin,v=dataArray[i]/255;
+    if(f<80){ss+=v;sn++;}
+    else if(f<250){bs+=v;bn++;}
+    else if(f<4000){ms+=v;mn++;}
+    else{hs+=v;hn++;}
+  }
+  const sm=G.smooth;
+  // Sub y bass — suavizado normal
+  sBands.sub=sBands.sub*sm+(sn?ss/sn:0)*(1-sm);
+  sBands.bass=sBands.bass*sm+(bn?bs/bn:0)*(1-sm);
+  // Mid — suavizado igual
+  sBands.mid=sBands.mid*sm+(mn?ms/mn:0)*(1-sm);
+  // Hi — suavizado más rápido para que los hats sean nítidos
+  const hiSm=Math.min(sm,0.3);
+  sBands.hi=sBands.hi*hiSm+(hn?hs/hn:0)*(1-hiSm);
+  const now=performance.now();
+  // Detectar beat — usa sub+bass+algo de mid para funcionar con micrófonos de webcam
+  const beatSignal=sBands.sub*0.3+sBands.bass*0.5+sBands.mid*0.2;
+  detectBeat(beatSignal);
+  detectBands(now);
+  updateVU();
+}
+
+let vuBars=[];
+function buildVU(){
+  const el=document.getElementById('vu-bar');if(!el)return;el.innerHTML='';vuBars=[];
+  for(let i=0;i<24;i++){const b=document.createElement('div');b.className='vb';el.appendChild(b);vuBars.push(b);}
+}
+buildVU();
+function updateVU(){
+  if(!analyser)return;
+  const step=Math.floor(dataArray.length/24);
+  vuBars.forEach((b,i)=>{const v=dataArray[i*step]/255;b.style.height=(v*26+2)+'px';b.style.background=`hsl(${170+i*4},100%,55%)`;});
+}
+
+// DETECCIÓN POR BANDA — 4 detectores independientes
+const BAND_DETECT={
+  sub:  {flash:0,prev:0,thr:0.08,lastHit:0,decay:0.85},
+  bass: {flash:0,prev:0,thr:0.12,lastHit:0,decay:0.82},
+  mid:  {flash:0,prev:0,thr:0.02,lastHit:0,decay:0.88},
+  hi:   {flash:0,prev:0,thr:0.003,lastHit:0,decay:0.65},
+};
+
+function detectBands(now){
+  const bands={sub:sBands.sub,bass:sBands.bass,mid:sBands.mid,hi:sBands.hi};
+  for(const [name,bd] of Object.entries(BAND_DETECT)){
+    const val=bands[name];
+    bd.flash*=bd.decay;
+    // Detectar ataque — subida brusca sobre umbral
+    if(val>bd.thr&&bd.prev<bd.thr*0.7){
+      const gap=now-bd.lastHit;
+    const minGap=name==='hi'?40:name==='mid'?60:80;
+      if(gap>minGap){
+        bd.flash=1;
+        bd.lastHit=now;
+      }
+    }
+    bd.prev=val;
+  }
+}
+
+const BPM={mode:'auto',thr:0.15,lastKick:0,intervals:[],bpm:0,
+  flash:0,onBeat:false,_prev:0,lastStrobeTime:0,tapTimes:[],manualBPM:120};
+
+function tickStrobe(now){
+  if(BPM.mode==='off'||BPM.bpm<=0)return;
+  const period=60000/BPM.bpm;
+  if(now-BPM.lastStrobeTime>=period){
+    BPM.lastStrobeTime=now;
+    BPM.flash=1;
+    BPM.onBeat=true;
+  } else { BPM.onBeat=false; }
+  BPM.flash*=(G.zoomDecay||0.78);
+  updateBPMDisplay();
+}
+
+function detectBeat(val){
+  if(BPM.mode!=='auto')return;
+  const now=performance.now();
+  if(val>BPM.thr&&BPM._prev<BPM.thr*0.7){
+    const iv=now-BPM.lastKick;
+    if(iv>200&&iv<2000){
+      BPM.intervals.push(iv);
+      if(BPM.intervals.length>8)BPM.intervals.shift();
+      const avg=BPM.intervals.reduce((a,b)=>a+b,0)/BPM.intervals.length;
+      BPM.bpm=Math.round(60000/avg);
+      BPM.lastStrobeTime=now;
+      BPM.flash=1;BPM.onBeat=true;
+    }
+    BPM.lastKick=now;
+  } else { BPM.onBeat=false; }
+  BPM._prev=val;
+  updateBPMDisplay();
+}
+
+function updateBPMDisplay(){
+  const bd=document.getElementById('beat-dot-b');
+  const bv=document.getElementById('bpm-val-b');
+  if(bd){bd.style.background=`rgba(0,255,224,${BPM.flash})`;bd.style.boxShadow=`0 0 ${BPM.flash*14}px rgba(0,255,224,${BPM.flash})`;}
+  if(bv)bv.textContent=BPM.bpm>0?BPM.bpm:'--';
+}
+
+function setBPMMode(mode){
+  BPM.mode=mode;
+  document.getElementById('bpm-auto-ui').style.display=mode==='auto'?'flex':'none';
+  document.getElementById('bpm-tap-ui').style.display=mode==='tap'?'flex':'none';
+  document.getElementById('bpm-man-ui').style.display=mode==='manual'?'flex':'none';
+  document.querySelectorAll('.bmode').forEach(b=>b.classList.remove('active'));
+  document.getElementById('bm-'+mode).classList.add('active');
+  if(mode==='manual')setManualBPM(BPM.manualBPM);
+  if(mode==='off'){BPM.bpm=0;BPM.flash=0;BPM.onBeat=false;updateBPMDisplay();}
+}
+
+function tapBPM(){
+  const now=performance.now();
+  BPM.tapTimes.push(now);
+  if(BPM.tapTimes.length>8)BPM.tapTimes.shift();
+  if(BPM.tapTimes.length>=2){
+    const ivs=[];
+    for(let i=1;i<BPM.tapTimes.length;i++)ivs.push(BPM.tapTimes[i]-BPM.tapTimes[i-1]);
+    const avg=ivs.reduce((a,b)=>a+b,0)/ivs.length;
+    BPM.bpm=Math.round(60000/avg);
+    BPM.lastStrobeTime=now;
+    document.getElementById('tap-hint').textContent=BPM.bpm+' BPM';
+  }
+  BPM.flash=1;updateBPMDisplay();
+}
+
+function setManualBPM(val){
+  BPM.manualBPM=val;BPM.bpm=val;
+  document.getElementById('v-manbpm').textContent=val;
+  updateBPMDisplay();
+}
+
+// CAPAS
+const COLS=[
+  {h:'#00ffe0',r:0,  g:255,b:224},
+  {h:'#ff3cac',r:255,g:60, b:172},
+  {h:'#ffe600',r:255,g:230,b:0  },
+  {h:'#39ff14',r:57, g:255,b:20 },
+  {h:'#a78bfa',r:167,g:139,b:250},
+  {h:'#ff6b35',r:255,g:107,b:53 },
+  {h:'#ffffff',r:255,g:255,b:255},
+];
+const GEOS=['sphere','cube','torus','wave','dna','diamond'];
+const GEO_LABELS=['ESFERA','CUBO','TORO','GRID','HELIX','ROMBO'];
+const BANDS=['sub','bass','mid','hi'];
+const BNAMES=['SUB','BAJO','MED','AGU'];
+
+let layers=[],lid=0;
+
+function defaultLayer(layerId,band,geo){
+  const id=layerId;
+  return {
+    id: (id!==undefined?id:lid++), on:true, collapsed:false,
+    geoStates: Object.fromEntries(GEOS.map(g=>{
+      const def=Object.assign({},GEO_DEFAULTS[g]||GEO_DEFAULTS.sphere,{ci:0,band:null,bandStates:{},ox:0,oy:0,opacity:1,glow:0,lineOpacity:1,nodeOpacity:1,trail:0,amp:1,tent:0,tentN:6,tentLen:1,zoom:0,zoomInt:0.5,zoomDecay:0.78,zoomFlash:0});
+      def.angleX=(g==='wave'||g==='torus')?Math.PI/2:0;
+      def.angleY=0;
+      def.driftX=0; def.driftY=0; def.driftOx=0; def.driftOy=0; def.driftBounce=false; def.driftLimit=0.8;
+      def.orbitR=0; def.orbitSpd=0; def.orbitAngle=0; def.shakeInt=0; def.shakeVal=0; def.shakeDecay=0.4; def.shakeOn=false; def.shakeSource='audio'; def.noiseInt=0; def.noiseSpd=1; def.scatterInt=0; def.scatterVal=0; def.scatterDecay=0.3; def.scatterOn=false; def.scatterSource='audio'; def.mirrorH=false; def.mirrorV=false; def.mirrorX=0; def.mirrorY=0; def.cloneN=0; def.cloneR=0.3;
+      return[g,def];
+    })),
+    geo: geo||'sphere', ci: 0, band: null,
+    // FORMA
+    density:43, links:5, nodeSize:(window.innerWidth<=860?5:8),
+    // MOVIMIENTO
+    amp:1, ox:0, oy:0,
+    rad:25, rotX:0.5, rotY:0,
+    drift:false, driftX:0, driftY:0, driftOx:0, driftOy:0, driftBounce:false, driftLimit:0.8,
+    orbitR:0, orbitSpd:0, orbitAngle:0,
+    shakeInt:0, shakeVal:0, shakeDecay:0.2, shakeOn:false, shakeSource:'audio',
+    noiseInt:0, noiseSpd:1,
+    scatterInt:0, scatterVal:0, scatterDecay:0.3, scatterOn:false, scatterSource:'audio',
+    mirrorH:false, mirrorV:false,
+    cloneN:0, cloneR:0.3,
+    opacity:1, glow:0, lineOpacity:1, nodeOpacity:1,
+    // AUDIO REACCION
+    // EFECTOS
+    trail:0,
+    tent:0, tentN:6, tentLen:1,
+    zoom:0, zoomInt:0.5, zoomDecay:0.78, zoomFlash:0,
+    // internos
+    nodes:[], edges:[], particles:[], maxPart:300,
+  };
+}
+
+function buildNodes(L){
+  L.nodes=[];L.edges=[];L.particles=[];
+  if(L.geo==='part')return;
+  const n=L.density, geo=L.geo;
+  if(geo==='sphere'){
+    const phi=Math.PI*(3-Math.sqrt(5));
+    for(let i=0;i<n;i++){
+      const y=1-(i/Math.max(n-1,1))*2;
+      const r=Math.sqrt(Math.max(0,1-y*y));
+      const t=phi*i;
+      L.nodes.push({x:Math.cos(t)*r,y,z:Math.sin(t)*r,ox:0,oz:0});
+    }
+  } else if(geo==='cube'){
+    const s=Math.round(Math.cbrt(n));
+    const ss=Math.max(2,s);
+    for(let x=0;x<ss;x++)
+      for(let y=0;y<ss;y++)
+        for(let z=0;z<ss;z++){
+          L.nodes.push({x:(x/(ss-1))*2-1,y:(y/(ss-1))*2-1,z:(z/(ss-1))*2-1,ox:0,oz:0});
+        }
+  } else if(geo==='torus'){
+    const R=0.65,r2=0.28,segs=Math.ceil(Math.sqrt(n)*1.5),tubes=Math.ceil(n/segs);
+    for(let i=0;i<segs&&L.nodes.length<n;i++)
+      for(let j=0;j<tubes&&L.nodes.length<n;j++){
+        const u=i/segs*Math.PI*2,v=j/tubes*Math.PI*2;
+        L.nodes.push({x:(R+r2*Math.cos(v))*Math.cos(u),y:r2*Math.sin(v),z:(R+r2*Math.cos(v))*Math.sin(u),ox:0,oz:0});
+      }
+  } else if(geo==='icosa'){
+    const phi=Math.PI*(3-Math.sqrt(5));
+    for(let i=0;i<n;i++){
+      const y=1-(i/Math.max(n-1,1))*2,r=Math.sqrt(Math.max(0,1-y*y)),t=phi*i;
+      const s=0.8,nx=Math.cos(t)*r*s+Math.round(Math.cos(t)*r*2)/2*(1-s);
+      const ny=y*s+Math.round(y*2)/2*(1-s),nz=Math.sin(t)*r*s+Math.round(Math.sin(t)*r*2)/2*(1-s);
+      const len=Math.sqrt(nx*nx+ny*ny+nz*nz)||1;
+      L.nodes.push({x:nx/len,y:ny/len,z:nz/len,ox:0,oz:0});
+    }
+  } else if(geo==='wave'){
+    const cols=Math.ceil(Math.sqrt(n)),rows=Math.ceil(n/cols);
+    for(let i=0;i<rows&&L.nodes.length<n;i++)
+      for(let j=0;j<cols&&L.nodes.length<n;j++)
+        L.nodes.push({x:(j/(cols-1)||0)*2-1,y:0,z:(i/(rows-1)||0)*2-1,ox:j/(cols-1)||0,oz:i/(rows-1)||0});
+  } else if(geo==='dna'){
+    const turns=4;
+    const radius=0.28;
+    const stretch=2.2; // menos estirado
+    // Hebras helicoidales
+    for(let i=0;i<n;i++){
+      const t=i/n, a=t*turns*Math.PI*2, side=i%2?1:-1;
+      L.nodes.push({x:Math.cos(a+side*Math.PI/2)*radius, y:(t-0.5)*stretch, z:Math.sin(a+side*Math.PI/2)*radius, ox:t, oz:0});
+    }
+    // Tapa superior — círculo plano
+    const capN=8;
+    for(let i=0;i<capN;i++){
+      const a=i/capN*Math.PI*2;
+      L.nodes.push({x:Math.cos(a)*radius,y:stretch/2,z:Math.sin(a)*radius,ox:0,oz:0});
+    }
+    // Tapa inferior
+    for(let i=0;i<capN;i++){
+      const a=i/capN*Math.PI*2;
+      L.nodes.push({x:Math.cos(a)*radius,y:-stretch/2,z:Math.sin(a)*radius,ox:0,oz:0});
+    }
+  } else if(geo==='diamond'){
+    const ang=(i,total,offset)=>i/total*Math.PI*2+(offset||0);
+    const crown=Math.max(4,Math.floor(n*0.22));
+    const girdle=Math.max(8,Math.floor(n*0.45));
+    const pav=crown; // simétrico
+    L.nodes.push({x:0,y:1,z:0,ox:0,oz:0}); // 0 top
+    for(let i=0;i<crown;i++) L.nodes.push({x:Math.cos(ang(i,crown))*0.55,y:0.52,z:Math.sin(ang(i,crown))*0.55,ox:0,oz:0}); // corona
+    for(let i=0;i<girdle;i++) L.nodes.push({x:Math.cos(ang(i,girdle))*1,y:0,z:Math.sin(ang(i,girdle))*1,ox:0,oz:0}); // girdle
+    for(let i=0;i<pav;i++) L.nodes.push({x:Math.cos(ang(i,pav,Math.PI/pav))*0.55,y:-0.52,z:Math.sin(ang(i,pav,Math.PI/pav))*0.55,ox:0,oz:0}); // pabellón
+    L.nodes.push({x:0,y:-1,z:0,ox:0,oz:0}); // culet
+    const c2=crown+1, g2=c2+girdle, p2=g2+pav;
+    for(let i=1;i<=crown;i++) L.edges.push([0,i],[i,i===crown?1:i+1]);
+    for(let i=0;i<crown;i++) L.edges.push([i+1, c2+Math.round(i/crown*girdle)%girdle]);
+    for(let i=c2;i<g2;i++) L.edges.push([i,i===g2-1?c2:i+1]);
+    for(let i=0;i<pav;i++) L.edges.push([c2+Math.round(i/pav*girdle)%girdle, g2+i]);
+    for(let i=g2;i<p2;i++) L.edges.push([i,i===p2-1?g2:i+1],[i,p2]);
+  }
+  // Edges
+  const nn=L.nodes.length;
+  for(let i=0;i<nn;i++){
+    const a=L.nodes[i],d=[];
+    for(let j=0;j<nn;j++){if(i===j)continue;const b=L.nodes[j];d.push({j,d:(a.x-b.x)**2+(a.y-b.y)**2+(a.z-b.z)**2});}
+    d.sort((a,b)=>a.d-b.d);
+    for(let k=0;k<Math.min(L.links,d.length);k++){if(i<d[k].j)L.edges.push([i,d[k].j]);}
+  }  // Rombo: las puntas (arriba y abajo) también ganan conexiones al subir LINKS
+  if(geo==='diamond'){
+    const have=new Set(L.edges.map(e=>e[0]<e[1]?e[0]+'_'+e[1]:e[1]+'_'+e[0]));
+    [0,nn-1].forEach(t=>{
+      const a=L.nodes[t],d=[];
+      for(let j=0;j<nn;j++){if(j===t)continue;const b=L.nodes[j];d.push({j,d:(a.x-b.x)**2+(a.y-b.y)**2+(a.z-b.z)**2});}
+      d.sort((p,q)=>p.d-q.d);
+      for(let k=0;k<Math.min(L.links*2,d.length);k++){
+        const j=d[k].j,key=t<j?t+'_'+j:j+'_'+t;
+        if(!have.has(key)){have.add(key);L.edges.push([t,j]);}
+      }
+    });
+  }
+}
+
+// RENDER
+function rot(nodes,ax,ay,az){
+  const cx=Math.cos(ax),sx=Math.sin(ax),cy=Math.cos(ay),sy=Math.sin(ay),cz=Math.cos(az),sz=Math.sin(az);
+  return nodes.map(n=>{
+    let{x,y,z}=n;
+    [y,z]=[y*cx-z*sx,y*sx+z*cx];
+    [x,z]=[x*cy+z*sy,-x*sy+z*cy];
+    [x,y]=[x*cz-y*sz,x*sz+y*cz];
+    return{x,y,z,ox:n.ox,oz:n.oz};
+  });
+}
+
+// Ruido simple basado en seno — no usa Math.random() en render
+function snoise(x,y,z){
+  return Math.sin(x*1.7+y*3.1)*Math.cos(y*2.3+z*1.9)*Math.sin(z*2.7+x*1.3);
+}
+
+let lastT=performance.now(),fps=60,lastFrame=0;
+let layerAngles={};
+
+function draw(ts){
+  requestAnimationFrame(draw);
+  if(ts-lastFrame<33)return;
+  lastFrame=ts;
+  if(G.freeze)return;
+  const now=performance.now(),dt=Math.min((now-lastT)/1000,0.05);lastT=now;
+  fps=fps*0.9+(1/Math.max(dt,0.001))*0.1;
+  document.getElementById('hud-fps').textContent=Math.round(fps)+' FPS';
+  time+=dt;
+  readAudio();
+
+  // Angulos globales
+  aX+=G.rotX*dt*0.3;aY+=G.rotY*dt*0.3;aZ+=G.rotZ*dt*0.3;
+
+  // Angulos por capa — rotSpeed afecta X e Y, rotX/rotY son velocidades independientes por eje
+  layers.forEach(L=>{
+    if(!layerAngles[L.id])layerAngles[L.id]={x:0,y:0,z:0};
+    const spd=(G.speed||1);
+    layerAngles[L.id].x += (L.rotY||0) * spd * dt;
+    layerAngles[L.id].y += (L.rotX||0) * spd * dt;
+    if(L.driftX||L.driftY){
+      L.driftOx=(L.driftOx||0)+(L.driftX||0)*dt*0.15;
+      L.driftOy=(L.driftOy||0)+(L.driftY||0)*dt*0.15;
+    }
+    // ORBIT
+    if(L.orbitSpd) L.orbitAngle=(L.orbitAngle||0)+L.orbitSpd*dt;
+    // SHAKE — dispara con beat o con banda y decae rápido
+    if(L.shakeInt&&L.shakeOn){
+      const bd=L.band?BAND_DETECT[L.band]:null;
+      const totalEnergy=sBands.sub+sBands.bass+sBands.mid+sBands.hi;
+      const audioHit=bd?bd.flash>0.5:totalEnergy>0.15;
+      const bpmHit=BPM.onBeat&&BPM.bpm>0;
+      const hit=L.shakeSource==='bpm'?bpmHit:audioHit;
+      if(hit) L.shakeVal=L.shakeInt;
+      L.shakeVal=(L.shakeVal||0)*(L.shakeDecay||0.2);
+    } else { L.shakeVal=0; }
+  });
+
+  // BPM tick
+  tickStrobe(now);
+  autoTick(dt);
+
+  // Fondo sólido; la estela (trail) se maneja por capa en su propio canvas
+  ctx.fillStyle='rgb(2,4,8)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // Zoom global
+  let beatScale=1;
+  if(G.strobe&&BPM.bpm>0){
+    const zoom=BPM.flash*BPM.flash*G.strobeInt*3;
+    beatScale=Math.max(0.05,0.05+zoom*G.strobeInt*4+(1-G.strobeInt)*(1-BPM.flash*0.8));
+  } else if(G.beatPulse){
+    beatScale=1+G.beatInt*BPM.flash*0.3;
+  }
+  const R=Math.min(canvas.width,canvas.height)*(G.rad/100)*beatScale;
+
+  layers.forEach(L=>{
+    // Canvas propio de la capa: fade individual según su PERSISTENCIA
+    let lv=LAYER_CV[L.id];
+    if(!lv){lv=LAYER_CV[L.id]={c:document.createElement('canvas')};lv.x=lv.c.getContext('2d');}
+    if(lv.c.width!==canvas.width||lv.c.height!==canvas.height){lv.c.width=canvas.width;lv.c.height=canvas.height;}
+    if(!L.on){lv.x.clearRect(0,0,lv.c.width,lv.c.height);return;}
+    const mainCtx=ctx;
+    if((L.trail||0)<=0){lv.x.clearRect(0,0,lv.c.width,lv.c.height);}
+    else{lv.x.globalCompositeOperation='destination-out';lv.x.fillStyle='rgba(0,0,0,'+(1-L.trail)+')';lv.x.fillRect(0,0,lv.c.width,lv.c.height);lv.x.globalCompositeOperation='source-over';}
+    ctx=lv.x;
+    (()=>{
+    const band=L.band?(sBands[L.band]||0):0;
+    const bandFlash=L.band&&BAND_DETECT[L.band]?BAND_DETECT[L.band].flash:0;
+    const audioAmt=(L.audioOn!==false)?(band+bandFlash*0.3):0;
+    const bpmAmt=(L.bpmSync&&L.band)?bpmPulse(L.band,now):0;
+    const amp=Math.max(audioAmt,bpmAmt)*L.amp;
+    const C=COLS[L.ci%COLS.length];
+    const la=layerAngles[L.id]||{x:0,y:0,z:0};
+
+    // PARTICULAS
+    if(L.geo==='part'){
+      const cx=canvas.width/2+L.ox*canvas.width;
+      const cy=canvas.height/2+L.oy*canvas.height;
+      const kick=(sBands.sub+sBands.bass)*0.5*L.amp;
+      const hat=sBands.hi*L.amp;
+      const mid=sBands.mid*L.amp;
+      const beatBoost=BPM.onBeat?2.5:1;
+      const ks=Math.floor(kick*12*beatBoost);
+      for(let s=0;s<ks&&L.particles.length<L.maxPart;s++){
+        const a=Math.random()*Math.PI*2,sp=2+Math.random()*5*kick;
+        L.particles.push({x:cx+(Math.random()-0.5)*20,y:cy+(Math.random()-0.5)*20,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,decay:0.008+Math.random()*0.012,size:2+Math.random()*4+kick*4,type:'kick',r:C.r,g:C.g,b:C.b});
+      }
+      const hs2=Math.floor(hat*20);
+      for(let s=0;s<hs2&&L.particles.length<L.maxPart;s++){
+        const a=Math.random()*Math.PI*2,dist=(0.2+Math.random()*0.8)*R,sp=3+Math.random()*8*hat;
+        L.particles.push({x:cx+Math.cos(a)*dist*0.5,y:cy+Math.sin(a)*dist*0.5,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,decay:0.04+Math.random()*0.06,size:0.5+Math.random()*1.5,type:'hat',r:C.r,g:C.g,b:C.b});
+      }
+      const ms2=Math.floor(mid*5);
+      for(let s=0;s<ms2&&L.particles.length<L.maxPart;s++){
+        const a=Math.random()*Math.PI*2,sp=0.5+Math.random()*2*mid;
+        L.particles.push({x:cx+Math.cos(a)*R*0.3,y:cy+Math.sin(a)*R*0.3,vx:Math.cos(a+Math.PI/2)*sp,vy:Math.sin(a+Math.PI/2)*sp,life:1,decay:0.005+Math.random()*0.008,size:1+Math.random()*2,type:'mid',r:C.r,g:C.g,b:C.b});
+      }
+      L.particles=L.particles.filter(p=>p.life>0);
+      L.particles.forEach(p=>{
+        const grav=p.type==='hat'?0.02:0.06,drag=p.type==='hat'?0.96:0.98;
+        p.x+=p.vx;p.y+=p.vy;p.vy+=grav;p.vx*=drag;p.vy*=drag;p.life-=p.decay;
+        const alpha=Math.max(0,p.life)*L.opacity,sz=Math.max(0.3,p.size*p.life);
+        if(L.glow>0&&p.type!=='hat'){
+          const gr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,sz+L.glow*p.life*0.5);
+          gr.addColorStop(0,`rgba(${p.r},${p.g},${p.b},${alpha*0.8})`);
+          gr.addColorStop(1,`rgba(${p.r},${p.g},${p.b},0)`);
+          ctx.beginPath();ctx.arc(p.x,p.y,sz+L.glow*p.life*0.5,0,Math.PI*2);ctx.fillStyle=gr;ctx.fill();
+        }
+        ctx.beginPath();ctx.arc(p.x,p.y,sz,0,Math.PI*2);
+        ctx.fillStyle=`rgba(${p.r},${p.g},${p.b},${alpha})`;ctx.fill();
+      });
+      return;
+    }
+
+    // ZOOM por capa
+    const layerOpacity=L.on?(L.opacity??1):0;
+    const bd=L.band&&L.band!=='all'?BAND_DETECT[L.band]:null;
+    if(L.zoom){
+      // Dispara con el flash de la banda propia O con el BPM global
+      const bandHit=bd&&bd.flash>0.7;
+      const bpmHit=BPM.onBeat&&BPM.bpm>0;
+      if(bandHit||bpmHit) L.zoomFlash=1;
+      L.zoomFlash=(L.zoomFlash||0)*(L.zoomDecay||0.78);
+      var lScale=1+L.zoomFlash*L.zoomFlash*L.zoomInt*4;
+    } else { var lScale=1; }
+
+    // HAT KICK — empujón brusco para bandas de agudos
+    const bdFlash=BAND_DETECT[L.band];
+    if(!L.hatKick) L.hatKick=0;
+    if(bdFlash&&bdFlash.flash>0.8){
+      L.hatKick=Math.min(1, 0.4 + (1-bdFlash.thr*5)*0.4);
+    }
+    L.hatKick*=0.45;
+    const hatBurst=L.hatKick*L.amp*0.5;
+
+    // SCATTER — dispara con beat, cada nodo explota hacia afuera
+    if(L.scatterInt&&L.scatterOn){
+      const bdScat=L.band&&L.band!=='all'?BAND_DETECT[L.band]:null;
+      const totalEnergy=sBands.sub+sBands.bass+sBands.mid+sBands.hi;
+      const audioHit=bdScat?bdScat.flash>0.5:totalEnergy>0.15;
+      const bpmHit=BPM.onBeat&&BPM.bpm>0;
+      const hit=L.scatterSource==='bpm'?bpmHit:audioHit;
+      if(hit) L.scatterVal=L.scatterInt;
+      L.scatterVal=(L.scatterVal||0)*(L.scatterDecay||0.3);
+    } else { L.scatterVal=0; }
+
+    const ps=(1+amp*0.3)*lScale;
+    const noiseT=time*(L.noiseSpd||1);
+    const noiseMag=(L.noiseInt||0)*(1+amp*0.5);
+    const def=L.nodes.map((n,i)=>{
+      const len=Math.sqrt(n.x*n.x+n.y*n.y+n.z*n.z)||1;
+      const push=amp*0.5*Math.sin(time*3+i*0.4);
+      const vib=amp*0.06*Math.sin(time*6+i*0.9);
+      const burst=hatBurst*1.2;
+      // NOISE — desplaza cada nodo individualmente
+      const nx=noiseMag*snoise(n.x+noiseT,n.y*1.3,n.z*0.7+i*0.1);
+      const ny=noiseMag*snoise(n.y+noiseT*1.1,n.z*0.9,n.x*1.2+i*0.15);
+      const nz=noiseMag*snoise(n.z+noiseT*0.9,n.x*1.1,n.y*0.8+i*0.2);
+      const scatter=(L.scatterVal||0)*1.5;
+      // Dirección caótica — basada en índice del nodo, no random por frame
+      const cx2=Math.sin(i*2.4+1.7)*Math.cos(i*1.3);
+      const cy2=Math.cos(i*3.1+0.9)*Math.sin(i*1.8);
+      const cz2=Math.sin(i*1.9+2.3)*Math.cos(i*2.7);
+      return{x:(n.x+n.x/len*(push+burst)+cx2*scatter+vib+nx)*ps,y:(n.y+n.y/len*(push+burst)+cy2*scatter+vib+ny)*ps,z:(n.z+n.z/len*(push+burst)+cz2*scatter+nz)*ps,ox:n.ox,oz:n.oz};
+    });
+
+    // Rotacion global + rotacion propia de la capa
+    const rotated=rot(def, aX+la.x, aY+la.y, aZ+la.z);
+    const orbitOffX=L.orbitR?Math.cos(L.orbitAngle||0)*L.orbitR:0;
+    const orbitOffY=L.orbitR?Math.sin(L.orbitAngle||0)*L.orbitR*0.5:0;
+    if(!L._shakeX) L._shakeX=0;
+    if(!L._shakeY) L._shakeY=0;
+    if(L.shakeVal){
+      const mag=L.shakeVal*Math.min(canvas.width,canvas.height)*0.03;
+      L._shakeX=L._shakeX*0.3+(Math.random()-0.5)*mag*0.7;
+      L._shakeY=L._shakeY*0.3+(Math.random()-0.5)*mag*0.7;
+    } else { L._shakeX*=0.5; L._shakeY*=0.5; }
+    const shakeX=L._shakeX, shakeY=L._shakeY;
+    const mirrorOffX=L.mirrorH?(L.mirrorX||0)*canvas.width*0.5:0;
+    const mirrorOffY=L.mirrorV?(L.mirrorY||0)*canvas.height*0.5:0;
+    const cx=canvas.width/2+(L.ox+(L.driftOx||0)+orbitOffX)*canvas.width+shakeX-mirrorOffX;
+    const cy=canvas.height/2+(L.oy+(L.driftOy||0)+orbitOffY)*canvas.height+shakeY-mirrorOffY;
+    const Rl=R*(1+(L.rad||0)/100)*lScale;
+    // DRIFT wrap — usa Rl real para saber exactamente cuándo el elemento salió completamente
+    if(L.driftX||L.driftY){
+      const marginX=(Rl*1.1)/canvas.width;
+      const marginY=(Rl*1.1)/canvas.height;
+      const wx=0.5+marginX;
+      const wy=0.5+marginY;
+      if(L.driftBounce){
+        const lim=(L.driftLimit||0.8);
+        const bx=wx*lim, by=wy*lim;
+        if(L.driftOx>bx){L.driftOx=bx;L.driftX=-Math.abs(L.driftX);}
+        if(L.driftOx<-bx){L.driftOx=-bx;L.driftX=Math.abs(L.driftX);}
+        if(L.driftOy>by){L.driftOy=by;L.driftY=-Math.abs(L.driftY);}
+        if(L.driftOy<-by){L.driftOy=-by;L.driftY=Math.abs(L.driftY);}
+      } else {
+        // WRAP normal — entra por el lado opuesto
+        L.driftOx=((L.driftOx+wx)%(wx*2)+wx*2)%(wx*2)-wx;
+        L.driftOy=((L.driftOy+wy)%(wy*2)+wy*2)%(wy*2)-wy;
+      }
+    }
+    // Perspectiva suave - nodos del frente mas grandes que los del fondo
+    const fov=Rl*4;
+    const pts=rotated.map((n,i)=>{
+      const zz=n.z*Rl+fov;
+      const sc=fov/Math.max(zz,fov*0.1);
+      return{x:n.x*Rl*sc+cx, y:n.y*Rl*sc+cy, z:n.z*Rl, sc, i};
+    });
+    pts.sort((a,b)=>a.z-b.z);
+    const ptMap=new Array(L.nodes.length);pts.forEach(p=>ptMap[p.i]=p);
+    const maxZ=Rl,minZ=-Rl;
+
+    // Edges
+    L.edges.forEach(([a,b])=>{
+      const pa=ptMap[a],pb=ptMap[b];if(!pa||!pb)return;
+      const depth=((pa.z+pb.z)/2-minZ)/(maxZ-minZ+1);
+      const alpha=(0.5+depth*0.5)*(L.lineOpacity??1)*layerOpacity;
+      ctx.beginPath();ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);
+      ctx.strokeStyle=`rgba(${C.r},${C.g},${C.b},${alpha})`;
+      ctx.lineWidth=1;ctx.stroke();
+    });
+
+    // Tentáculos
+    if(L.tent){
+      const tentAlpha=Math.min(1,0.8+amp*2)*(L.lineOpacity??1)*layerOpacity;
+      const tentSize=Rl*L.tentLen*(0.2+amp);
+      pts.forEach((pt,idx)=>{
+        if(idx%Math.max(1,Math.floor(pts.length/40))!==0)return;
+        const depth=(pt.z-minZ)/(maxZ-minZ+1);
+        const alpha=tentAlpha*(0.3+depth*0.7);
+        for(let t=0;t<L.tentN;t++){
+          const angle=(t/L.tentN)*Math.PI*2+time*2+idx*0.5;
+          const len=tentSize*(0.5+Math.random()*0.5);
+          ctx.beginPath();ctx.moveTo(pt.x,pt.y);
+          ctx.lineTo(pt.x+Math.cos(angle)*len,pt.y+Math.sin(angle)*len);
+          ctx.strokeStyle=`rgba(${C.r},${C.g},${C.b},${alpha})`;
+          ctx.lineWidth=1+amp*1.5;ctx.stroke();
+        }
+      });
+    }
+
+    // Nodos
+    if(L.nodeSize>0&&(L.nodeOpacity??1)*layerOpacity>0){
+      const radFactor=Math.min(1, G.rad/25);
+      pts.forEach(pt=>{
+        const depth=(pt.z-minZ)/(maxZ-minZ+1);
+        const nr=(L.nodeSize*0.5+depth*L.nodeSize*0.5+amp*2)*lScale*radFactor;
+        const alpha=(0.3+depth*0.7)*(L.nodeOpacity??1)*layerOpacity;
+        if(L.glow>0){
+          const gr=ctx.createRadialGradient(pt.x,pt.y,0,pt.x,pt.y,Math.max(1, Math.min(nr+L.glow*Math.max(0,depth), 60)));
+          gr.addColorStop(0,`rgba(${C.r},${C.g},${C.b},${alpha*0.7})`);
+          gr.addColorStop(1,`rgba(${C.r},${C.g},${C.b},0)`);
+          ctx.beginPath();ctx.arc(pt.x,pt.y,Math.max(1, Math.min(nr+L.glow*Math.max(0,depth), 60)),0,Math.PI*2);ctx.fillStyle=gr;ctx.fill();
+        }
+        ctx.beginPath();ctx.arc(pt.x,pt.y,Math.max(0.5,nr),0,Math.PI*2);
+        ctx.fillStyle=`rgba(${C.r},${C.g},${C.b},${alpha})`;ctx.fill();
+      });
+    }
+
+    // MIRROR — dibuja reflejo horizontal y/o vertical
+    if(L.mirrorH||L.mirrorV){
+      const drawReflected=(getPt)=>{
+        const rpts=pts.map(getPt);
+        const rptMap=new Array(L.nodes.length);rpts.forEach(p=>rptMap[p.i]=p);
+        L.edges.forEach(([a,b])=>{
+          const pa=rptMap[a],pb=rptMap[b];if(!pa||!pb)return;
+          const depth=((pa.z+pb.z)/2-minZ)/(maxZ-minZ+1);
+          ctx.beginPath();ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);
+          ctx.strokeStyle=`rgba(${C.r},${C.g},${C.b},${(0.5+depth*0.5)*(L.lineOpacity??1)*layerOpacity})`;
+          ctx.lineWidth=1;ctx.stroke();
+        });
+        if(L.tent){
+          const tentAlpha=Math.min(1,0.8+amp*2)*(L.lineOpacity??1)*layerOpacity;
+          const tentSize=Rl*L.tentLen*(0.2+amp);
+          rpts.forEach((pt,idx)=>{
+            if(idx%Math.max(1,Math.floor(rpts.length/40))!==0)return;
+            const depth=(pt.z-minZ)/(maxZ-minZ+1);
+            const alpha=tentAlpha*(0.3+depth*0.7);
+            for(let t=0;t<L.tentN;t++){
+              const angle=(t/L.tentN)*Math.PI*2+time*2+idx*0.5;
+              const len=tentSize*(0.5+Math.random()*0.5);
+              ctx.beginPath();ctx.moveTo(pt.x,pt.y);
+              ctx.lineTo(pt.x+Math.cos(angle)*len,pt.y+Math.sin(angle)*len);
+              ctx.strokeStyle=`rgba(${C.r},${C.g},${C.b},${alpha})`;
+              ctx.lineWidth=1+amp*1.5;ctx.stroke();
+            }
+          });
+        }
+        if(L.nodeSize>0&&(L.nodeOpacity??1)*layerOpacity>0){
+          const rf=Math.min(1,G.rad/25);
+          rpts.forEach(pt=>{
+            const depth=(pt.z-minZ)/(maxZ-minZ+1);
+            const nr=(L.nodeSize*0.5+depth*L.nodeSize*0.5+amp*2)*lScale*rf;
+            const alpha=(0.3+depth*0.7)*(L.nodeOpacity??1)*layerOpacity;
+            if(L.glow>0){
+              const gr=ctx.createRadialGradient(pt.x,pt.y,0,pt.x,pt.y,Math.max(1, Math.min(nr+L.glow*Math.max(0,depth), 60)));
+              gr.addColorStop(0,`rgba(${C.r},${C.g},${C.b},${alpha*0.7})`);
+              gr.addColorStop(1,`rgba(${C.r},${C.g},${C.b},0)`);
+              ctx.beginPath();ctx.arc(pt.x,pt.y,Math.max(1, Math.min(nr+L.glow*Math.max(0,depth), 60)),0,Math.PI*2);ctx.fillStyle=gr;ctx.fill();
+            }
+            ctx.beginPath();ctx.arc(pt.x,pt.y,Math.max(0.5,nr),0,Math.PI*2);
+            ctx.fillStyle=`rgba(${C.r},${C.g},${C.b},${alpha})`;ctx.fill();
+          });
+        }
+      };
+      if(L.mirrorH) drawReflected(pt=>({...pt, x:cx+mirrorOffX*2-(pt.x-cx)}));
+      if(L.mirrorV) drawReflected(pt=>({...pt, y:cy+mirrorOffY*2-(pt.y-cy)}));
+      if(L.mirrorH&&L.mirrorV) drawReflected(pt=>({...pt, x:cx+mirrorOffX*2-(pt.x-cx), y:cy+mirrorOffY*2-(pt.y-cy)}));
+    }
+    })();
+    ctx=mainCtx;
+    ctx.drawImage(lv.c,0,0);
+  });
+}
+
+// UI
+function renderUI(){
+  // Actualizar botón + CAPA
+  const addBtn=document.getElementById('bb-add-btn');
+  if(addBtn) addBtn.style.display=layers.length>=4?'none':'block';
+  buildFaders();
+  // Agregar listeners MIDI a sliders de capas
+  setTimeout(()=>attachMidiListeners(),0);
+  const elL=document.getElementById('layers-ui-l');
+  const elR=document.getElementById('layers-ui-r');
+  if(elL) elL.innerHTML='';
+  if(elR) elR.innerHTML='';
+
+  layers.forEach((L,idx)=>{
+    const C=COLS[L.ci%COLS.length],col=C.h;
+    const div=document.createElement('div');
+    div.className='lcard'+(L.on?' on':'')+(L.id>=2?' lcard-extra-top':'');
+    const header=`<div class="lhdr" onclick="toggleCollapse(${L.id})">
+      <div class="ldot" style="background:${col};box-shadow:0 0 6px ${col}" onclick="event.stopPropagation();cycleCol(${L.id})"></div>
+      <span class="lname" style="color:${col}">CAPA ${L.id+1}</span>
+      <button class="ltog ${L.on?'':'off'}" style="color:${col}" onclick="event.stopPropagation();togL(${L.id})">${L.on?'ON':'OFF'}</button>
+      <button class="lrst" onclick="event.stopPropagation();resetLayer(${L.id})" title="Reset capa">↺</button>
+      <span class="larr" style="color:${col}">${L.collapsed?'▶':'▼'}</span>
+      
+    </div>`;
+
+    const tab=L.tab||'forma';    const body=L.collapsed?'':`<div class="lbody">
+      <div class="ltabs">
+        <button class="ltab${tab==='forma'?' active':''}" style="${tab==='forma'?'border-color:'+col+';color:'+col:''}" onclick="setLayerTab(${L.id},'forma')">FORMA</button>
+        <button class="ltab${tab==='mov'?' active':''}" style="${tab==='mov'?'border-color:'+col+';color:'+col:''}" onclick="setLayerTab(${L.id},'mov')">MOV</button>
+        <button class="ltab${tab==='fx'?' active':''}" style="${tab==='fx'?'border-color:'+col+';color:'+col:''}" onclick="setLayerTab(${L.id},'fx')">FX</button>
+      </div>
+
+      <div style="display:${tab==='forma'?'flex':'none'};flex-direction:column;gap:3px">
+        <div class="lsec">GEOMETRÍA</div>
+        <div class="geo-grid">${GEOS.map((g,i)=>`<button class="gb${L.geo===g?' active':''}" onclick="setGeo(${L.id},'${g}')" style="${L.geo===g?'border-color:'+col+';color:'+col:''}">${GEO_LABELS[i]}</button>`).join('')}</div>
+
+        <div class="lsec">COLOR</div>
+        <div class="col-grid">
+          ${COLS.map((c,i)=>`<div class="col-swatch${L.ci===i?' active':''}" style="background:${c.h};${L.ci===i?'outline:2px solid #fff;':''}" onclick="getL(${L.id}).ci=${i};renderUI()"></div>`).join('')}
+        </div>
+
+        <div class="lsec">FORMA</div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">DENSIDAD NODOS</label><span class="val" id="vd${L.id}">${L.density}</span></div>
+        <input type="range" min="6" max="${L.geo==='torus'?112:L.geo==='dna'?150:100}" value="${L.density}" oninput="const L=getL(${L.id});L.density=+this.value;document.getElementById('vd${L.id}').textContent=this.value;buildNodes(L);saveGeoState(L)" ondblclick="const L=getL(${L.id}),d=(GEO_DEFAULTS[L.geo]||GEO_DEFAULTS.sphere).density;L.density=d;this.value=d;document.getElementById('vd${L.id}').textContent=d;buildNodes(L);saveGeoState(L)"></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">TAMAÑO NODOS</label><span class="val" id="vns${L.id}">${L.nodeSize}</span></div>
+        <input type="range" min="0" max="20" step="0.5" value="${L.nodeSize}" oninput="const L=getL(${L.id});L.nodeSize=+this.value;document.getElementById('vns${L.id}').textContent=(+this.value).toFixed(1);saveGeoState(L)" ondblclick="const L=getL(${L.id}),d=(GEO_DEFAULTS[L.geo]||GEO_DEFAULTS.sphere).nodeSize;L.nodeSize=d;this.value=d;document.getElementById('vns${L.id}').textContent=d;saveGeoState(L)"></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">CONEXIONES</label><span class="val" id="vc${L.id}">${L.links}</span></div>
+        <input type="range" min="5" max="20" value="${L.links}" oninput="const L=getL(${L.id});L.links=+this.value;document.getElementById('vc${L.id}').textContent=this.value;buildNodes(L);saveGeoState(L)" ondblclick="const L=getL(${L.id}),d=(GEO_DEFAULTS[L.geo]||GEO_DEFAULTS.sphere).links;L.links=d;this.value=d;document.getElementById('vc${L.id}').textContent=d;buildNodes(L);saveGeoState(L)"></div>
+
+        <div class="lsec">POSICIÓN</div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">OFFSET X</label><span class="val" id="vox${L.id}">${Math.round(L.ox*100)}</span></div>
+        <input type="range" min="-40" max="40" value="${Math.round(L.ox*100)}" oninput="const L=getL(${L.id});L.ox=+this.value/100;document.getElementById('vox${L.id}').textContent=this.value;saveGeoState(L)" ondblclick="const L=getL(${L.id});L.ox=0;this.value=0;document.getElementById('vox${L.id}').textContent=0;saveGeoState(L)"></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">OFFSET Y</label><span class="val" id="voy${L.id}">${Math.round(L.oy*100)}</span></div>
+        <input type="range" min="-40" max="40" value="${Math.round(L.oy*100)}" oninput="const L=getL(${L.id});L.oy=+this.value/100;document.getElementById('voy${L.id}').textContent=this.value;saveGeoState(L)" ondblclick="const L=getL(${L.id});L.oy=0;this.value=0;document.getElementById('voy${L.id}').textContent=0;saveGeoState(L)"></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">RADIO +/-</label><span class="val" id="vrad${L.id}">${(L.rad||0)}</span></div>
+        <input type="range" min="-50" max="100" value="${L.rad||0}" oninput="const L=getL(${L.id});L.rad=+this.value;document.getElementById('vrad${L.id}').textContent=this.value;saveGeoState(L)" ondblclick="const L=getL(${L.id}),d=(GEO_DEFAULTS[L.geo]||GEO_DEFAULTS.sphere).rad;L.rad=d;this.value=d;document.getElementById('vrad${L.id}').textContent=d;saveGeoState(L)"></div>
+
+        <div class="ctrl"><div class="crow"><label style="color:${col}">BRILLO NODOS</label><span class="val" id="vg${L.id}">${L.glow}</span></div>
+        <input type="range" min="0" max="40" value="${L.glow}" oninput="getL(${L.id}).glow=+this.value;document.getElementById('vg${L.id}').textContent=this.value" ondblclick="getL(${L.id}).glow=0;this.value=0;document.getElementById('vg${L.id}').textContent=0"></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">OPACIDAD LÍNEAS</label><span class="val" id="vlo${L.id}">${(L.lineOpacity??1).toFixed(2)}</span></div>
+        <input type="range" min="0" max="1" step="0.01" value="${L.lineOpacity??1}" oninput="getL(${L.id}).lineOpacity=+this.value;document.getElementById('vlo${L.id}').textContent=(+this.value).toFixed(2)" ondblclick="getL(${L.id}).lineOpacity=1;this.value=1;document.getElementById('vlo${L.id}').textContent='1.00'"></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">OPACIDAD NODOS</label><span class="val" id="vno${L.id}">${(L.nodeOpacity??1).toFixed(2)}</span></div>
+        <input type="range" min="0" max="1" step="0.01" value="${L.nodeOpacity??1}" oninput="getL(${L.id}).nodeOpacity=+this.value;document.getElementById('vno${L.id}').textContent=(+this.value).toFixed(2)" ondblclick="getL(${L.id}).nodeOpacity=1;this.value=1;document.getElementById('vno${L.id}').textContent='1.00'"></div>
+
+        <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
+          <span>FRECUENCIA</span>
+          <div style="display:flex;gap:3px">
+            <button class="bb-tog ${L.bpmSync?'on':''}" style="font-size:7px;padding:2px 6px;${L.bpmSync?'border-color:'+col+';color:'+col:''}" onclick="event.stopPropagation();const L=getL(${L.id});L.bpmSync=!L.bpmSync;renderUI()">BPM SYNC</button>
+            <button class="bb-tog ${(L.audioOn!==false&&analyser)?'on':''}" id="btn-audio-freq-${L.id}" style="font-size:7px;padding:2px 6px;${(L.audioOn!==false&&analyser)?'border-color:'+col+';color:'+col:''}" onclick="event.stopPropagation();toggleLayerAudio(${L.id})">AUDIO</button>
+            <button class="lrst" onclick="event.stopPropagation();const L=getL(${L.id});L.band=null;L.amp=1;if(L.bandStates)L.bandStates={};saveGeoState(L);renderUI()">↺</button>
+          </div>
+        </div>
+        <div class="band-grid">${BANDS.map((b,i)=>`<button class="bb${L.band===b?' active':''}" onclick="setBand(${L.id},'${b}')" style="${L.band===b?'border-color:'+col+';color:'+col:''}">${BNAMES[i]}</button>`).join('')}</div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">SENSIBILIDAD</label><span class="val" id="vsens${L.id}">${((BAND_DETECT[L.band]||{thr:0.1}).thr).toFixed(2)}</span></div>
+        <input type="range" min="0.005" max="0.5" step="0.005" value="${(BAND_DETECT[L.band]||{thr:0.1}).thr}" oninput="const bd=BAND_DETECT[getL(${L.id}).band];if(bd)bd.thr=+this.value;document.getElementById(\`vsens${L.id}\`).textContent=(+this.value).toFixed(3)"></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">AMPLITUD</label><span class="val" id="va${L.id}">${L.amp.toFixed(1)}</span></div>
+        <input type="range" min="0" max="5" step="0.1" value="${L.amp}" oninput="const L=getL(${L.id});L.amp=+this.value;if(L.band){if(!L.bandStates)L.bandStates={};L.bandStates[L.band]={amp:L.amp};}document.getElementById('va${L.id}').textContent=(+this.value).toFixed(1)"></div>
+      </div>
+      <!-- PESTAÑA MOV -->
+      <div style="display:${tab==='mov'?'flex':'none'};flex-direction:column;gap:3px">
+        <div class="lsec" style="display:flex;justify-content:space-between;align-items:center"><span>ROTACIÓN</span><button class="lrst" onclick="event.stopPropagation();const L=getL(${L.id});L.rotX=0.5;L.rotY=0;saveGeoState(L);renderUI()">↺</button></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">ROT X</label><span class="val" id="vrx${L.id}">${(L.rotX||0).toFixed(2)}</span></div>
+        <div class="midi-wrap" style="position:relative;flex:1"><input type="range" style="width:100%" min="-3" max="3" step="0.05" value="${L.rotX||0}" oninput="const L=getL(${L.id});L.rotX=+this.value;document.getElementById('vrx${L.id}').textContent=(+this.value).toFixed(2);saveGeoState(L)" ondblclick="const L=getL(${L.id}),d=(GEO_DEFAULTS[L.geo]||GEO_DEFAULTS.sphere).rotX||0.5;L.rotX=d;this.value=d;document.getElementById('vrx${L.id}').textContent=d.toFixed(2);saveGeoState(L)" data-midi-id="${L.id}" data-midi-param="rotX" data-midi-min="-3" data-midi-max="3"></div></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">ROT Y</label><span class="val" id="vry${L.id}">${(L.rotY||0).toFixed(2)}</span></div>
+        <div class="midi-wrap" style="position:relative;flex:1"><input type="range" style="width:100%" min="-3" max="3" step="0.05" value="${L.rotY||0}" oninput="const L=getL(${L.id});L.rotY=+this.value;document.getElementById('vry${L.id}').textContent=(+this.value).toFixed(2);saveGeoState(L)" ondblclick="const L=getL(${L.id});L.rotY=0;this.value=0;document.getElementById('vry${L.id}').textContent='0.00';saveGeoState(L)" data-midi-id="${L.id}" data-midi-param="rotY" data-midi-min="-3" data-midi-max="3"></div></div>
+
+        <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
+          <span>DRIFT</span>
+          <button class="lrst" onclick="event.stopPropagation();resetDrift(${L.id})">↺</button>
+        </div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">VEL X</label><span class="val" id="vdx${L.id}">${(L.driftX||0).toFixed(2)}</span></div>
+        <div class="midi-wrap" style="position:relative;flex:1"><input type="range" style="width:100%" min="-5" max="5" step="0.01" value="${L.driftX||0}" oninput="const L=getL(${L.id});L.driftX=+this.value;document.getElementById('vdx${L.id}').textContent=(+this.value).toFixed(2);saveGeoState(L)" ondblclick="const L=getL(${L.id});L.driftX=0;this.value=0;document.getElementById('vdx${L.id}').textContent='0.00';saveGeoState(L)" data-midi-id="${L.id}" data-midi-param="driftX" data-midi-min="-5" data-midi-max="5"></div></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">VEL Y</label><span class="val" id="vdy${L.id}">${(L.driftY||0).toFixed(2)}</span></div>
+        <div class="midi-wrap" style="position:relative;flex:1"><input type="range" style="width:100%" min="-5" max="5" step="0.01" value="${L.driftY||0}" oninput="const L=getL(${L.id});L.driftY=+this.value;document.getElementById('vdy${L.id}').textContent=(+this.value).toFixed(2);saveGeoState(L)" ondblclick="const L=getL(${L.id});L.driftY=0;this.value=0;document.getElementById('vdy${L.id}').textContent='0.00';saveGeoState(L)" data-midi-id="${L.id}" data-midi-param="driftY" data-midi-min="-5" data-midi-max="5"></div></div>
+        <div class="ctrl"><button class="bb-tog${L.driftBounce?' on':''}" style="width:100%;padding:8px 6px;font-size:10px;letter-spacing:1px;${L.driftBounce?'border-color:'+col+';color:'+col:''}" onclick="event.stopPropagation();const L=getL(${L.id});L.driftBounce=!L.driftBounce;saveGeoState(L);renderUI()">BOUNCE</button></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">LÍMITE</label><span class="val" id="vdl${L.id}">${(L.driftLimit||0.8).toFixed(2)}</span></div>
+        <input type="range" min="0.1" max="1" step="0.01" value="${L.driftLimit||0.8}" oninput="const L=getL(${L.id});L.driftLimit=+this.value;document.getElementById('vdl${L.id}').textContent=(+this.value).toFixed(2);saveGeoState(L)" ondblclick="const L=getL(${L.id});L.driftLimit=0.8;this.value=0.8;document.getElementById('vdl${L.id}').textContent='0.80';saveGeoState(L)"></div>
+
+        <div class="lsec" style="display:flex;justify-content:space-between;align-items:center"><span>ORBIT</span><button class="lrst" onclick="event.stopPropagation();resetOrbit(${L.id})">↺</button></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">RADIO</label><span class="val" id="vor${L.id}">${(L.orbitR||0).toFixed(2)}</span></div>
+        <div class="midi-wrap" style="position:relative;flex:1"><input type="range" style="width:100%" min="0" max="0.8" step="0.01" value="${L.orbitR||0}" oninput="const L=getL(${L.id});L.orbitR=+this.value;document.getElementById('vor${L.id}').textContent=(+this.value).toFixed(2);saveGeoState(L)" ondblclick="const L=getL(${L.id});L.orbitR=0;this.value=0;document.getElementById('vor${L.id}').textContent='0.00';saveGeoState(L)" data-midi-id="${L.id}" data-midi-param="orbitR" data-midi-min="0" data-midi-max="0.8"></div></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">VELOCIDAD</label><span class="val" id="vos${L.id}">${(L.orbitSpd||0).toFixed(2)}</span></div>
+        <div class="midi-wrap" style="position:relative;flex:1"><input type="range" style="width:100%" min="-3" max="3" step="0.05" value="${L.orbitSpd||0}" oninput="const L=getL(${L.id});L.orbitSpd=+this.value;document.getElementById('vos${L.id}').textContent=(+this.value).toFixed(2);saveGeoState(L)" ondblclick="const L=getL(${L.id});L.orbitSpd=0;this.value=0;document.getElementById('vos${L.id}').textContent='0.00';saveGeoState(L)" data-midi-id="${L.id}" data-midi-param="orbitSpd" data-midi-min="-3" data-midi-max="3"></div></div>
+      </div>
+
+      <!-- PESTAÑA FX -->
+      <div style="display:${tab==='fx'?'flex':'none'};flex-direction:column;gap:3px">
+        <div class="lsec" style="display:flex;justify-content:space-between;align-items:center"><span>SHAKE</span><button class="lrst" onclick="event.stopPropagation();resetShake(${L.id})">↺</button></div>
+        <div class="ltabs">
+          <button class="ltab${L.shakeOn?' active':''}" style="${L.shakeOn?'border-color:'+col+';color:'+col:''}" onclick="const L=getL(${L.id});L.shakeOn=!L.shakeOn;saveGeoState(L);renderUI()">${L.shakeOn?'● ON':'○ OFF'}</button>
+          <button class="ltab${L.shakeSource==='bpm'?' active':''}" style="${L.shakeSource==='bpm'?'border-color:'+col+';color:'+col:''}" onclick="const L=getL(${L.id});L.shakeSource=L.shakeSource==='bpm'?'audio':'bpm';saveGeoState(L);renderUI()">BPM</button>
+        </div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">INTENSIDAD</label><span class="val" id="vsh${L.id}">${(L.shakeInt||0).toFixed(2)}</span></div>
+        <div class="midi-wrap" style="position:relative;flex:1"><input type="range" style="width:100%" min="0" max="3" step="0.05" value="${L.shakeInt||0}" oninput="const L=getL(${L.id});L.shakeInt=+this.value;document.getElementById('vsh${L.id}').textContent=(+this.value).toFixed(2);saveGeoState(L)" ondblclick="const L=getL(${L.id});L.shakeInt=0;this.value=0;document.getElementById('vsh${L.id}').textContent='0.00';saveGeoState(L)" data-midi-id="${L.id}" data-midi-param="shakeInt" data-midi-min="0" data-midi-max="3"></div></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">DECAY</label><span class="val" id="vsd${L.id}">${(L.shakeDecay||0.4).toFixed(2)}</span></div>
+        <input type="range" min="0.05" max="0.95" step="0.05" value="${L.shakeDecay||0.4}" oninput="const L=getL(${L.id});L.shakeDecay=+this.value;document.getElementById('vsd${L.id}').textContent=(+this.value).toFixed(2);saveGeoState(L)" ondblclick="const L=getL(${L.id});L.shakeDecay=0.2;this.value=0.2;document.getElementById('vsd${L.id}').textContent='0.20';saveGeoState(L)"></div>
+
+        <div class="lsec" style="display:flex;justify-content:space-between;align-items:center"><span>NOISE</span><button class="lrst" onclick="event.stopPropagation();const L=getL(${L.id});L.noiseInt=0;L.noiseSpd=1;saveGeoState(L);renderUI()">↺</button></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">INTENSIDAD</label><span class="val" id="vni${L.id}">${(L.noiseInt||0).toFixed(2)}</span></div>
+        <div class="midi-wrap" style="position:relative;flex:1"><input type="range" style="width:100%" min="0" max="1" step="0.01" value="${L.noiseInt||0}" oninput="const L=getL(${L.id});L.noiseInt=+this.value;document.getElementById('vni${L.id}').textContent=(+this.value).toFixed(2);saveGeoState(L)" ondblclick="const L=getL(${L.id});L.noiseInt=0;this.value=0;document.getElementById('vni${L.id}').textContent='0.00';saveGeoState(L)" data-midi-id="${L.id}" data-midi-param="noiseInt" data-midi-min="0" data-midi-max="1"></div></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">VELOCIDAD</label><span class="val" id="vns2${L.id}">${(L.noiseSpd||1).toFixed(2)}</span></div>
+        <div class="midi-wrap" style="position:relative;flex:1"><input type="range" style="width:100%" min="0.1" max="3" step="0.1" value="${L.noiseSpd||1}" oninput="const L=getL(${L.id});L.noiseSpd=+this.value;document.getElementById('vns2${L.id}').textContent=(+this.value).toFixed(2);saveGeoState(L)" ondblclick="const L=getL(${L.id});L.noiseSpd=1;this.value=1;document.getElementById('vns2${L.id}').textContent='1.00';saveGeoState(L)" data-midi-id="${L.id}" data-midi-param="noiseSpd" data-midi-min="0.1" data-midi-max="3"></div></div>
+
+        <div class="lsec" style="display:flex;justify-content:space-between;align-items:center"><span>SCATTER</span><button class="lrst" onclick="event.stopPropagation();const L=getL(${L.id});L.scatterInt=0;L.scatterVal=0;L.scatterOn=false;saveGeoState(L);renderUI()">↺</button></div>
+        <div class="ltabs">
+          <button class="ltab${L.scatterOn?' active':''}" style="${L.scatterOn?'border-color:'+col+';color:'+col:''}" onclick="const L=getL(${L.id});L.scatterOn=!L.scatterOn;saveGeoState(L);renderUI()">${L.scatterOn?'● ON':'○ OFF'}</button>
+          <button class="ltab${L.scatterSource==='bpm'?' active':''}" style="${L.scatterSource==='bpm'?'border-color:'+col+';color:'+col:''}" onclick="const L=getL(${L.id});L.scatterSource=L.scatterSource==='bpm'?'audio':'bpm';saveGeoState(L);renderUI()">BPM</button>
+        </div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">INTENSIDAD</label><span class="val" id="vsi${L.id}">${(L.scatterInt||0).toFixed(2)}</span></div>
+        <div class="midi-wrap" style="position:relative;flex:1"><input type="range" style="width:100%" min="0" max="3" step="0.05" value="${L.scatterInt||0}" oninput="const L=getL(${L.id});L.scatterInt=+this.value;document.getElementById('vsi${L.id}').textContent=(+this.value).toFixed(2);saveGeoState(L)" ondblclick="const L=getL(${L.id});L.scatterInt=0;this.value=0;document.getElementById('vsi${L.id}').textContent='0.00';saveGeoState(L)" data-midi-id="${L.id}" data-midi-param="scatterInt" data-midi-min="0" data-midi-max="3"></div></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">DECAY</label><span class="val" id="vsd2${L.id}">${(L.scatterDecay||0.3).toFixed(2)}</span></div>
+        <input type="range" min="0.05" max="0.95" step="0.05" value="${L.scatterDecay||0.3}" oninput="const L=getL(${L.id});L.scatterDecay=+this.value;document.getElementById('vsd2${L.id}').textContent=(+this.value).toFixed(2);saveGeoState(L)" ondblclick="const L=getL(${L.id});L.scatterDecay=0.3;this.value=0.3;document.getElementById('vsd2${L.id}').textContent='0.30';saveGeoState(L)"></div>
+
+        <div class="lsec" style="display:flex;justify-content:space-between;align-items:center"><span>MIRROR</span><button class="lrst" onclick="event.stopPropagation();const L=getL(${L.id});L.mirrorH=false;L.mirrorV=false;L.mirrorX=0;L.mirrorY=0;saveGeoState(L);renderUI()">↺</button></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">DIST X</label><span class="val" id="vmx${L.id}">${(L.mirrorX||0).toFixed(2)}</span></div>
+        <div class="midi-wrap" style="position:relative;flex:1"><input type="range" style="width:100%" min="0" max="1" step="0.01" value="${L.mirrorX||0}" oninput="const L=getL(${L.id});L.mirrorX=+this.value;L.mirrorH=L.mirrorX>0;if(L.mirrorH)L.driftBounce=true;document.getElementById('vmx${L.id}').textContent=(+this.value).toFixed(2);saveGeoState(L)" ondblclick="const L=getL(${L.id});L.mirrorX=0;L.mirrorH=false;this.value=0;document.getElementById('vmx${L.id}').textContent='0.00';saveGeoState(L)" data-midi-id="${L.id}" data-midi-param="mirrorX" data-midi-min="0" data-midi-max="1"></div></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">DIST Y</label><span class="val" id="vmy${L.id}">${(L.mirrorY||0).toFixed(2)}</span></div>
+        <div class="midi-wrap" style="position:relative;flex:1"><input type="range" style="width:100%" min="0" max="1" step="0.01" value="${L.mirrorY||0}" oninput="const L=getL(${L.id});L.mirrorY=+this.value;L.mirrorV=L.mirrorY>0;if(L.mirrorV)L.driftBounce=true;document.getElementById('vmy${L.id}').textContent=(+this.value).toFixed(2);saveGeoState(L)" ondblclick="const L=getL(${L.id});L.mirrorY=0;L.mirrorV=false;this.value=0;document.getElementById('vmy${L.id}').textContent='0.00';saveGeoState(L)" data-midi-id="${L.id}" data-midi-param="mirrorY" data-midi-min="0" data-midi-max="1"></div></div>
+
+        <div class="lsec" style="display:flex;justify-content:space-between;align-items:center"><span>ESTELA / TRAIL</span><button class="lrst" onclick="event.stopPropagation();resetEstela(${L.id})">↺</button></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">PERSISTENCIA</label><span class="val" id="vtr${L.id}">${(L.trail||0).toFixed(2)}</span></div>
+        <input type="range" min="0" max="0.98" step="0.01" value="${L.trail||0}" oninput="getL(${L.id}).trail=+this.value;document.getElementById('vtr${L.id}').textContent=(+this.value).toFixed(2)" ondblclick="getL(${L.id}).trail=0;this.value=0;document.getElementById('vtr${L.id}').textContent='0.00'"></div>
+
+        <div class="lsec" style="display:flex;justify-content:space-between;align-items:center"><span>TENTÁCULOS</span><button class="lrst" onclick="event.stopPropagation();resetTent(${L.id})">↺</button></div>
+        <button class="efx-toggle ${L.tent?'':'off'}" style="border:1px solid ${col};color:${col}" onclick="toggleTent(${L.id})">TENTÁCULOS ${L.tent?'● ON':'○ OFF'}</button>
+        <div style="display:${L.tent?'flex':'none'};flex-direction:column;gap:3px" id="tent-ui-${L.id}">
+          <div class="ctrl"><div class="crow"><label style="color:${col}">CANTIDAD</label><span class="val" id="vtn${L.id}">${L.tentN}</span></div>
+          <input type="range" min="1" max="20" value="${L.tentN}" oninput="getL(${L.id}).tentN=+this.value;document.getElementById('vtn${L.id}').textContent=this.value" ondblclick="getL(${L.id}).tentN=6;this.value=6;document.getElementById('vtn${L.id}').textContent=6"></div>
+          <div class="ctrl"><div class="crow"><label style="color:${col}">LONGITUD</label><span class="val" id="vtl${L.id}">${L.tentLen.toFixed(1)}</span></div>
+          <input type="range" min="0.1" max="5" step="0.1" value="${L.tentLen}" oninput="getL(${L.id}).tentLen=+this.value;document.getElementById('vtl${L.id}').textContent=(+this.value).toFixed(1)" ondblclick="getL(${L.id}).tentLen=1;this.value=1;document.getElementById('vtl${L.id}').textContent='1.0'"></div>
+        </div>
+
+        <div class="lsec" style="display:flex;justify-content:space-between;align-items:center"><span>ZOOM PULSE</span><button class="lrst" onclick="event.stopPropagation();resetZoom(${L.id})">↺</button></div>
+        <button class="efx-toggle ${L.zoom?'':'off'}" style="border:1px solid ${col};color:${col}" onclick="toggleLayerZoom(${L.id})">ZOOM PULSE ${L.zoom?'● ON':'○ OFF'}</button>
+        <div style="display:${L.zoom?'flex':'none'};flex-direction:column;gap:3px" id="zoom-ui-${L.id}">
+          <div class="ctrl"><div class="crow"><label style="color:${col}">INTENSIDAD</label><span class="val" id="vzi${L.id}">${L.zoomInt.toFixed(2)}</span></div>
+          <input type="range" min="0.05" max="1" step="0.05" value="${L.zoomInt}" oninput="getL(${L.id}).zoomInt=+this.value;document.getElementById('vzi${L.id}').textContent=(+this.value).toFixed(2)" ondblclick="getL(${L.id}).zoomInt=0.5;this.value=0.5;document.getElementById('vzi${L.id}').textContent='0.50'"></div>
+          <div class="ctrl"><div class="crow"><label style="color:${col}">DECAY</label><span class="val" id="vzd${L.id}">${L.zoomDecay.toFixed(2)}</span></div>
+          <input type="range" min="0.5" max="0.98" step="0.01" value="${L.zoomDecay}" oninput="getL(${L.id}).zoomDecay=+this.value;document.getElementById('vzd${L.id}').textContent=(+this.value).toFixed(2)" ondblclick="getL(${L.id}).zoomDecay=0.78;this.value=0.78;document.getElementById('vzd${L.id}').textContent='0.78'"></div>
+
+        <div class="ctrl"><div class="crow"><label style="color:${col}">SENSIBILIDAD</label><span class="val" id="vsens${L.id}">${((BAND_DETECT[L.band]||{thr:0.1}).thr).toFixed(2)}</span></div>
+        <input type="range" min="0.005" max="0.5" step="0.005" value="${(BAND_DETECT[L.band]||{thr:0.1}).thr}" oninput="const bd=BAND_DETECT[getL(${L.id}).band];if(bd)bd.thr=+this.value;document.getElementById('vsens${L.id}').textContent=(+this.value).toFixed(3)" ondblclick="resetSensibilidad(${L.id},this)"></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">AMPLITUD</label><span class="val" id="va${L.id}">${L.amp.toFixed(1)}</span></div>
+        <input type="range" min="0" max="5" step="0.1" value="${L.amp}" oninput="const L=getL(${L.id});L.amp=+this.value;if(L.band){if(!L.bandStates)L.bandStates={};L.bandStates[L.band]={amp:L.amp};}document.getElementById('va${L.id}').textContent=(+this.value).toFixed(1)" ondblclick="resetAmplitud(${L.id},this)"></div>
+        </div>
+
+    </div>`;
+
+    div.innerHTML=header+body;
+    const target = idx % 2 === 0 ? elR : elL;
+    if(target) target.appendChild(div);
+  });
+}
+
+function resetDrift(id){const L=getL(id);if(!L)return;L.driftX=0;L.driftY=0;L.driftOx=0;L.driftOy=0;saveGeoState(L);renderUI();}
+function resetOrbit(id){const L=getL(id);if(!L)return;L.orbitR=0;L.orbitSpd=0;L.orbitAngle=0;saveGeoState(L);renderUI();}
+function resetShake(id){const L=getL(id);if(!L)return;L.shakeInt=0;L.shakeVal=0;L.shakeDecay=0.2;L.shakeOn=false;saveGeoState(L);renderUI();}
+function resetEstela(id){const L=getL(id);if(!L)return;L.trail=0;saveGeoState(L);renderUI();}
+function resetTent(id){const L=getL(id);if(!L)return;L.tent=0;L.tentN=6;L.tentLen=1;saveGeoState(L);renderUI();}
+function resetZoom(id){const L=getL(id);if(!L)return;L.zoom=0;L.zoomInt=0.5;L.zoomDecay=0.78;L.zoomFlash=0;saveGeoState(L);renderUI();}
+function resetSensibilidad(id,el){
+  const L=getL(id);if(!L)return;
+  const defaults={sub:0.08,bass:0.12,mid:0.02,hi:0.003,all:0.05};
+  const v=defaults[L.band]||0.1;
+  const bd=BAND_DETECT[L.band];
+  if(bd) bd.thr=v;
+  el.value=v;
+  const d=document.getElementById('vsens'+id);
+  if(d) d.textContent=v.toFixed(3);
+}
+function resetAmplitud(id,el){
+  const L=getL(id);if(!L)return;
+  const defaults={sub:1.5,bass:1.0,mid:2.0,hi:3.0,all:1.0};
+  const v=defaults[L.band]||1;
+  L.amp=v;
+  el.value=v;
+  const d=document.getElementById('va'+id);
+  if(d) d.textContent=v.toFixed(1);
+}
+function dblReset(el,val,displayId,fmt){
+  el.value=val;
+  const d=document.getElementById(displayId);
+  if(d) d.textContent=fmt?val.toFixed(fmt):(val+'');
+}
+function setLayerTab(id,tab){const L=getL(id);if(L){L.tab=tab;renderUI();}}
+function getL(id){return layers.find(L=>L.id===id);}
+function toggleCollapse(id){const L=getL(id);if(L){L.collapsed=!L.collapsed;renderUI();}}
+function togL(id){const L=getL(id);if(L){L.on=!L.on;renderUI();}}
+function remL(id){layers=layers.filter(L=>L.id!==id);renderUI();}
+function cycleCol(id){const L=getL(id);if(L){L.ci=(L.ci+1)%COLS.length;renderUI();}}
+const GEO_DEFAULTS={
+  sphere:{ density:43, nodeSize:6,  links:5, rotX:0.5, rotY:0, rad:25 },
+  cube:  { density:48, nodeSize:8,  links:5, rotX:0.5, rotY:0, rad:15 },
+  torus: { density:112,nodeSize:6,  links:5, rotX:0.5, rotY:0, rad:20 },
+  wave:  { density:49, nodeSize:8,  links:5, rotX:0.5, rotY:0, rad:20 },
+  dna:   { density:75, nodeSize:7,  links:7, rotX:0.5, rotY:0, rad:20 },
+  diamond:{ density:44,nodeSize:7,  links:7, rotX:0.3, rotY:0, rad:25 },
+  part:  { density:43, nodeSize:8,  links:5, rotX:0.5, rotY:0, rad:25 },
+};
+// Tamaño de nodos por defecto: 8 en PC, 5 en móvil
+Object.keys(GEO_DEFAULTS).forEach(function(g){Object.defineProperty(GEO_DEFAULTS[g],'nodeSize',{enumerable:true,get:function(){return window.innerWidth<=860?5:8;}});});
+function saveGeoState(L){
+  if(!L||!L.geoStates) return;
+  const id=L.id;
+  L.geoStates[L.geo]={
+    density:L.density, nodeSize:L.nodeSize, links:L.links,
+    rotX:L.rotX, rotY:L.rotY, rad:L.rad,
+    opacity:L.opacity, glow:L.glow, lineOpacity:L.lineOpacity, nodeOpacity:L.nodeOpacity,
+    trail:L.trail, amp:L.amp, ox:L.ox, oy:L.oy, ci:L.ci, band:L.band,
+    bandStates:Object.assign({},L.bandStates||{}),
+    driftX:L.driftX||0, driftY:L.driftY||0, driftOx:L.driftOx||0, driftOy:L.driftOy||0, driftBounce:L.driftBounce||false, driftLimit:L.driftLimit||0.8,
+    orbitR:L.orbitR||0, orbitSpd:L.orbitSpd||0, orbitAngle:L.orbitAngle||0, shakeInt:L.shakeInt||0, shakeDecay:L.shakeDecay||0.4, shakeOn:L.shakeOn||false, shakeSource:L.shakeSource||'audio', noiseInt:L.noiseInt||0, noiseSpd:L.noiseSpd||1, scatterInt:L.scatterInt||0, scatterDecay:L.scatterDecay||0.3, scatterOn:L.scatterOn||false, scatterSource:L.scatterSource||'audio', mirrorH:L.mirrorH||false, mirrorV:L.mirrorV||false, mirrorX:L.mirrorX||0, mirrorY:L.mirrorY||0, cloneN:L.cloneN||0, cloneR:L.cloneR||0.3,
+    angleX:(layerAngles[id]||{x:0}).x,
+    angleY:(layerAngles[id]||{y:0}).y,
+  };
+}
+function setGeo(id,geo){
+  const L=getL(id);if(!L)return;
+  // Guardar estado de la geometría actual
+  if(!L.geoStates) L.geoStates={};
+  L.geoStates[L.geo]={
+    density:L.density, nodeSize:L.nodeSize, links:L.links,
+    rotX:L.rotX, rotY:L.rotY, rad:L.rad,
+    opacity:L.opacity, glow:L.glow, lineOpacity:L.lineOpacity, nodeOpacity:L.nodeOpacity,
+    trail:L.trail, amp:L.amp, ox:L.ox, oy:L.oy, ci:L.ci, band:L.band,
+    bandStates:Object.assign({},L.bandStates||{}),
+    driftX:L.driftX||0, driftY:L.driftY||0, driftOx:L.driftOx||0, driftOy:L.driftOy||0, driftBounce:L.driftBounce||false, driftLimit:L.driftLimit||0.8,
+    orbitR:L.orbitR||0, orbitSpd:L.orbitSpd||0, orbitAngle:L.orbitAngle||0, shakeInt:L.shakeInt||0, shakeDecay:L.shakeDecay||0.4, shakeOn:L.shakeOn||false, shakeSource:L.shakeSource||'audio', noiseInt:L.noiseInt||0, noiseSpd:L.noiseSpd||1, scatterInt:L.scatterInt||0, scatterDecay:L.scatterDecay||0.3, scatterOn:L.scatterOn||false, scatterSource:L.scatterSource||'audio', mirrorH:L.mirrorH||false, mirrorV:L.mirrorV||false, mirrorX:L.mirrorX||0, mirrorY:L.mirrorY||0, cloneN:L.cloneN||0, cloneR:L.cloneR||0.3,
+    angleX: (layerAngles[id]||{x:0}).x,
+    angleY: (layerAngles[id]||{y:0}).y,
+  };
+  L.geo=geo;
+  const saved=L.geoStates[geo];
+  const currentCi=L.ci;
+  const keepOpacity=L.opacity; // el fader de la capa no cambia al elegir geometría
+  Object.assign(L, saved||(GEO_DEFAULTS[geo]||GEO_DEFAULTS.sphere));
+  L.opacity=keepOpacity;
+  if(!saved) L.ci=0; // primera vez: cyan por defecto
+  // Ángulo inicial para onda solo si es la primera vez
+  if(geo==='torus'){
+    if(!layerAngles[id]) layerAngles[id]={x:0,y:0,z:0};
+    layerAngles[id].x = saved ? saved.angleX : Math.PI/2;
+    layerAngles[id].y = saved ? saved.angleY : 0;
+  }
+  if(geo==='wave'){
+    if(!layerAngles[id]) layerAngles[id]={x:0,y:0,z:0};
+    layerAngles[id].x = saved ? saved.angleX : Math.PI/2;
+    layerAngles[id].y = saved ? saved.angleY : 0;
+  }
+  if(geo!=='torus'&&geo!=='wave'){
+    if(!layerAngles[id]) layerAngles[id]={x:0,y:0,z:0};
+    layerAngles[id].x = saved ? saved.angleX : 0;
+    layerAngles[id].y = saved ? saved.angleY : 0;
+  }
+  buildNodes(L);renderUI();setTimeout(()=>{if(typeof mobRender==='function')mobRender();},0);
+}
+const BAND_DEFAULTS={
+  sub:  {amp:1.5},
+  bass: {amp:1.0},
+  mid:  {amp:2.0},
+  hi:   {amp:3.0},
+};
+
+function setBand(id,b){
+  const L=getL(id);if(!L)return;
+  if(L.band===b){L.band=null;renderUI();setTimeout(()=>{if(typeof mobRender==='function')mobRender();},0);return;}
+  if(L.band){
+    if(!L.bandStates) L.bandStates={};
+    L.bandStates[L.band]={amp:L.amp};
+  }
+  L.band=b;
+  if(!L.bandStates) L.bandStates={};
+  const saved=L.bandStates[b];
+  L.amp=saved?saved.amp:(BAND_DEFAULTS[b]||{amp:1}).amp;
+  renderUI();setTimeout(()=>{if(typeof mobRender==='function')mobRender();},0);
+}
+function toggleTent(id){const L=getL(id);if(L){L.tent=L.tent?0:1;renderUI();}}
+function toggleLayerZoom(id){const L=getL(id);if(L){L.zoom=L.zoom?0:1;renderUI();}}
+function addLayer(){
+  if(layers.length>=4)return;
+  const id=layers.length; // siempre 2 o 3
+  const L=defaultLayer(id); L.on=false;
+  buildNodes(L);layers.push(L);renderUI();
+}
+function resetLayer(id){
+  const L=getL(id);if(!L)return;
+  const geo=L.geo;
+  const geoDef=GEO_DEFAULTS[geo]||GEO_DEFAULTS.sphere;
+  // Solo resetear parámetros de forma/movimiento/color de la geometría actual
+  L.density=geoDef.density; L.nodeSize=geoDef.nodeSize; L.links=geoDef.links;
+  L.rotX=geoDef.rotX; L.rotY=geoDef.rotY; L.rad=geoDef.rad;
+  L.ci=L.defaultCi!==undefined?L.defaultCi:0; L.glow=0; L.lineOpacity=1; L.nodeOpacity=1; L.band=null;
+  L.opacity=1; L.autoOn=false; L.amp=1; L.ox=0; L.oy=0; L.trail=0;
+  L.drift=false; L.driftX=0; L.driftY=0; L.driftOx=0; L.driftOy=0; L.driftBounce=false; L.driftLimit=0.8;
+  L.orbitR=0; L.orbitSpd=0; L.orbitAngle=0; L.shakeInt=0; L.shakeVal=0; L.shakeDecay=0.4; L.shakeOn=false; L.shakeSource='audio'; L.noiseInt=0; L.noiseSpd=1; L.scatterInt=0; L.scatterVal=0; L.scatterDecay=0.3; L.scatterOn=false; L.scatterSource='audio'; L.mirrorH=false; L.mirrorV=false; L.mirrorX=0; L.mirrorY=0; L.cloneN=0; L.cloneR=0.3;
+  L.zoom=0; L.zoomInt=0.5; L.zoomDecay=0.78; L.zoomFlash=0;
+  // Actualizar el geoState de la geometría actual con los valores reseteados
+  saveGeoState(L);
+  // Ángulo de vista correcto solo para la geometría actual
+  if(!layerAngles[id]) layerAngles[id]={x:0,y:0,z:0};
+  if(geo==='wave'||geo==='torus'){
+    layerAngles[id].x=Math.PI/2; layerAngles[id].y=0;
+  } else {
+    layerAngles[id].x=0; layerAngles[id].y=0;
+  }
+  layerAngles[id].z=0;
+  buildNodes(L);renderUI();
+}
+function resetAll(){
+  layers=[];lid=0;aX=aY=aZ=time=0;layerAngles={};
+  sBands={sub:0,bass:0,mid:0,hi:0};
+  BPM.bpm=0;BPM.intervals=[];BPM.flash=0;
+  const L0=defaultLayer(0); L0.defaultCi=0; buildNodes(L0); layers.push(L0);
+  const L1=defaultLayer(1); L1.on=false; L1.ci=1; L1.defaultCi=1; buildNodes(L1); layers.push(L1);
+  const L2=defaultLayer(2); L2.on=false; L2.collapsed=true; L2.ci=2; L2.defaultCi=2; buildNodes(L2); layers.push(L2);
+  const L3=defaultLayer(3); L3.on=false; L3.collapsed=true; L3.ci=3; L3.defaultCi=3; buildNodes(L3); layers.push(L3);
+  renderUI();
+  mobRender();
+  mobUpdateHeader();
+}
+// FADERS
+const FADER_COLORS=['#00ffe0','#ff3cac','#ffe600','#39ff14'];
+function buildFaders(){
+  const container=document.getElementById('faders-container');
+  if(!container)return;
+  container.innerHTML='';
+  layers.forEach((L,i)=>{
+    const C=COLS[L.ci%COLS.length];
+    const col=C.h;
+    const opacity=L.on?1:0.4;
+    const pct=Math.round((L.opacity??1)*100);
+    const div=document.createElement('div');
+    div.className='bb-fw';
+    div.innerHTML=`
+      <button class="bb-fon" id="fon-${i}" style="color:${col};border-color:${col};opacity:${opacity}" onclick="togL(${L.id})">${L.on?'ON':'OFF'}</button>
+      <div class="bb-ft" id="ft-${i}">
+        <div class="bb-ff" id="ff-${i}" style="height:${pct}%;background:${col};opacity:${L.on?0.35:0.15}"></div>
+        <div class="bb-fth" id="fth-${i}" style="bottom:calc(${pct}% - 2.5px);background:${col};box-shadow:0 0 5px ${col};opacity:${opacity}"></div>
+      </div>
+      <span class="bb-fpct" id="fpct-${i}" style="opacity:${opacity}">${pct}%</span>
+    `;
+    const wrap=document.createElement('div');
+    wrap.className='mx-col';
+    wrap.appendChild(div);
+    const au=document.createElement('div');
+    au.className='bb-auto';
+    au.innerHTML=`<button class="bb-aut${L.autoOn?' on':''}" id="aut-${i}" onclick="toggleAuto(${i})">AUTO</button><button class="bb-aus" onclick="autoSpeed(${i},1)">+</button><button class="bb-aus" onclick="autoSpeed(${i},-1)">-</button>`;
+    wrap.appendChild(au);
+    container.appendChild(wrap);
+
+    // Drag
+    const track=div.querySelector('.bb-ft');
+    track.addEventListener('mousedown',e=>{faderDrag={i:i,L:L,col:col};updateFader(e,i,L,col);});
+  });
+}
+
+// ── AUTO fader: sube y baja solo (ida y vuelta) ──
+function setFaderUI(i,v){
+  const pct=Math.round(v*100);
+  [['ff-','fth-','fpct-'],['mx-ff-','mx-fth-','mx-fpct-']].forEach(function(p){
+    const f=document.getElementById(p[0]+i),t=document.getElementById(p[1]+i),q=document.getElementById(p[2]+i);
+    if(f) f.style.height=pct+'%';
+    if(t) t.style.bottom='calc('+pct+'% - 2.5px)';
+    if(q) q.textContent=pct+'%';
+  });
+}
+function autoTick(dt){
+  layers.forEach(function(L,i){
+    if(!L.autoOn) return;
+    if(L._drag||(faderDrag&&faderDrag.L===L)) return; // mientras lo mueves con el dedo/mouse
+    let d=L.autoDir||1, v=(L.opacity??1)+d*(L.autoSpd||0.25)*dt;
+    if(v>=1){v=1;d=-1;} else if(v<=0){v=0;d=1;}
+    L.autoDir=d; L.opacity=v; setFaderUI(i,v);
+  });
+}
+function toggleAuto(i){
+  const L=layers[i]; if(!L) return;
+  L.autoOn=!L.autoOn;
+  if(L.autoSpd==null) L.autoSpd=0.25;
+  if(!L.autoDir) L.autoDir=1;
+  ['aut-','maut-'].forEach(function(p){const b=document.getElementById(p+i); if(b) b.classList.toggle('on',!!L.autoOn);});
+}
+function autoSpeed(i,k){
+  const L=layers[i]; if(!L) return;
+  L.autoSpd=Math.max(0.03,Math.min(4,(L.autoSpd||0.25)*(k>0?1.4:1/1.4)));
+}
+let faderDrag=null;
+document.addEventListener('mousemove',e=>{if(faderDrag)updateFader(e,faderDrag.i,faderDrag.L,faderDrag.col);});
+document.addEventListener('mouseup',()=>faderDrag=null);
+function updateFader(e,i,L,col,directVal){
+  const track=document.getElementById('ft-'+i);
+  if(!track) return;
+  let v;
+  if(directVal!==undefined){
+    v=Math.max(0,Math.min(1,directVal));
+  } else if(e){
+    if(midiMapMode){startMidiLearn(track,{type:'fader',id:L.id,idx:i});return;}
+    const rect=track.getBoundingClientRect();
+    v=1-(e.clientY-rect.top)/rect.height;
+    v=Math.max(0,Math.min(1,v));
+  } else return;
+  L.opacity=v;
+  const pct=Math.round(v*100);
+  const fill=document.getElementById('ff-'+i);
+  const thumb=document.getElementById('fth-'+i);
+  const pctEl=document.getElementById('fpct-'+i);
+  if(fill) fill.style.height=pct+'%';
+  if(thumb) thumb.style.bottom='calc('+pct+'% - 2.5px)';
+  if(pctEl) pctEl.textContent=pct+'%';
+}
+
+// ─── MIDI ───────────────────────────────────────────────
+let midiAccess=null;
+let midiMapping={};      // {cc: {type, id, param}}
+let midiMapMode=false;
+let midiWaitingEl=null;  // elemento esperando mapeo
+let midiWaitingMeta=null;
+
+async function initMIDI(){
+  if(window.innerWidth<=860) return; // móvil: sin MIDI, no pide permiso
+  if(!navigator.requestMIDIAccess){
+    console.log('Web MIDI no disponible en este navegador — MIDI deshabilitado.');
+    return;
+  }
+  try{
+    midiAccess=await navigator.requestMIDIAccess();
+    midiAccess.inputs.forEach(input=>{
+      input.onmidimessage=onMIDIMessage;
+    });
+    midiAccess.onstatechange=e=>{
+      if(e.port.type==='input'){
+        if(e.port.state==='connected') e.port.onmidimessage=onMIDIMessage;
+      }
+    };
+    const btn=document.getElementById('midi-map-btn');
+    if(btn) btn.style.color='rgba(255,200,0,0.9)';
+    console.log('MIDI conectado:',midiAccess.inputs.size,'inputs');
+  }catch(e){
+    console.log('MIDI error:',e);
+  }
+}
+
+function onMIDIMessage(e){
+  const [status,cc,value]=e.data;
+  const type=status&0xf0;
+  // Solo CC (0xB0) y Note On (0x90)
+  if(type!==0xB0&&type!==0x90) return;
+  const key=`${type}-${cc}`;
+
+  if(midiWaitingEl){
+    midiMapping[key]=midiWaitingMeta;
+    midiWaitingEl.classList.remove('waiting');
+    midiWaitingEl.classList.add('mapped');
+    midiWaitingEl=null;
+    midiWaitingMeta=null;
+    saveMidiMapping();
+    return;
+  }
+
+  // Aplicar mapeo
+  if(midiMapping[key]){
+    applyMIDI(midiMapping[key], value/127);
+  }
+}
+
+function startLayerMidiMap(layerId){
+  if(!midiAccess){initMIDI().then(()=>startLayerMidiMap(layerId));return;}
+  // Cancelar cualquier mapeo anterior
+  if(midiWaitingEl){
+    midiWaitingEl.style.outline='';
+    midiWaitingEl.style.boxShadow='';
+  }
+  const btn=document.getElementById('midi-capa-'+layerId);
+  if(!btn) return;
+  midiWaitingEl=btn;
+  midiWaitingMeta={type:'fader',id:layerId,idx:layerId};
+  btn.style.outline='2px solid #ffc800';
+  btn.style.boxShadow='0 0 10px #ffc800';
+  btn.style.color='#ffc800';
+  btn.textContent='...';
+  // Auto-cancelar en 10s
+  setTimeout(()=>{
+    if(midiWaitingEl===btn){
+      midiWaitingEl=null;
+      btn.style.outline='';
+      btn.style.boxShadow='';
+      btn.style.color='rgba(255,200,0,0.5)';
+      btn.textContent='MAP';
+    }
+  },10000);
+}
+
+function attachMidiListeners(){
+  document.querySelectorAll('.midi-wrap').forEach(wrap=>{
+    const el=wrap.querySelector('[data-midi-id]');
+    if(!el) return;
+    wrap.onclick=function(e){
+      if(!midiMapMode) return;
+      e.stopPropagation();
+      document.querySelectorAll('.midi-wrap.waiting').forEach(w=>w.classList.remove('waiting'));
+      wrap.classList.add('waiting');
+      midiWaitingEl=wrap;
+      midiWaitingMeta={
+        type:'layer',
+        id:parseInt(el.dataset.midiId),
+        param:el.dataset.midiParam,
+        min:parseFloat(el.dataset.midiMin||0),
+        max:parseFloat(el.dataset.midiMax||1)
+      };
+    };
+  });
+}
+
+function midiLearnSlider(el,layerId,param,min,max){
+  if(!midiMapMode) return;
+  startMidiLearn(el,{type:'layer',id:layerId,param,min,max});
+}
+
+function applyMIDI(meta, v){
+  if(meta.type==='global'){
+    if(meta.param==='rad'){G.rad=5+v*90;const el=document.getElementById('v-r');if(el)el.textContent=Math.round(G.rad)+'%';}
+    if(meta.param==='speed'){G.speed=0.05+v*2.95;const el=document.getElementById('v-spd');if(el)el.textContent=G.speed.toFixed(2);}
+    if(meta.param==='smooth'){G.smooth=0.1+v*0.89;const el=document.getElementById('v-sm');if(el)el.textContent=G.smooth.toFixed(2);}
+  } else if(meta.type==='fader'){
+    const idx=layers.findIndex(L=>L.id===meta.id);
+    if(idx<0) return;
+    const L=layers[idx];
+    const col=COLS[L.ci%COLS.length].h;
+    L.opacity=v;
+    const pct=Math.round(v*100);
+    const fill=document.getElementById('ff-'+idx);
+    const thumb=document.getElementById('fth-'+idx);
+    const pctEl=document.getElementById('fpct-'+idx);
+    if(fill) fill.style.height=pct+'%';
+    if(thumb) thumb.style.bottom='calc('+pct+'% - 2.5px)';
+    if(pctEl) pctEl.textContent=pct+'%';
+  } else if(meta.type==='layer'){
+    const L=getL(meta.id);
+    if(!L) return;
+    const min=meta.min||0, max=meta.max||1;
+    const val=min+v*(max-min);
+    L[meta.param]=val;
+    saveGeoState(L);
+    // Actualizar display si existe
+    const displays={
+      rotX:'vrx',rotY:'vry',
+      driftX:'vdx',driftY:'vdy',
+      noiseInt:'vni',noiseSpd:'vns2',
+      scatterInt:'vsi',
+      mirrorX:'vmx',mirrorY:'vmy',
+      shakeInt:'vsh',
+      rad:'vrad',
+      orbitR:'vor',orbitSpd:'vos'
+    };
+    const displayId=displays[meta.param];
+    if(displayId){
+      const el=document.getElementById(displayId+meta.id);
+      if(el) el.textContent=val.toFixed(2);
+    }
+    // Mirror activa automáticamente
+    if(meta.param==='mirrorX') L.mirrorH=val>0;
+    if(meta.param==='mirrorY') L.mirrorV=val>0;
+  } else if(meta.type==='toggle'){
+    if(v>0.5){
+      if(meta.param==='freeze') toggleFreeze();
+      else if(meta.param==='layer'){const L=getL(meta.id);if(L)togL(meta.id);}
+    }
+  }
+}
+
+function toggleMidiMap(){
+  if(!midiAccess){initMIDI();return;}
+  midiMapMode=!midiMapMode;
+  const btn=document.getElementById('midi-map-btn');
+  if(midiMapMode){
+    btn.textContent='⬡ MAPEANDO...';
+    btn.style.borderColor='#ffc800';
+    btn.style.color='#ffc800';
+    btn.style.background='rgba(255,200,0,0.1)';
+    document.body.classList.add('midi-mapping');
+    attachMidiListeners();
+  } else {
+    btn.textContent='⬡ MIDI MAP';
+    btn.style.background='';
+    btn.style.borderColor='rgba(255,200,0,0.4)';
+    btn.style.color='rgba(255,200,0,0.6)';
+    document.body.classList.remove('midi-mapping');
+    removeMidiOverlays();
+    if(midiWaitingEl){midiWaitingEl=null;midiWaitingMeta=null;}
+  }
+}
+
+function addMidiOverlays(){
+  removeMidiOverlays();
+  document.querySelectorAll('[data-midi-id]').forEach(el=>{
+    const wrap=el.closest('.midi-wrap');
+    if(!wrap) return;
+    wrap.onclick=function(e){
+      if(!midiMapMode) return;
+      // Quitar waiting anterior
+      document.querySelectorAll('.midi-wrap.waiting').forEach(w=>w.classList.remove('waiting'));
+      wrap.classList.add('waiting');
+      midiWaitingEl=wrap;
+      midiWaitingMeta={
+        type:'layer',
+        id:parseInt(el.dataset.midiId),
+        param:el.dataset.midiParam,
+        min:parseFloat(el.dataset.midiMin||0),
+        max:parseFloat(el.dataset.midiMax||1)
+      };
+    };
+  });
+}
+
+function removeMidiOverlays(){
+  document.querySelectorAll('.midi-wrap').forEach(w=>{
+    w.onclick=null;
+    w.classList.remove('waiting');
+  });
+}
+
+function highlightMappable(on){
+  const style=on?'1px solid rgba(255,200,0,0.6)':'';
+  const shadow=on?'0 0 6px rgba(255,200,0,0.3)':'';
+  // Sliders globales
+  ['v-r','v-spd','v-sm'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.style.outline=style;el.style.boxShadow=shadow;}
+  });
+  // Faders
+  for(let i=0;i<4;i++){
+    const el=document.getElementById('ft-'+i);
+    if(el){el.style.outline=style;el.style.boxShadow=shadow;}
+  }
+}
+
+function startMidiLearn(el, meta){
+  if(!midiMapMode) return;
+  if(midiWaitingEl&&midiWaitingEl.classList) midiWaitingEl.classList.remove('waiting');
+  midiWaitingEl=el;
+  midiWaitingMeta=meta;
+  if(el.classList) el.classList.add('waiting');
+}
+
+function saveMidiMapping(){
+  try{localStorage.setItem('nodoscope_midi',JSON.stringify(midiMapping));}catch(e){}
+}
+function loadMidiMapping(){
+  try{const s=localStorage.getItem('nodoscope_midi');if(s)midiMapping=JSON.parse(s);}catch(e){}
+}
+loadMidiMapping();
+initMIDI();
+// ─────────────────────────────────────────────────────────
+
+function toggleFreeze(){
+  G.freeze=!G.freeze;
+  const b1=document.getElementById('bb-freeze');
+  if(b1) b1.classList.toggle('on',G.freeze);
+  const b2=document.getElementById('mob-freeze');
+  if(b2) b2.classList.toggle('on',G.freeze);
+}
+function toggleFullscreen(){
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+
+// ══════════════════════════════════════════════════════
+//  LÓGICA MÓVIL
+// ══════════════════════════════════════════════════════
+
+let mobLayerIdx = 0;   // índice de la capa activa en el panel móvil
+let mobTabName  = 'mix';
+
+// ── Seleccionar capa ──
+function mobSelLayer(idx){
+  mobLayerIdx = idx;
+  // Actualizar botones selector
+  document.querySelectorAll('.mob-lbtn').forEach((b,i)=>{
+    b.classList.toggle('active', i === idx);
+  });
+  // Actualizar dot y toggle
+  mobUpdateHeader();
+  // Re-renderizar pestaña activa
+  mobRender();
+}
+
+function mobGeoColorHTML(){
+  const L=layers[mobLayerIdx];
+  if(!L) return '';
+  const col=COLS[L.ci % COLS.length].h, id=L.id;
+  return '<div class="mx-geo">' +
+    '<div class="geo-grid">' + GEOS.map(function(g,i){
+      return '<button class="gb'+(L.geo===g?' active':'')+'" onclick="setGeo('+id+',\''+g+'\')" style="'+(L.geo===g?'border-color:'+col+';color:'+col:'')+'">'+GEO_LABELS[i]+'</button>';
+    }).join('') + '</div>' +
+    '<div class="col-grid">' + COLS.map(function(c,i){
+      return '<div class="col-swatch'+(L.ci===i?' active':'')+'" style="background:'+c.h+';'+(L.ci===i?'outline:2px solid #fff;':'')+'" onclick="getL('+id+').ci='+i+';mobUpdateHeader();mobRender()"></div>';
+    }).join('') + '</div></div>';
+}
+
+function mobUpdateHeader(){
+  const L = layers[mobLayerIdx];
+  if(!L) return;
+  const C = COLS[L.ci % COLS.length];
+  const dot = document.getElementById('mob-layer-dot');
+  const tog = document.getElementById('mob-layer-tog');
+  var top=document.getElementById('mob-top'); if(top) top.style.setProperty('--lc', C.h);
+  if(dot){ dot.style.background = C.h; dot.style.boxShadow = `0 0 6px ${C.h}`; }
+  if(tog){ tog.textContent = L.on ? 'ON' : 'OFF'; tog.className = L.on ? 'on' : ''; }
+}
+
+function mobTogLayer(){
+  const L = layers[mobLayerIdx];
+  if(!L) return;
+  togL(L.id);   // función original
+  mobUpdateHeader();
+  if(mobTabName === 'mix') mobBuildMixer();
+}
+
+// ── MIXER móvil: faders de las 4 capas ──
+let mobMixerPrev = 'audio';
+function mobToggleMixer(){
+  if(mobTabName === 'mix'){ mobTab(mobMixerPrev || 'forma'); }
+  else { mobMixerPrev = mobTabName; mobTab('mix'); }
+}
+function mobMixToggle(id){
+  togL(id);
+  mobBuildMixer();
+  mobUpdateHeader();
+}
+function mobMixSet(i, v){
+  const L = layers[i]; if(!L) return;
+  L.opacity = v;
+  const pct = Math.round(v*100);
+  const f = document.getElementById('mx-ff-'+i);
+  const t = document.getElementById('mx-fth-'+i);
+  const p = document.getElementById('mx-fpct-'+i);
+  if(f) f.style.height = pct+'%';
+  if(t) t.style.bottom = 'calc('+pct+'% - 2.5px)';
+  if(p) p.textContent = pct+'%';
+}
+function mobBuildMixer(){
+  const cont = document.getElementById('mp-mix');
+  if(!cont) return;
+  let h = mobGeoColorHTML() + '<div class="bb-faders-row">';
+  layers.forEach(function(L, i){
+    const col = COLS[L.ci % COLS.length].h;
+    const op = L.on ? 1 : 0.4;
+    const pct = Math.round((L.opacity ?? 1) * 100);
+    h += '<div class="mx-col"><div class="bb-fw">'
+      + '<button class="bb-fon" style="color:'+col+';border-color:'+col+';opacity:'+op+'" onclick="mobMixToggle('+L.id+')">'+(L.on?'ON':'OFF')+'</button>'
+      + '<div class="mx-hit" data-i="'+i+'"><div class="bb-ft" id="mx-ft-'+i+'">'
+      + '<div class="bb-ff" id="mx-ff-'+i+'" style="height:'+pct+'%;background:'+col+';opacity:'+(L.on?0.35:0.15)+'"></div>'
+      + '<div class="bb-fth" id="mx-fth-'+i+'" style="bottom:calc('+pct+'% - 2.5px);background:'+col+';box-shadow:0 0 5px '+col+';opacity:'+op+'"></div>'
+      + '</div></div>'
+      + '<span class="bb-fpct" id="mx-fpct-'+i+'" style="opacity:'+op+'">'+pct+'%</span>'
+      + '</div>'
+      + '<div class="bb-auto"><button class="bb-aut'+(L.autoOn?' on':'')+'" id="maut-'+i+'" onclick="toggleAuto('+i+')">AUTO</button><button class="bb-aus" onclick="autoSpeed('+i+',1)">+</button><button class="bb-aus" onclick="autoSpeed('+i+',-1)">-</button></div>'
+      + '</div>';
+  });
+  cont.innerHTML = h + '</div>';
+  cont.querySelectorAll('.mx-hit').forEach(function(hit){
+    const i = +hit.dataset.i;
+    const set = function(e){
+      const tr = document.getElementById('mx-ft-'+i);
+      if(!tr) return;
+      const r = tr.getBoundingClientRect();
+      mobMixSet(i, Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height)));
+    };
+    hit.addEventListener('pointerdown', function(e){ hit._drag = true; if(layers[i]) layers[i]._drag = true; hit.setPointerCapture(e.pointerId); set(e); });
+    hit.addEventListener('pointermove', function(e){ if(hit._drag) set(e); });
+    hit.addEventListener('pointerup',   function(){ hit._drag = false; if(layers[i]) layers[i]._drag = false; });
+    hit.addEventListener('pointercancel', function(){ hit._drag = false; if(layers[i]) layers[i]._drag = false; });
+  });
+}
+
+// ── Cambiar pestaña ──
+function mobTab(name){
+  mobTabName = name;
+  document.querySelectorAll('.mtab').forEach((b,i)=>{
+    b.classList.toggle('active', ['audio','forma','mov','fx'][i] === name);
+  });
+  document.querySelectorAll('.mpanel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('mp-'+name);
+  if(panel) panel.classList.add('active');
+  const mxb = document.getElementById('mob-mixer-btn');
+  if(mxb) mxb.classList.toggle('on', name==='mix');
+  const mxw = document.getElementById('mob-mixer-wrap');
+  if(mxw) mxw.style.display = (name==='mix') ? 'none' : '';
+  const mobEl = document.getElementById('mob');
+  if(mobEl) mobEl.classList.toggle('mixon', name==='mix');
+  if(name !== 'audio') mobRender();
+}
+
+// ── Renderizar contenido de la capa activa en la pestaña activa ──
+function mobRender(){
+  if(!isMob()) return;
+  const name = mobTabName;
+  if(name === 'audio') return;
+  if(name === 'mix'){ mobBuildMixer(); return; }
+  const cont = document.getElementById('mp-' + name);
+  if(!cont) return;
+  const L = layers[mobLayerIdx];
+  if(!L) return;
+  const C = COLS[L.ci % COLS.length], col = C.h;
+  const id = L.id;
+
+  // IDs con prefijo "m_" para no chocar con desktop
+  const uid = `m_${name}_${id}`;
+
+  if(name === 'forma'){
+    cont.innerHTML = `
+      <div class="lsec">GEOMETRÍA</div>
+      <div class="geo-grid">
+        ${GEOS.map((g,i)=>`<button class="gb${L.geo===g?' active':''}" onclick="setGeo(${id},'${g}')" style="${L.geo===g?'border-color:'+col+';color:'+col:''}">${GEO_LABELS[i]}</button>`).join('')}
+      </div>
+
+      <div class="lsec">COLOR</div>
+      <div class="col-grid">
+        ${COLS.map((c,i)=>`<div class="col-swatch${L.ci===i?' active':''}" style="background:${c.h};${L.ci===i?'outline:2px solid #fff;':''}" onclick="getL(${id}).ci=${i};mobUpdateHeader();mobRender()"></div>`).join('')}
+      </div>
+
+      <div class="lsec">FORMA</div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">DENSIDAD NODOS</label><span class="val" id="${uid}_d">${L.density}</span></div>
+        <input type="range" min="6" max="${L.geo==='torus'?112:L.geo==='dna'?150:100}" value="${L.density}"
+          oninput="const L=getL(${id});L.density=+this.value;document.getElementById('${uid}_d').textContent=this.value;buildNodes(L);saveGeoState(L)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">TAMAÑO NODOS</label><span class="val" id="${uid}_ns">${L.nodeSize}</span></div>
+        <input type="range" min="0" max="20" step="0.5" value="${L.nodeSize}"
+          oninput="const L=getL(${id});L.nodeSize=+this.value;document.getElementById('${uid}_ns').textContent=(+this.value).toFixed(1);saveGeoState(L)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">CONEXIONES</label><span class="val" id="${uid}_c">${L.links}</span></div>
+        <input type="range" min="5" max="20" value="${L.links}"
+          oninput="const L=getL(${id});L.links=+this.value;document.getElementById('${uid}_c').textContent=this.value;buildNodes(L);saveGeoState(L)">
+      </div>
+
+      <div class="lsec">POSICIÓN</div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">OFFSET X</label><span class="val" id="${uid}_ox">${Math.round(L.ox*100)}</span></div>
+        <input type="range" min="-40" max="40" value="${Math.round(L.ox*100)}"
+          oninput="const L=getL(${id});L.ox=+this.value/100;document.getElementById('${uid}_ox').textContent=this.value;saveGeoState(L)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">OFFSET Y</label><span class="val" id="${uid}_oy">${Math.round(L.oy*100)}</span></div>
+        <input type="range" min="-40" max="40" value="${Math.round(L.oy*100)}"
+          oninput="const L=getL(${id});L.oy=+this.value/100;document.getElementById('${uid}_oy').textContent=this.value;saveGeoState(L)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">RADIO +/-</label><span class="val" id="${uid}_rad">${(L.rad||0)}</span></div>
+        <input type="range" min="-50" max="100" value="${L.rad||0}"
+          oninput="const L=getL(${id});L.rad=+this.value;document.getElementById('${uid}_rad').textContent=this.value;saveGeoState(L)">
+      </div>
+
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">BRILLO NODOS</label><span class="val" id="${uid}_g">${L.glow}</span></div>
+        <input type="range" min="0" max="40" value="${L.glow}"
+          oninput="getL(${id}).glow=+this.value;document.getElementById('${uid}_g').textContent=this.value">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">OPACIDAD LÍNEAS</label><span class="val" id="${uid}_lo">${(L.lineOpacity??1).toFixed(2)}</span></div>
+        <input type="range" min="0" max="1" step="0.01" value="${L.lineOpacity??1}"
+          oninput="getL(${id}).lineOpacity=+this.value;document.getElementById('${uid}_lo').textContent=(+this.value).toFixed(2)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">OPACIDAD NODOS</label><span class="val" id="${uid}_no">${(L.nodeOpacity??1).toFixed(2)}</span></div>
+        <input type="range" min="0" max="1" step="0.01" value="${L.nodeOpacity??1}"
+          oninput="getL(${id}).nodeOpacity=+this.value;document.getElementById('${uid}_no').textContent=(+this.value).toFixed(2)">
+      </div>
+
+      <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
+        <span>FRECUENCIA</span>
+        <div style="display:flex;gap:3px">
+          <button class="bb-tog ${(L.audioOn!==false&&analyser)?'on':''}" id="mob-btn-audio-freq" style="font-size:7px;padding:2px 6px;${(L.audioOn!==false&&analyser)?'border-color:'+col+';color:'+col:''}" onclick="toggleLayerAudio(${id})">AUDIO</button>
+          <button class="bb-tog ${L.bpmSync?'on':''}" style="font-size:7px;padding:2px 6px;${L.bpmSync?'border-color:'+col+';color:'+col:''}"
+            onclick="const L=getL(${id});L.bpmSync=!L.bpmSync;mobRender()">BPM SYNC</button>
+          <button class="lrst" onclick="const L=getL(${id});L.band=null;L.amp=1;saveGeoState(L);mobRender()">↺</button>
+        </div>
+      </div>
+      <div class="band-grid">
+        ${BANDS.map((b,i)=>{
+          const isActive = L.band===b;
+          const s = isActive ? `border-color:${col};color:${col};background:rgba(255,255,255,0.1)` : '';
+          return `<button class="bb${isActive?' active':''}" style="${s}" onclick="setBand(${id},'${b}')">${BNAMES[i]}</button>`;
+        }).join('')}
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">AMPLITUD</label><span class="val" id="${uid}_a">${L.amp.toFixed(1)}</span></div>
+        <input type="range" min="0" max="5" step="0.1" value="${L.amp}"
+          oninput="const L=getL(${id});L.amp=+this.value;if(L.band){if(!L.bandStates)L.bandStates={};L.bandStates[L.band]={amp:L.amp};}document.getElementById('${uid}_a').textContent=(+this.value).toFixed(1)">
+      </div>
+    `;
+  }
+
+  if(name === 'mov'){
+    cont.innerHTML = `
+      <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
+        <span>ROTACIÓN</span>
+        <button class="lrst" onclick="const L=getL(${id});L.rotX=0.5;L.rotY=0;saveGeoState(L);mobRender()">↺</button>
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">ROT X</label><span class="val" id="${uid}_rx">${(L.rotX||0).toFixed(2)}</span></div>
+        <input type="range" min="-3" max="3" step="0.05" value="${L.rotX||0}"
+          oninput="const L=getL(${id});L.rotX=+this.value;document.getElementById('${uid}_rx').textContent=(+this.value).toFixed(2);saveGeoState(L)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">ROT Y</label><span class="val" id="${uid}_ry">${(L.rotY||0).toFixed(2)}</span></div>
+        <input type="range" min="-3" max="3" step="0.05" value="${L.rotY||0}"
+          oninput="const L=getL(${id});L.rotY=+this.value;document.getElementById('${uid}_ry').textContent=(+this.value).toFixed(2);saveGeoState(L)">
+      </div>
+
+      <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
+        <span>DRIFT</span>
+        <button class="lrst" onclick="resetDrift(${id});mobRender()">↺</button>
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">DRIFT X</label><span class="val" id="${uid}_dx">${(L.driftX||0).toFixed(2)}</span></div>
+        <input type="range" min="-5" max="5" step="0.01" value="${L.driftX||0}"
+          oninput="const L=getL(${id});L.driftX=+this.value;document.getElementById('${uid}_dx').textContent=(+this.value).toFixed(2);saveGeoState(L)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">DRIFT Y</label><span class="val" id="${uid}_dy">${(L.driftY||0).toFixed(2)}</span></div>
+        <input type="range" min="-5" max="5" step="0.01" value="${L.driftY||0}"
+          oninput="const L=getL(${id});L.driftY=+this.value;document.getElementById('${uid}_dy').textContent=(+this.value).toFixed(2);saveGeoState(L)">
+      </div>
+      <div class="ctrl">
+        <button class="bb-tog${L.driftBounce?' on':''}" style="width:100%;padding:9px 6px;font-size:10px;letter-spacing:1px;${L.driftBounce?'border-color:'+col+';color:'+col:''}" onclick="const L=getL(${id});L.driftBounce=!L.driftBounce;saveGeoState(L);mobRender()">BOUNCE</button>
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">LÍMITE</label><span class="val" id="${uid}_dl">${(L.driftLimit||0.8).toFixed(2)}</span></div>
+        <input type="range" min="0.1" max="1" step="0.01" value="${L.driftLimit||0.8}"
+          oninput="const L=getL(${id});L.driftLimit=+this.value;document.getElementById('${uid}_dl').textContent=(+this.value).toFixed(2);saveGeoState(L)">
+      </div>
+
+      <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
+        <span>ORBIT</span>
+        <button class="lrst" onclick="resetOrbit(${id});mobRender()">↺</button>
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">RADIO</label><span class="val" id="${uid}_or">${(L.orbitR||0).toFixed(2)}</span></div>
+        <input type="range" min="0" max="0.8" step="0.01" value="${L.orbitR||0}"
+          oninput="const L=getL(${id});L.orbitR=+this.value;document.getElementById('${uid}_or').textContent=(+this.value).toFixed(2);saveGeoState(L)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">VELOCIDAD</label><span class="val" id="${uid}_os">${(L.orbitSpd||0).toFixed(2)}</span></div>
+        <input type="range" min="-3" max="3" step="0.05" value="${L.orbitSpd||0}"
+          oninput="const L=getL(${id});L.orbitSpd=+this.value;document.getElementById('${uid}_os').textContent=(+this.value).toFixed(2);saveGeoState(L)">
+      </div>
+    `;
+  }
+
+  if(name === 'fx'){
+    cont.innerHTML = `
+      <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
+        <span>SHAKE</span>
+        <button class="lrst" onclick="resetShake(${id});mobRender()">↺</button>
+      </div>
+      <div class="ltabs">
+        <button class="ltab${L.shakeOn?' active':''}" style="${L.shakeOn?'border-color:'+col+';color:'+col:''}" onclick="const L=getL(${id});L.shakeOn=!L.shakeOn;saveGeoState(L);mobRender()">${L.shakeOn?'● ON':'○ OFF'}</button>
+        <button class="ltab${L.shakeSource==='bpm'?' active':''}" style="${L.shakeSource==='bpm'?'border-color:'+col+';color:'+col:''}" onclick="const L=getL(${id});L.shakeSource=L.shakeSource==='bpm'?'audio':'bpm';saveGeoState(L);mobRender()">BPM</button>
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">INTENSIDAD</label><span class="val" id="${uid}_shi">${(L.shakeInt||0).toFixed(2)}</span></div>
+        <input type="range" min="0" max="3" step="0.05" value="${L.shakeInt||0}"
+          oninput="const L=getL(${id});L.shakeInt=+this.value;document.getElementById('${uid}_shi').textContent=(+this.value).toFixed(2);saveGeoState(L)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">DECAY</label><span class="val" id="${uid}_shd">${(L.shakeDecay||0.4).toFixed(2)}</span></div>
+        <input type="range" min="0.05" max="0.95" step="0.05" value="${L.shakeDecay||0.4}"
+          oninput="const L=getL(${id});L.shakeDecay=+this.value;document.getElementById('${uid}_shd').textContent=(+this.value).toFixed(2);saveGeoState(L)">
+      </div>
+
+      <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
+        <span>NOISE</span>
+        <button class="lrst" onclick="const L=getL(${id});L.noiseInt=0;L.noiseSpd=1;saveGeoState(L);mobRender()">↺</button>
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">INTENSIDAD</label><span class="val" id="${uid}_ni">${(L.noiseInt||0).toFixed(2)}</span></div>
+        <input type="range" min="0" max="1" step="0.01" value="${L.noiseInt||0}"
+          oninput="const L=getL(${id});L.noiseInt=+this.value;document.getElementById('${uid}_ni').textContent=(+this.value).toFixed(2);saveGeoState(L)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">VELOCIDAD NOISE</label><span class="val" id="${uid}_ns">${(L.noiseSpd||1).toFixed(1)}</span></div>
+        <input type="range" min="0.1" max="5" step="0.1" value="${L.noiseSpd||1}"
+          oninput="const L=getL(${id});L.noiseSpd=+this.value;document.getElementById('${uid}_ns').textContent=(+this.value).toFixed(1);saveGeoState(L)">
+      </div>
+
+      <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
+        <span>ESTELA / TRAIL</span>
+        <button class="lrst" onclick="resetEstela(${id})">↺</button>
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">PERSISTENCIA</label><span class="val" id="${uid}_tr">${(L.trail||0).toFixed(2)}</span></div>
+        <input type="range" min="0" max="0.98" step="0.01" value="${L.trail||0}"
+          oninput="getL(${id}).trail=+this.value;document.getElementById('${uid}_tr').textContent=(+this.value).toFixed(2)">
+      </div>
+
+      <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
+        <span>SCATTER</span>
+        <button class="lrst" onclick="const L=getL(${id});L.scatterInt=0;L.scatterOn=false;saveGeoState(L);mobRender()">↺</button>
+      </div>
+      <div class="ltabs">
+        <button class="ltab${L.scatterOn?' active':''}" style="${L.scatterOn?'border-color:'+col+';color:'+col:''}" onclick="const L=getL(${id});L.scatterOn=!L.scatterOn;saveGeoState(L);mobRender()">${L.scatterOn?'● ON':'○ OFF'}</button>
+        <button class="ltab${L.scatterSource==='bpm'?' active':''}" style="${L.scatterSource==='bpm'?'border-color:'+col+';color:'+col:''}" onclick="const L=getL(${id});L.scatterSource=L.scatterSource==='bpm'?'audio':'bpm';saveGeoState(L);mobRender()">BPM</button>
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">INTENSIDAD</label><span class="val" id="${uid}_si">${(L.scatterInt||0).toFixed(2)}</span></div>
+        <input type="range" min="0" max="1" step="0.01" value="${L.scatterInt||0}"
+          oninput="const L=getL(${id});L.scatterInt=+this.value;document.getElementById('${uid}_si').textContent=(+this.value).toFixed(2);saveGeoState(L)">
+      </div>
+
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">DECAY</label><span class="val" id="${uid}_sd">${(L.scatterDecay||0.3).toFixed(2)}</span></div>
+        <input type="range" min="0.05" max="0.95" step="0.05" value="${L.scatterDecay||0.3}"
+          oninput="const L=getL(${id});L.scatterDecay=+this.value;document.getElementById('${uid}_sd').textContent=(+this.value).toFixed(2);saveGeoState(L)">
+      </div>
+
+      <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
+        <span>MIRROR</span>
+        <button class="lrst" onclick="const L=getL(${id});L.mirrorH=false;L.mirrorV=false;L.mirrorX=0;L.mirrorY=0;saveGeoState(L);mobRender()">↺</button>
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">DIST X</label><span class="val" id="${uid}_mx">${(L.mirrorX||0).toFixed(2)}</span></div>
+        <input type="range" min="0" max="1" step="0.01" value="${L.mirrorX||0}"
+          oninput="const L=getL(${id});L.mirrorX=+this.value;L.mirrorH=L.mirrorX>0;if(L.mirrorH)L.driftBounce=true;document.getElementById('${uid}_mx').textContent=(+this.value).toFixed(2);saveGeoState(L)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">DIST Y</label><span class="val" id="${uid}_my">${(L.mirrorY||0).toFixed(2)}</span></div>
+        <input type="range" min="0" max="1" step="0.01" value="${L.mirrorY||0}"
+          oninput="const L=getL(${id});L.mirrorY=+this.value;L.mirrorV=L.mirrorY>0;if(L.mirrorV)L.driftBounce=true;document.getElementById('${uid}_my').textContent=(+this.value).toFixed(2);saveGeoState(L)">
+      </div>
+
+      <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
+        <span>ZOOM PULSE</span>
+        <button class="lrst" onclick="resetZoom(${id})">↺</button>
+      </div>
+      <button class="efx-toggle ${L.zoom?'':'off'}" style="border:1px solid ${col};color:${col}" onclick="toggleLayerZoom(${id});mobRender()">ZOOM PULSE ${L.zoom?'● ON':'○ OFF'}</button>
+      <div style="display:${L.zoom?'flex':'none'};flex-direction:column;gap:6px">
+        <div class="ctrl">
+          <div class="crow"><label style="color:${col}">INTENSIDAD</label><span class="val" id="${uid}_zi">${L.zoomInt.toFixed(2)}</span></div>
+          <input type="range" min="0.05" max="1" step="0.05" value="${L.zoomInt}"
+            oninput="getL(${id}).zoomInt=+this.value;document.getElementById('${uid}_zi').textContent=(+this.value).toFixed(2)">
+        </div>
+        <div class="ctrl">
+          <div class="crow"><label style="color:${col}">DECAY</label><span class="val" id="${uid}_zd">${L.zoomDecay.toFixed(2)}</span></div>
+          <input type="range" min="0.5" max="0.98" step="0.01" value="${L.zoomDecay}"
+            oninput="getL(${id}).zoomDecay=+this.value;document.getElementById('${uid}_zd').textContent=(+this.value).toFixed(2)">
+        </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">SENSIBILIDAD</label><span class="val" id="${uid}_zs">${((BAND_DETECT[L.band]||{thr:0.1}).thr).toFixed(2)}</span></div>
+        <input type="range" min="0.005" max="0.5" step="0.005" value="${(BAND_DETECT[L.band]||{thr:0.1}).thr}"
+          oninput="const bd=BAND_DETECT[getL(${id}).band];if(bd)bd.thr=+this.value;document.getElementById('${uid}_zs').textContent=(+this.value).toFixed(3)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">AMPLITUD</label><span class="val" id="${uid}_za">${L.amp.toFixed(1)}</span></div>
+        <input type="range" min="0" max="5" step="0.1" value="${L.amp}"
+          oninput="const L=getL(${id});L.amp=+this.value;if(L.band){if(!L.bandStates)L.bandStates={};L.bandStates[L.band]={amp:L.amp};}document.getElementById('${uid}_za').textContent=(+this.value).toFixed(1)">
+      </div>
+      </div>
+
+      <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
+        <span>TENTÁCULOS</span>
+        <button class="lrst" onclick="resetTent(${id})">↺</button>
+      </div>
+      <button class="efx-toggle ${L.tent?'':'off'}" style="border:1px solid ${col};color:${col}" onclick="toggleTent(${id});mobRender()">TENTÁCULOS ${L.tent?'● ON':'○ OFF'}</button>
+      <div style="display:${L.tent?'flex':'none'};flex-direction:column;gap:6px">
+        <div class="ctrl">
+          <div class="crow"><label style="color:${col}">CANTIDAD</label><span class="val" id="${uid}_tn">${L.tentN}</span></div>
+          <input type="range" min="1" max="20" value="${L.tentN}"
+            oninput="getL(${id}).tentN=+this.value;document.getElementById('${uid}_tn').textContent=this.value">
+        </div>
+        <div class="ctrl">
+          <div class="crow"><label style="color:${col}">LONGITUD</label><span class="val" id="${uid}_tl">${L.tentLen.toFixed(1)}</span></div>
+          <input type="range" min="0.1" max="5" step="0.1" value="${L.tentLen}"
+            oninput="getL(${id}).tentLen=+this.value;document.getElementById('${uid}_tl').textContent=(+this.value).toFixed(1)">
+        </div>
+      </div>
+    `;
+  }
+
+  mobUpdateHeader();
+}
+
+// ── Sync BPM modes ──
+function mobSyncBPM(){
+  ['auto','tap','man','off'].forEach(m=>{
+    const mob  = document.getElementById('mob-bm-'+m);
+    const orig = document.getElementById('bm-'+(m==='man'?'manual':m));
+    if(mob && orig) mob.className = orig.className;
+  });
+}
+
+// ── Sync audio button ──
+function mobSyncAudio(){
+  const mb = document.getElementById('mob-audio-btn');
+  const ob = document.getElementById('bb-audio-btn');
+  if(mb && ob){ mb.textContent = ob.textContent; mb.className = ob.className; }
+}
+
+// ── Sync beat dot ──
+(function patchBPM(){
+  const orig = updateBPMDisplay;
+  window.updateBPMDisplay = function(){
+    orig();
+    const md = document.getElementById('mob-beat-dot');
+    const mv = document.getElementById('mob-bpm-val');
+    const od = document.getElementById('beat-dot-b');
+    const ov = document.getElementById('bpm-val-b');
+    if(md && od){ md.style.background=od.style.background; md.style.boxShadow=od.style.boxShadow; }
+    if(mv && ov) mv.textContent = ov.textContent;
+  };
+})();
+
+// ── Inicializar panel móvil tras el INIT ──
+window.addEventListener('DOMContentLoaded', ()=>{
+  setTimeout(()=>{
+    if(isMob()){
+      mobUpdateHeader();
+      mobTab('mix');
+    }
+  }, 100);
+});
+
+// INIT — 4 capas fijas
+const La=defaultLayer(0); La.defaultCi=0; buildNodes(La); layers.push(La);
+const Lb=defaultLayer(1); Lb.on=false; Lb.ci=1; Lb.defaultCi=1; buildNodes(Lb); layers.push(Lb);
+const Lc=defaultLayer(2); Lc.on=false; Lc.collapsed=true; Lc.ci=2; Lc.defaultCi=2; buildNodes(Lc); layers.push(Lc);
+const Ld=defaultLayer(3); Ld.on=false; Ld.collapsed=true; Ld.ci=3; Ld.defaultCi=3; buildNodes(Ld); layers.push(Ld);
+renderUI();
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

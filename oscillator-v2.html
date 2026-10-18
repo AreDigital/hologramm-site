@@ -519,6 +519,14 @@ input[type=range]::-webkit-slider-thumb,.bb-range::-webkit-slider-thumb,.bb-gran
 @media (min-width:861px){.bb-global .bb-gctrl{margin:6px 0}
 #bottombar .bb-col:not(.bb-global){gap:12px}}
 </style>
+<style id="slider-pro">
+/* ===== Sliders: manija tipo mixer + barra rellena ===== */
+html body input[type=range]{-webkit-appearance:none!important;appearance:none!important;background:transparent!important;height:22px!important;border-radius:0!important;margin:0;outline:none}
+html body input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:3px;background:linear-gradient(90deg,rgba(255,255,255,.14) var(--fa,0%),rgba(0,255,224,.55) var(--fa,0%),rgba(0,255,224,.55) var(--fb,0%),rgba(255,255,255,.14) var(--fb,0%))}
+html body input[type=range]::-moz-range-track{height:5px;border-radius:3px;background:linear-gradient(90deg,rgba(255,255,255,.14) var(--fa,0%),rgba(0,255,224,.55) var(--fa,0%),rgba(0,255,224,.55) var(--fb,0%),rgba(255,255,255,.14) var(--fb,0%))}
+html body input[type=range]::-webkit-slider-thumb{-webkit-appearance:none!important;width:32px!important;height:20px!important;margin-top:-7.5px!important;border-radius:4px!important;border:0!important;background:linear-gradient(90deg,transparent 12px,rgba(0,0,0,.55) 12px,rgba(0,0,0,.55) 13px,transparent 13px,transparent 19px,rgba(0,0,0,.55) 19px,rgba(0,0,0,.55) 20px,transparent 20px),linear-gradient(rgba(255,255,255,.55),rgba(0,0,0,.28)),var(--p)!important;box-shadow:0 2px 6px rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,255,255,.3)!important;cursor:grab}
+html body input[type=range]::-moz-range-thumb{width:32px;height:20px;border-radius:4px;border:0;background:linear-gradient(rgba(255,255,255,.55),rgba(0,0,0,.28)),var(--p);box-shadow:0 2px 6px rgba(0,0,0,.65),inset 0 0 0 1px rgba(255,255,255,.3)}
+</style>
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -2592,6 +2600,25 @@ window.addEventListener('DOMContentLoaded', ()=>{
     }
   }, 100);
 });
+
+
+// ── Barra rellena de los sliders (desde el borde, o desde el 0 si va a ambos lados) ──
+function sliderFill(el){
+  const mn=+el.min||0, mx=el.max===''?100:+el.max, v=+el.value, span=(mx-mn)||1;
+  const pos=Math.max(0,Math.min(100,(v-mn)/span*100));
+  const zero=(mn<0&&mx>0)?Math.max(0,Math.min(100,(0-mn)/span*100)):0;
+  const a=Math.min(zero,pos), b=Math.max(zero,pos);
+  const key=a.toFixed(1)+'|'+b.toFixed(1);
+  if(el._fk===key) return;
+  el._fk=key;
+  el.style.setProperty('--fa',a+'%');
+  el.style.setProperty('--fb',b+'%');
+}
+function sliderFillAll(){ document.querySelectorAll('input[type=range]').forEach(sliderFill); }
+document.addEventListener('input',function(e){ if(e.target&&e.target.type==='range') sliderFill(e.target); },true);
+document.addEventListener('dblclick',function(){ setTimeout(sliderFillAll,0); },true);
+setInterval(sliderFillAll,250); // cubre cambios por código, MIDI y paneles que se redibujan
+sliderFillAll();
 
 // INIT — 4 capas fijas
 const La=defaultLayer(0); La.defaultCi=0; buildNodes(La); layers.push(La);

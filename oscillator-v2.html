@@ -466,13 +466,13 @@ input[type=range]::-webkit-slider-thumb,.bb-range::-webkit-slider-thumb,.bb-gran
 #mp-mix .bb-faders-row{justify-content:center;align-items:stretch;gap:10px;padding:4px 14px 0;width:100%}
 #mp-mix .bb-fw{flex:1;min-width:0;padding:12px 6px 10px;gap:12px}
 #mp-mix .bb-fon{width:100%;max-width:60px;height:28px;font-size:10px;border-radius:6px}
-#mp-mix .bb-ft{width:16px;height:max(64px,calc(var(--mobh) - 333px));border-radius:4px}
-#mp-mix .mx-geo{display:flex;flex-direction:column;gap:5px;padding:2px 2px 8px}
+#mp-mix .bb-ft{width:16px;height:max(56px,calc(var(--mobh) - 331px));border-radius:4px}
+#mp-mix .mx-geo{display:flex;flex-direction:column;gap:5px;padding:0 2px 4px}
 #mp-mix .mx-geo .lsec{margin:2px 0 0;padding:0;font-size:9px}
 #mp-mix .mx-geo .geo-grid{padding:0;gap:5px;margin:0}
-#mp-mix .mx-geo .gb{padding:7px 2px;font-size:9px}
-#mp-mix .mx-geo .col-grid{padding:0;gap:6px;margin:10px 0 0;grid-template-columns:repeat(7,1fr)}
-#mp-mix .mx-geo .col-swatch{height:20px}
+#mp-mix .mx-geo .gb{padding:5px 2px;font-size:9px}
+#mp-mix .mx-geo .col-grid{padding:0;gap:6px;margin:6px 0 0;grid-template-columns:repeat(7,1fr)}
+#mp-mix .mx-geo .col-swatch{height:18px}
 #mp-mix .bb-fw{gap:8px;padding-top:8px;padding-bottom:6px}
 #mp-mix .bb-ft::before{left:-14px;right:-14px;-webkit-mask:linear-gradient(90deg,#000 0 9px,transparent 9px calc(100% - 9px),#000 calc(100% - 9px));mask:linear-gradient(90deg,#000 0 9px,transparent 9px calc(100% - 9px),#000 calc(100% - 9px))}
 #mp-mix .bb-ff{border-radius:4px}
@@ -486,13 +486,15 @@ input[type=range]::-webkit-slider-thumb,.bb-range::-webkit-slider-thumb,.bb-gran
 .bb-aut{flex:1;min-width:0}
 .bb-aus{width:17px;font-size:12px;font-weight:500;line-height:1}
 .bb-aut.on{background:rgba(0,255,224,0.14);border-color:rgba(0,255,224,0.55);color:#e9fffc}
-#mp-mix .mx-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+#mp-mix .mx-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+#mx-dyn{min-height:calc(var(--mobh) - 85px)}
 #mp-mix .mx-col .bb-fw{flex:1}
-#mp-mix .bb-auto{gap:3px}
+#mp-mix .bb-auto{gap:4px;flex-wrap:wrap}
 #mp-mix .bb-aut,#mp-mix .bb-aus{height:26px;border-radius:6px}
-#mp-mix .bb-aut{font-size:9px}
-#mp-mix .bb-aus{width:20px;font-size:15px}
+#mp-mix .bb-aut{font-size:11px;flex:1 1 100%;height:28px}
+#mp-mix .bb-aus{width:auto;flex:1 1 0;height:26px;font-size:16px}
 #mp-mix .bb-faders-row{gap:6px;padding:4px 8px 0}
+#mp-mix #mob-fx-inner{margin-top:0;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07)}
 .mx-hit{padding:0 24px;margin:0 -24px;touch-action:none;position:relative}
 </style>
 <style id="capa-btn">
@@ -634,7 +636,6 @@ input[type=range]::-webkit-slider-thumb,.bb-range::-webkit-slider-thumb,.bb-gran
 
   <!-- Pestañas -->
   <div id="mob-tabs">
-    <button class="mtab" onclick="mobTab('audio')">GLOBAL</button>
     <button class="mtab"        onclick="mobTab('forma')">FORMA</button>
     <button class="mtab"        onclick="mobTab('mov')">MOV</button>
     <button class="mtab"        onclick="mobTab('fx')">FX</button>
@@ -658,8 +659,9 @@ input[type=range]::-webkit-slider-thumb,.bb-range::-webkit-slider-thumb,.bb-gran
       <!-- generado por mobRender() -->
     </div>
 
-    <!-- AUDIO -->
-    <div class="mpanel" id="mp-audio">
+    <!-- MIXER -->
+    <div class="mpanel active" id="mp-mix">
+      <div id="mx-dyn"></div>
       <div id="mob-fx-inner">
 
         <div id="mob-fx-top">
@@ -709,9 +711,6 @@ input[type=range]::-webkit-slider-thumb,.bb-range::-webkit-slider-thumb,.bb-gran
 
       </div>
     </div>
-
-    <!-- MIXER -->
-    <div class="mpanel active" id="mp-mix"></div>
 
   </div><!-- /mob-content -->
   <div id="mob-mixer-wrap" style="display:none"><button id="mob-mixer-btn" class="on" onclick="mobToggleMixer()">MIXER</button></div>
@@ -2170,7 +2169,7 @@ function mobTogLayer(){
 }
 
 // ── MIXER móvil: faders de las 4 capas ──
-let mobMixerPrev = 'audio';
+let mobMixerPrev = 'forma';
 function mobToggleMixer(){
   if(mobTabName === 'mix'){ mobTab(mobMixerPrev || 'forma'); }
   else { mobMixerPrev = mobTabName; mobTab('mix'); }
@@ -2192,7 +2191,7 @@ function mobMixSet(i, v){
   if(p) p.textContent = pct+'%';
 }
 function mobBuildMixer(){
-  const cont = document.getElementById('mp-mix');
+  const cont = document.getElementById('mx-dyn');
   if(!cont) return;
   let h = mobGeoColorHTML() + '<div class="bb-faders-row">';
   layers.forEach(function(L, i){
@@ -2230,7 +2229,7 @@ function mobBuildMixer(){
 function mobTab(name){
   mobTabName = name;
   document.querySelectorAll('.mtab').forEach((b,i)=>{
-    b.classList.toggle('active', ['audio','forma','mov','fx'][i] === name);
+    b.classList.toggle('active', ['forma','mov','fx'][i] === name);
   });
   document.querySelectorAll('.mpanel').forEach(p => p.classList.remove('active'));
   const panel = document.getElementById('mp-'+name);

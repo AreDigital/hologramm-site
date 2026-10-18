@@ -2268,6 +2268,7 @@ function mobTab(name){
   const mobEl = document.getElementById('mob');
   if(mobEl) mobEl.classList.toggle('mixon', name==='mix');
   if(name !== 'audio') mobRender();
+  if(name === 'mix'){ const mc = document.getElementById('mob-content'); if(mc) mc.scrollTop = 0; } // el mixer siempre abre arriba
 }
 
 // ── Renderizar contenido de la capa activa en la pestaña activa ──

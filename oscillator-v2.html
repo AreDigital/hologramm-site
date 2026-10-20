@@ -1545,6 +1545,14 @@ function renderUI(){
           ${COLS.map((c,i)=>`<div class="col-swatch${L.ci===i?' active':''}" style="background:${c.h};${L.ci===i?'outline:2px solid #fff;':''}" onclick="getL(${L.id}).ci=${i};renderUI()"></div>`).join('')}
         </div>
 
+        <div class="lsec" style="display:flex;justify-content:space-between;align-items:center"><span>POSICIÓN</span><button class="lrst" onclick="resetPos(${L.id})">↺</button></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">RADIO +/-</label><span class="val" id="vrad${L.id}">${(L.rad||0)}</span></div>
+        <input type="range" min="-50" max="100" value="${L.rad||0}" oninput="const L=getL(${L.id});L.rad=+this.value;document.getElementById('vrad${L.id}').textContent=this.value;saveGeoState(L)" ondblclick="const L=getL(${L.id}),d=(GEO_DEFAULTS[L.geo]||GEO_DEFAULTS.sphere).rad;L.rad=d;this.value=d;document.getElementById('vrad${L.id}').textContent=d;saveGeoState(L)"></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">OFFSET X</label><span class="val" id="vox${L.id}">${Math.round(L.ox*100)}</span></div>
+        <input type="range" min="-40" max="40" value="${Math.round(L.ox*100)}" oninput="const L=getL(${L.id});L.ox=+this.value/100;document.getElementById('vox${L.id}').textContent=this.value;saveGeoState(L)" ondblclick="const L=getL(${L.id});L.ox=0;this.value=0;document.getElementById('vox${L.id}').textContent=0;saveGeoState(L)"></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">OFFSET Y</label><span class="val" id="voy${L.id}">${Math.round(L.oy*100)}</span></div>
+        <input type="range" min="-40" max="40" value="${Math.round(L.oy*100)}" oninput="const L=getL(${L.id});L.oy=+this.value/100;document.getElementById('voy${L.id}').textContent=this.value;saveGeoState(L)" ondblclick="const L=getL(${L.id});L.oy=0;this.value=0;document.getElementById('voy${L.id}').textContent=0;saveGeoState(L)"></div>
+
         <div class="lsec" style="display:flex;justify-content:space-between;align-items:center"><span>FORMA</span><button class="lrst" onclick="resetForma(${L.id})">↺</button></div>
         <div class="ctrl"><div class="crow"><label style="color:${col}">DENSIDAD NODOS</label><span class="val" id="vd${L.id}">${L.density}</span></div>
         <input type="range" min="6" max="${L.geo==='torus'?112:L.geo==='dna'?150:100}" value="${L.density}" oninput="const L=getL(${L.id});L.density=+this.value;document.getElementById('vd${L.id}').textContent=this.value;buildNodes(L);saveGeoState(L)" ondblclick="const L=getL(${L.id}),d=(GEO_DEFAULTS[L.geo]||GEO_DEFAULTS.sphere).density;L.density=d;this.value=d;document.getElementById('vd${L.id}').textContent=d;buildNodes(L);saveGeoState(L)"></div>
@@ -1559,14 +1567,6 @@ function renderUI(){
         <input type="range" min="0" max="1" step="0.01" value="${L.lineOpacity??1}" oninput="getL(${L.id}).lineOpacity=+this.value;document.getElementById('vlo${L.id}').textContent=(+this.value).toFixed(2)" ondblclick="getL(${L.id}).lineOpacity=1;this.value=1;document.getElementById('vlo${L.id}').textContent='1.00'"></div>
         <div class="ctrl"><div class="crow"><label style="color:${col}">OPACIDAD NODOS</label><span class="val" id="vno${L.id}">${(L.nodeOpacity??1).toFixed(2)}</span></div>
         <input type="range" min="0" max="1" step="0.01" value="${L.nodeOpacity??1}" oninput="getL(${L.id}).nodeOpacity=+this.value;document.getElementById('vno${L.id}').textContent=(+this.value).toFixed(2)" ondblclick="getL(${L.id}).nodeOpacity=1;this.value=1;document.getElementById('vno${L.id}').textContent='1.00'"></div>
-
-        <div class="lsec" style="display:flex;justify-content:space-between;align-items:center"><span>POSICIÓN</span><button class="lrst" onclick="resetPos(${L.id})">↺</button></div>
-        <div class="ctrl"><div class="crow"><label style="color:${col}">RADIO +/-</label><span class="val" id="vrad${L.id}">${(L.rad||0)}</span></div>
-        <input type="range" min="-50" max="100" value="${L.rad||0}" oninput="const L=getL(${L.id});L.rad=+this.value;document.getElementById('vrad${L.id}').textContent=this.value;saveGeoState(L)" ondblclick="const L=getL(${L.id}),d=(GEO_DEFAULTS[L.geo]||GEO_DEFAULTS.sphere).rad;L.rad=d;this.value=d;document.getElementById('vrad${L.id}').textContent=d;saveGeoState(L)"></div>
-        <div class="ctrl"><div class="crow"><label style="color:${col}">OFFSET X</label><span class="val" id="vox${L.id}">${Math.round(L.ox*100)}</span></div>
-        <input type="range" min="-40" max="40" value="${Math.round(L.ox*100)}" oninput="const L=getL(${L.id});L.ox=+this.value/100;document.getElementById('vox${L.id}').textContent=this.value;saveGeoState(L)" ondblclick="const L=getL(${L.id});L.ox=0;this.value=0;document.getElementById('vox${L.id}').textContent=0;saveGeoState(L)"></div>
-        <div class="ctrl"><div class="crow"><label style="color:${col}">OFFSET Y</label><span class="val" id="voy${L.id}">${Math.round(L.oy*100)}</span></div>
-        <input type="range" min="-40" max="40" value="${Math.round(L.oy*100)}" oninput="const L=getL(${L.id});L.oy=+this.value/100;document.getElementById('voy${L.id}').textContent=this.value;saveGeoState(L)" ondblclick="const L=getL(${L.id});L.oy=0;this.value=0;document.getElementById('voy${L.id}').textContent=0;saveGeoState(L)"></div>
 
         <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
           <span>FRECUENCIA</span>
@@ -2440,6 +2440,23 @@ function mobRender(){
 
   if(name === 'forma'){
     cont.innerHTML = `
+      <div class="lsec" style="display:flex;justify-content:space-between;align-items:center"><span>POSICIÓN</span><button class="lrst" onclick="resetPos(${id});mobRender()">↺</button></div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">RADIO +/-</label><span class="val" id="${uid}_rad">${(L.rad||0)}</span></div>
+        <input type="range" min="-50" max="100" value="${L.rad||0}"
+          oninput="const L=getL(${id});L.rad=+this.value;document.getElementById('${uid}_rad').textContent=this.value;saveGeoState(L)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">OFFSET X</label><span class="val" id="${uid}_ox">${Math.round(L.ox*100)}</span></div>
+        <input type="range" min="-40" max="40" value="${Math.round(L.ox*100)}"
+          oninput="const L=getL(${id});L.ox=+this.value/100;document.getElementById('${uid}_ox').textContent=this.value;saveGeoState(L)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">OFFSET Y</label><span class="val" id="${uid}_oy">${Math.round(L.oy*100)}</span></div>
+        <input type="range" min="-40" max="40" value="${Math.round(L.oy*100)}"
+          oninput="const L=getL(${id});L.oy=+this.value/100;document.getElementById('${uid}_oy').textContent=this.value;saveGeoState(L)">
+      </div>
+
       <div class="lsec" style="display:flex;justify-content:space-between;align-items:center"><span>FORMA</span><button class="lrst" onclick="resetForma(${id});mobRender()">↺</button></div>
       <div class="ctrl">
         <div class="crow"><label style="color:${col}">DENSIDAD NODOS</label><span class="val" id="${uid}_d">${L.density}</span></div>
@@ -2471,23 +2488,6 @@ function mobRender(){
         <div class="crow"><label style="color:${col}">OPACIDAD NODOS</label><span class="val" id="${uid}_no">${(L.nodeOpacity??1).toFixed(2)}</span></div>
         <input type="range" min="0" max="1" step="0.01" value="${L.nodeOpacity??1}"
           oninput="getL(${id}).nodeOpacity=+this.value;document.getElementById('${uid}_no').textContent=(+this.value).toFixed(2)">
-      </div>
-
-      <div class="lsec" style="display:flex;justify-content:space-between;align-items:center"><span>POSICIÓN</span><button class="lrst" onclick="resetPos(${id});mobRender()">↺</button></div>
-      <div class="ctrl">
-        <div class="crow"><label style="color:${col}">RADIO +/-</label><span class="val" id="${uid}_rad">${(L.rad||0)}</span></div>
-        <input type="range" min="-50" max="100" value="${L.rad||0}"
-          oninput="const L=getL(${id});L.rad=+this.value;document.getElementById('${uid}_rad').textContent=this.value;saveGeoState(L)">
-      </div>
-      <div class="ctrl">
-        <div class="crow"><label style="color:${col}">OFFSET X</label><span class="val" id="${uid}_ox">${Math.round(L.ox*100)}</span></div>
-        <input type="range" min="-40" max="40" value="${Math.round(L.ox*100)}"
-          oninput="const L=getL(${id});L.ox=+this.value/100;document.getElementById('${uid}_ox').textContent=this.value;saveGeoState(L)">
-      </div>
-      <div class="ctrl">
-        <div class="crow"><label style="color:${col}">OFFSET Y</label><span class="val" id="${uid}_oy">${Math.round(L.oy*100)}</span></div>
-        <input type="range" min="-40" max="40" value="${Math.round(L.oy*100)}"
-          oninput="const L=getL(${id});L.oy=+this.value/100;document.getElementById('${uid}_oy').textContent=this.value;saveGeoState(L)">
       </div>
 
     `;

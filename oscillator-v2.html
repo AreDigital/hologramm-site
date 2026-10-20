@@ -1650,9 +1650,12 @@ function renderUI(){
     </div>`;
 
     div.innerHTML=header+body;
+    div.dataset.li=idx;
+    div.addEventListener('mousedown',()=>{ if(idx!==pcSelLayer) pcSelectLayer(idx); }); // tocar la tarjeta selecciona la capa (y su fader)
     const target = idx % 2 === 0 ? elR : elL;
     if(target) target.appendChild(div);
   });
+  applyPcSel();
 }
 
 function resetDrift(id){const L=getL(id);if(!L)return;L.driftX=0;L.driftY=0;L.driftOx=0;L.driftOy=0;saveGeoState(L);renderUI();}
@@ -1853,8 +1856,27 @@ function buildFaders(){
 
     // Drag
     const track=div.querySelector('.bb-ft');
-    track.addEventListener('mousedown',e=>{faderDrag={i:i,L:L,col:col};updateFader(e,i,L,col);});
+    track.addEventListener('mousedown',e=>{
+      if(i!==pcSelLayer) pcSelectLayer(i); // tocar el fader selecciona la capa Y lo mueve de una
+      faderDrag={i:i,L:L,col:col};updateFader(e,i,L,col);
+    });
+    div.addEventListener('mousedown',()=>{ if(i!==pcSelLayer) pcSelectLayer(i); }); // clic en cualquier parte de la tarjeta selecciona la capa
   });
+  applyPcSel();
+}
+
+// ── PC: capa seleccionada (se resalta su tarjeta y su fader) ──
+let pcSelLayer=0;
+function pcSelectLayer(i){ pcSelLayer=i; applyPcSel(); }
+function applyPcSel(){
+  const mk=(el,j)=>{
+    const L=layers[j]; if(!el||!L) return;
+    const c=COLS[L.ci%COLS.length].h, on=(j===pcSelLayer);
+    el.style.borderColor=on?c:'';
+    el.style.boxShadow=on?'0 0 0 1px '+c+'66,0 0 12px '+c+'33':'';
+  };
+  document.querySelectorAll('#faders-container .bb-fw').forEach((fw,j)=>mk(fw,j));
+  document.querySelectorAll('#layers-ui-l .lcard,#layers-ui-r .lcard').forEach(card=>mk(card,+card.dataset.li));
 }
 
 // ── AUTO fader: sube y baja solo (ida y vuelta) ──
@@ -2334,7 +2356,7 @@ function mobBuildMixer(){
       mobMixSet(i, Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height)));
     };
     hit.addEventListener('pointerdown', function(e){
-      if(i !== mobLayerIdx){ mobSelLayerSoft(i); hit._drag = false; return; } // primer toque: solo selecciona la capa, no mueve el fader
+      mobSelLayerSoft(i); // tocar el fader selecciona la capa Y lo mueve de una
       hit._drag = true; if(layers[i]) layers[i]._drag = true; hit.setPointerCapture(e.pointerId); set(e);
     });
     hit.addEventListener('pointermove', function(e){ if(hit._drag) set(e); });

@@ -567,6 +567,9 @@ html body,html body *{text-rendering:geometricPrecision;-webkit-font-smoothing:a
 #mp-mix .mx-geo .col-grid{order:-1;margin:8px 0 6px;grid-template-columns:repeat(8,min(38px,calc((100% - 42px)/8)));justify-content:space-between;gap:0}
 }
 </style>
+<style id="mx-botones-toque">
+#mp-mix .bb-fon,#mp-mix .bb-aut,#mp-mix .bb-aus{touch-action:manipulation}
+</style>
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -2345,7 +2348,10 @@ function mobBuildMixer(){
   cont.innerHTML = h + '</div>';
   const fz = document.getElementById('mx-freq'); if(fz) fz.innerHTML = mobFreqHTML();
   cont.querySelectorAll('.bb-fw').forEach(function(fw,i){   // tocar cualquier parte de la tarjeta del fader selecciona la capa
-    fw.addEventListener('pointerdown', function(){ if(i !== mobLayerIdx) mobSelLayerSoft(i); });
+    fw.addEventListener('pointerdown', function(e){
+      if(e.target.closest && e.target.closest('.bb-fon,.bb-auto')) return; // los botones ON/OFF y AUTO hacen su función de una; el clic ya selecciona la capa
+      if(i !== mobLayerIdx) mobSelLayerSoft(i);
+    });
   });
   cont.querySelectorAll('.mx-hit').forEach(function(hit){
     const i = +hit.dataset.i;

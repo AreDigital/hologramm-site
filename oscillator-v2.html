@@ -2330,7 +2330,10 @@ function mobBuildMixer(){
       const r = tr.getBoundingClientRect();
       mobMixSet(i, Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height)));
     };
-    hit.addEventListener('pointerdown', function(e){ hit._drag = true; if(layers[i]) layers[i]._drag = true; mobSelLayerSoft(i); hit.setPointerCapture(e.pointerId); set(e); });
+    hit.addEventListener('pointerdown', function(e){
+      if(i !== mobLayerIdx){ mobSelLayerSoft(i); hit._drag = false; return; } // primer toque: solo selecciona la capa, no mueve el fader
+      hit._drag = true; if(layers[i]) layers[i]._drag = true; hit.setPointerCapture(e.pointerId); set(e);
+    });
     hit.addEventListener('pointermove', function(e){ if(hit._drag) set(e); });
     hit.addEventListener('pointerup',   function(){ hit._drag = false; if(layers[i]) layers[i]._drag = false; });
     hit.addEventListener('pointercancel', function(){ hit._drag = false; if(layers[i]) layers[i]._drag = false; });

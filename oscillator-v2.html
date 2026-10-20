@@ -578,6 +578,18 @@ html body,html body *{text-rendering:geometricPrecision;-webkit-font-smoothing:a
 html body .lrst{font-size:15px;line-height:1;padding:7px 12px;margin-left:6px}
 html body .lhdr .lrst{font-size:16px;padding:10px 13px}
 </style>
+<style id="lgrp-gap">
+html body .lgrp .lrst{margin-left:0}
+/* solo móvil (mixer): botones de FRECUENCIA de igual altura */
+html body #mx-freq .lgrp .lrst{height:31px;padding:0 12px;display:flex;align-items:center}
+html body #mx-freq .lgrp .bb-tog{height:31px;padding:0 12px!important;font-size:9px!important;letter-spacing:.8px;display:flex;align-items:center;box-sizing:border-box}
+</style>
+<style id="freq-pc-alto">
+@media (min-width:861px){
+html body .lgrp .bb-tog{height:31px;padding:0 6px!important;display:flex;align-items:center;box-sizing:border-box}
+html body .lgrp [id^="btn-audio-freq-"]{order:-1}
+}
+</style>
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -1558,7 +1570,7 @@ function renderUI(){
 
         <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
           <span>FRECUENCIA</span>
-          <div style="display:flex;gap:3px">
+          <div class="lgrp" style="display:flex;gap:6px;align-items:center">
             <button class="bb-tog ${L.bpmSync?'on':''}" style="font-size:7px;padding:2px 6px;${L.bpmSync?'border-color:'+col+';color:'+col:''}" onclick="event.stopPropagation();const L=getL(${L.id});L.bpmSync=!L.bpmSync;renderUI()">BPM SYNC</button>
             <button class="bb-tog ${(L.audioOn!==false&&analyser)?'on':''}" id="btn-audio-freq-${L.id}" style="font-size:7px;padding:2px 6px;${(L.audioOn!==false&&analyser)?'border-color:'+col+';color:'+col:''}" onclick="event.stopPropagation();toggleLayerAudio(${L.id})">AUDIO</button>
             <button class="lrst" onclick="event.stopPropagation();const L=getL(${L.id});L.band=null;L.amp=1;if(L.bandStates)L.bandStates={};saveGeoState(L);renderUI()">↺</button>
@@ -2323,7 +2335,7 @@ function mobFreqHTML(){
   return `
       <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
         <span>FRECUENCIA</span>
-        <div style="display:flex;gap:3px">
+        <div class="lgrp" style="display:flex;gap:6px;align-items:center">
           <button class="bb-tog ${(L.audioOn!==false&&analyser)?'on':''}" id="mob-btn-audio-freq" style="font-size:7px;padding:2px 6px;${(L.audioOn!==false&&analyser)?'border-color:'+col+';color:'+col:''}" onclick="toggleLayerAudio(${id})">AUDIO</button>
           <button class="bb-tog ${L.bpmSync?'on':''}" style="font-size:7px;padding:2px 6px;${L.bpmSync?'border-color:'+col+';color:'+col:''}"
             onclick="const L=getL(${id});L.bpmSync=!L.bpmSync;mobRender()">BPM SYNC</button>

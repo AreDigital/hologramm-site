@@ -2322,6 +2322,9 @@ function mobBuildMixer(){
   });
   cont.innerHTML = h + '</div>';
   const fz = document.getElementById('mx-freq'); if(fz) fz.innerHTML = mobFreqHTML();
+  cont.querySelectorAll('.bb-fw').forEach(function(fw,i){   // tocar cualquier parte de la tarjeta del fader selecciona la capa
+    fw.addEventListener('pointerdown', function(){ if(i !== mobLayerIdx) mobSelLayerSoft(i); });
+  });
   cont.querySelectorAll('.mx-hit').forEach(function(hit){
     const i = +hit.dataset.i;
     const set = function(e){

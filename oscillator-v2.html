@@ -590,6 +590,17 @@ html body .lgrp .bb-tog{height:31px;padding:0 6px!important;display:flex;align-i
 html body .lgrp [id^="btn-audio-freq-"]{order:-1}
 }
 </style>
+<style id="ltabs-movil">
+@media (max-width:860px){
+html body #mob-content .ltabs{padding:0}
+}
+</style>
+<style id="flash-reset">
+@media (max-width:860px){
+html body #mob .lrst.flash,html body #mob .lrst:active{background:rgba(0,255,224,0.28);border-color:var(--p);color:#fff;box-shadow:0 0 10px rgba(0,255,224,0.55)}
+html body #mob button:active{filter:brightness(1.6)}
+}
+</style>
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -2786,6 +2797,20 @@ document.addEventListener('pointerup',function(e){
     return;
   }
   _mrT=now; _mrEl=el; _mrX=e.clientX; _mrY=e.clientY;
+},true);
+
+// ── Móvil: los botones de reset muestran que se tocaron (aunque el panel se redibuje al presionarlos) ──
+document.addEventListener('click',function(e){
+  const b=e.target.closest&&e.target.closest('#mob-content .lrst');
+  if(!b) return;
+  const panel=b.closest('.mpanel'); if(!panel) return;
+  const idx=[].indexOf.call(panel.querySelectorAll('.lrst'),b), pid=panel.id;
+  setTimeout(function(){
+    const p=document.getElementById(pid); if(!p) return;
+    const nb=p.querySelectorAll('.lrst')[idx]; if(!nb) return;
+    nb.classList.add('flash');
+    setTimeout(function(){ nb.classList.remove('flash'); },280);
+  },0);
 },true);
 
 // INIT — 4 capas fijas

@@ -562,6 +562,11 @@ html body,html body *{text-rendering:geometricPrecision;-webkit-font-smoothing:a
 #mp-mix .mx-geo .col-swatch{height:22px}
 }
 </style>
+<style id="mx-colores-arriba">
+@media (max-width:860px){
+#mp-mix .mx-geo .col-grid{order:-1;margin:8px 0 0;grid-template-columns:repeat(8,32px);justify-content:space-between;gap:0}
+}
+</style>
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -1525,20 +1530,20 @@ function renderUI(){
         <div class="ctrl"><div class="crow"><label style="color:${col}">CONEXIONES</label><span class="val" id="vc${L.id}">${L.links}</span></div>
         <input type="range" min="5" max="20" value="${L.links}" oninput="const L=getL(${L.id});L.links=+this.value;document.getElementById('vc${L.id}').textContent=this.value;buildNodes(L);saveGeoState(L)" ondblclick="const L=getL(${L.id}),d=(GEO_DEFAULTS[L.geo]||GEO_DEFAULTS.sphere).links;L.links=d;this.value=d;document.getElementById('vc${L.id}').textContent=d;buildNodes(L);saveGeoState(L)"></div>
 
-        <div class="lsec">POSICIÓN</div>
-        <div class="ctrl"><div class="crow"><label style="color:${col}">OFFSET X</label><span class="val" id="vox${L.id}">${Math.round(L.ox*100)}</span></div>
-        <input type="range" min="-40" max="40" value="${Math.round(L.ox*100)}" oninput="const L=getL(${L.id});L.ox=+this.value/100;document.getElementById('vox${L.id}').textContent=this.value;saveGeoState(L)" ondblclick="const L=getL(${L.id});L.ox=0;this.value=0;document.getElementById('vox${L.id}').textContent=0;saveGeoState(L)"></div>
-        <div class="ctrl"><div class="crow"><label style="color:${col}">OFFSET Y</label><span class="val" id="voy${L.id}">${Math.round(L.oy*100)}</span></div>
-        <input type="range" min="-40" max="40" value="${Math.round(L.oy*100)}" oninput="const L=getL(${L.id});L.oy=+this.value/100;document.getElementById('voy${L.id}').textContent=this.value;saveGeoState(L)" ondblclick="const L=getL(${L.id});L.oy=0;this.value=0;document.getElementById('voy${L.id}').textContent=0;saveGeoState(L)"></div>
-        <div class="ctrl"><div class="crow"><label style="color:${col}">RADIO +/-</label><span class="val" id="vrad${L.id}">${(L.rad||0)}</span></div>
-        <input type="range" min="-50" max="100" value="${L.rad||0}" oninput="const L=getL(${L.id});L.rad=+this.value;document.getElementById('vrad${L.id}').textContent=this.value;saveGeoState(L)" ondblclick="const L=getL(${L.id}),d=(GEO_DEFAULTS[L.geo]||GEO_DEFAULTS.sphere).rad;L.rad=d;this.value=d;document.getElementById('vrad${L.id}').textContent=d;saveGeoState(L)"></div>
-
         <div class="ctrl"><div class="crow"><label style="color:${col}">BRILLO NODOS</label><span class="val" id="vg${L.id}">${L.glow}</span></div>
         <input type="range" min="0" max="40" value="${L.glow}" oninput="getL(${L.id}).glow=+this.value;document.getElementById('vg${L.id}').textContent=this.value" ondblclick="getL(${L.id}).glow=0;this.value=0;document.getElementById('vg${L.id}').textContent=0"></div>
         <div class="ctrl"><div class="crow"><label style="color:${col}">OPACIDAD LÍNEAS</label><span class="val" id="vlo${L.id}">${(L.lineOpacity??1).toFixed(2)}</span></div>
         <input type="range" min="0" max="1" step="0.01" value="${L.lineOpacity??1}" oninput="getL(${L.id}).lineOpacity=+this.value;document.getElementById('vlo${L.id}').textContent=(+this.value).toFixed(2)" ondblclick="getL(${L.id}).lineOpacity=1;this.value=1;document.getElementById('vlo${L.id}').textContent='1.00'"></div>
         <div class="ctrl"><div class="crow"><label style="color:${col}">OPACIDAD NODOS</label><span class="val" id="vno${L.id}">${(L.nodeOpacity??1).toFixed(2)}</span></div>
         <input type="range" min="0" max="1" step="0.01" value="${L.nodeOpacity??1}" oninput="getL(${L.id}).nodeOpacity=+this.value;document.getElementById('vno${L.id}').textContent=(+this.value).toFixed(2)" ondblclick="getL(${L.id}).nodeOpacity=1;this.value=1;document.getElementById('vno${L.id}').textContent='1.00'"></div>
+
+        <div class="lsec">POSICIÓN</div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">RADIO +/-</label><span class="val" id="vrad${L.id}">${(L.rad||0)}</span></div>
+        <input type="range" min="-50" max="100" value="${L.rad||0}" oninput="const L=getL(${L.id});L.rad=+this.value;document.getElementById('vrad${L.id}').textContent=this.value;saveGeoState(L)" ondblclick="const L=getL(${L.id}),d=(GEO_DEFAULTS[L.geo]||GEO_DEFAULTS.sphere).rad;L.rad=d;this.value=d;document.getElementById('vrad${L.id}').textContent=d;saveGeoState(L)"></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">OFFSET X</label><span class="val" id="vox${L.id}">${Math.round(L.ox*100)}</span></div>
+        <input type="range" min="-40" max="40" value="${Math.round(L.ox*100)}" oninput="const L=getL(${L.id});L.ox=+this.value/100;document.getElementById('vox${L.id}').textContent=this.value;saveGeoState(L)" ondblclick="const L=getL(${L.id});L.ox=0;this.value=0;document.getElementById('vox${L.id}').textContent=0;saveGeoState(L)"></div>
+        <div class="ctrl"><div class="crow"><label style="color:${col}">OFFSET Y</label><span class="val" id="voy${L.id}">${Math.round(L.oy*100)}</span></div>
+        <input type="range" min="-40" max="40" value="${Math.round(L.oy*100)}" oninput="const L=getL(${L.id});L.oy=+this.value/100;document.getElementById('voy${L.id}').textContent=this.value;saveGeoState(L)" ondblclick="const L=getL(${L.id});L.oy=0;this.value=0;document.getElementById('voy${L.id}').textContent=0;saveGeoState(L)"></div>
 
         <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
           <span>FRECUENCIA</span>
@@ -2386,23 +2391,6 @@ function mobRender(){
           oninput="const L=getL(${id});L.links=+this.value;document.getElementById('${uid}_c').textContent=this.value;buildNodes(L);saveGeoState(L)">
       </div>
 
-      <div class="lsec">POSICIÓN</div>
-      <div class="ctrl">
-        <div class="crow"><label style="color:${col}">OFFSET X</label><span class="val" id="${uid}_ox">${Math.round(L.ox*100)}</span></div>
-        <input type="range" min="-40" max="40" value="${Math.round(L.ox*100)}"
-          oninput="const L=getL(${id});L.ox=+this.value/100;document.getElementById('${uid}_ox').textContent=this.value;saveGeoState(L)">
-      </div>
-      <div class="ctrl">
-        <div class="crow"><label style="color:${col}">OFFSET Y</label><span class="val" id="${uid}_oy">${Math.round(L.oy*100)}</span></div>
-        <input type="range" min="-40" max="40" value="${Math.round(L.oy*100)}"
-          oninput="const L=getL(${id});L.oy=+this.value/100;document.getElementById('${uid}_oy').textContent=this.value;saveGeoState(L)">
-      </div>
-      <div class="ctrl">
-        <div class="crow"><label style="color:${col}">RADIO +/-</label><span class="val" id="${uid}_rad">${(L.rad||0)}</span></div>
-        <input type="range" min="-50" max="100" value="${L.rad||0}"
-          oninput="const L=getL(${id});L.rad=+this.value;document.getElementById('${uid}_rad').textContent=this.value;saveGeoState(L)">
-      </div>
-
       <div class="ctrl">
         <div class="crow"><label style="color:${col}">BRILLO NODOS</label><span class="val" id="${uid}_g">${L.glow}</span></div>
         <input type="range" min="0" max="40" value="${L.glow}"
@@ -2417,6 +2405,23 @@ function mobRender(){
         <div class="crow"><label style="color:${col}">OPACIDAD NODOS</label><span class="val" id="${uid}_no">${(L.nodeOpacity??1).toFixed(2)}</span></div>
         <input type="range" min="0" max="1" step="0.01" value="${L.nodeOpacity??1}"
           oninput="getL(${id}).nodeOpacity=+this.value;document.getElementById('${uid}_no').textContent=(+this.value).toFixed(2)">
+      </div>
+
+      <div class="lsec">POSICIÓN</div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">RADIO +/-</label><span class="val" id="${uid}_rad">${(L.rad||0)}</span></div>
+        <input type="range" min="-50" max="100" value="${L.rad||0}"
+          oninput="const L=getL(${id});L.rad=+this.value;document.getElementById('${uid}_rad').textContent=this.value;saveGeoState(L)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">OFFSET X</label><span class="val" id="${uid}_ox">${Math.round(L.ox*100)}</span></div>
+        <input type="range" min="-40" max="40" value="${Math.round(L.ox*100)}"
+          oninput="const L=getL(${id});L.ox=+this.value/100;document.getElementById('${uid}_ox').textContent=this.value;saveGeoState(L)">
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">OFFSET Y</label><span class="val" id="${uid}_oy">${Math.round(L.oy*100)}</span></div>
+        <input type="range" min="-40" max="40" value="${Math.round(L.oy*100)}"
+          oninput="const L=getL(${id});L.oy=+this.value/100;document.getElementById('${uid}_oy').textContent=this.value;saveGeoState(L)">
       </div>
 
     `;
@@ -2669,6 +2674,53 @@ document.addEventListener('input',function(e){ if(e.target&&e.target.type==='ran
 document.addEventListener('dblclick',function(){ setTimeout(sliderFillAll,0); },true);
 setInterval(sliderFillAll,250); // cubre cambios por código, MIDI y paneles que se redibujan
 sliderFillAll();
+
+// ── Móvil: doble toque en un slider → valor predeterminado (igual que doble clic en PC) ──
+function mobResetRange(el){
+  if(el._mrLock!=null){ el.value=el._mrLock; el.dispatchEvent(new Event('input',{bubbles:true})); sliderFillAll(); return; }
+  const oi=el.getAttribute('oninput')||'';
+  let v=null;
+  const g=oi.match(/G\.(rad|speed|smooth)=\+this\.value/);
+  if(g){ v={rad:25,speed:1,smooth:0.8}[g[1]]; }
+  else{
+    const m=oi.match(/\.(\w+)=\+this\.value/);
+    const L=layers[mobLayerIdx]; if(!L) return;
+    const GD=GEO_DEFAULTS[L.geo]||GEO_DEFAULTS.sphere;
+    const p=m?m[1]:'';
+    if(oi.indexOf('BAND_DETECT')>-1) v=({sub:0.08,bass:0.12,mid:0.02,hi:0.003,all:0.05})[L.band]||0.1;
+    else{
+      const D={density:GD.density,nodeSize:GD.nodeSize,links:GD.links,rad:GD.rad,rotX:GD.rotX||0.5,rotY:0,glow:0,lineOpacity:1,nodeOpacity:1,
+        ox:0,oy:0,driftX:0,driftY:0,driftLimit:0.8,orbitR:0,orbitSpd:0,shakeInt:0,shakeDecay:0.2,noiseInt:0,noiseSpd:1,trail:0,
+        scatterInt:0,scatterDecay:0.3,mirrorX:0,mirrorY:0,zoomInt:0.5,zoomDecay:0.78,tentN:6,tentLen:1};
+      if(p==='amp') v=({sub:1.5,bass:1.0,mid:2.0,hi:3.0,all:1.0})[L.band]||1;
+      else v=D[p];
+    }
+  }
+  if(v==null) return;
+  el._mrLock=v;
+  setTimeout(function(){ el._mrLock=null; },200);
+  el.value=v;
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+  sliderFillAll();
+}
+let _mrT=0,_mrX=0,_mrY=0,_mrEl=null;
+function _mrApply(el){
+  // se aplica después de que el navegador termine de mover el slider con el toque
+  mobResetRange(el);
+  requestAnimationFrame(function(){ mobResetRange(el); });
+  setTimeout(function(){ mobResetRange(el); }, 60);
+}
+document.addEventListener('pointerup',function(e){
+  const el=e.target;
+  if(!(el&&el.matches&&el.matches('#mob input[type=range]'))) return;
+  const now=Date.now();
+  if(el===_mrEl&&now-_mrT<350&&Math.hypot(e.clientX-_mrX,e.clientY-_mrY)<24){
+    _mrT=0; _mrEl=null;
+    setTimeout(function(){ _mrApply(el); },0);
+    return;
+  }
+  _mrT=now; _mrEl=el; _mrX=e.clientX; _mrY=e.clientY;
+},true);
 
 // INIT — 4 capas fijas
 const La=defaultLayer(0); La.defaultCi=0; buildNodes(La); layers.push(La);

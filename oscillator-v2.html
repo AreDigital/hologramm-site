@@ -471,7 +471,7 @@ input[type=range]::-webkit-slider-thumb,.bb-range::-webkit-slider-thumb,.bb-gran
 #mp-mix .mx-geo .lsec{margin:2px 0 0;padding:0;font-size:9px}
 #mp-mix .mx-geo .geo-grid{padding:0;gap:5px;margin:0}
 #mp-mix .mx-geo .gb{padding:5px 2px;font-size:9px}
-#mp-mix .mx-geo .col-grid{padding:0;gap:6px;margin:6px 0 0;grid-template-columns:repeat(7,1fr)}
+#mp-mix .mx-geo .col-grid{padding:0;gap:5px;margin:6px 0 0;grid-template-columns:repeat(8,1fr)}
 #mp-mix .mx-geo .col-swatch{height:18px}
 #mp-mix .bb-fw{gap:8px;padding-top:8px;padding-bottom:6px}
 #mp-mix .bb-ft::before{left:-14px;right:-14px;-webkit-mask:linear-gradient(90deg,#000 0 9px,transparent 9px calc(100% - 9px),#000 calc(100% - 9px));mask:linear-gradient(90deg,#000 0 9px,transparent 9px calc(100% - 9px),#000 calc(100% - 9px))}
@@ -493,7 +493,7 @@ input[type=range]::-webkit-slider-thumb,.bb-range::-webkit-slider-thumb,.bb-gran
 #mp-mix .bb-aut,#mp-mix .bb-aus{height:26px;border-radius:6px}
 #mp-mix .bb-aut{font-size:11px;flex:1 1 100%;height:28px}
 #mp-mix .bb-aus{width:auto;flex:1 1 0;height:26px;font-size:16px}
-#mp-mix .bb-faders-row{gap:6px;padding:4px 8px 0}
+#mp-mix .bb-faders-row{gap:6px;padding:4px 2px 0}
 #mp-mix #mob-fx-inner{margin-top:0;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07)}
 .mx-hit{padding:0 24px;margin:0 -24px;touch-action:none;position:relative}
 </style>
@@ -510,10 +510,10 @@ input[type=range]::-webkit-slider-thumb,.bb-range::-webkit-slider-thumb,.bb-gran
 #mob-layer-tog.on{background:color-mix(in srgb,var(--lc) 16%,transparent);border-color:var(--lc);color:var(--lc)}
 </style>
 <style id="mob-col-wide">
-@media (max-width:860px){#mob-content .col-grid{grid-template-columns:repeat(7,1fr);gap:8px;width:100%}}
+@media (max-width:860px){#mob-content .col-grid{grid-template-columns:repeat(8,1fr);gap:6px;width:100%}}
 </style>
 <style id="pc-col-wide">
-@media (min-width:861px){#panel .col-grid,#panel-l .col-grid{grid-template-columns:repeat(7,1fr);gap:8px;padding:2px 12px}}
+@media (min-width:861px){#panel .col-grid,#panel-l .col-grid{grid-template-columns:repeat(8,1fr);gap:6px;padding:2px 12px}}
 </style>
 <style id="pc-global-air">
 @media (min-width:861px){.bb-global .bb-gctrl{margin:6px 0}
@@ -541,6 +541,25 @@ html body input[type=range]::-webkit-slider-runnable-track{height:4px;border-rad
 html body input[type=range]::-moz-range-track{height:4px;border-radius:2px}
 html body input[type=range]::-webkit-slider-thumb{width:24px!important;height:14px!important;margin-top:-5px!important;border-radius:3px!important;background:linear-gradient(90deg,transparent 11px,rgba(0,0,0,.55) 11px,rgba(0,0,0,.55) 13px,transparent 13px),linear-gradient(rgba(255,255,255,.45),rgba(0,0,0,.28)),var(--p)!important;box-shadow:0 2px 5px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.22)!important}
 html body input[type=range]::-moz-range-thumb{width:24px;height:14px;border-radius:3px}
+}
+</style>
+<style id="mx-freq-css">
+#mx-freq{display:flex;flex-direction:column;gap:6px}
+#mx-freq .lsec{margin:4px 0 0;padding:0}
+#mx-freq .band-grid{padding:0;margin:0}
+#mx-freq .ctrl{margin:0}
+</style>
+<style id="texto-suave">
+html body,html body *{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+</style>
+<style id="mx-aire">
+@media (max-width:860px){
+#mp-mix .bb-ft{height:max(44px,calc(var(--mobh) - 348px))}
+#mp-mix .mx-geo{gap:8px}
+#mp-mix .mx-geo .geo-grid{gap:6px}
+#mp-mix .mx-geo .gb{padding:8px 2px;font-size:10px}
+#mp-mix .mx-geo .col-grid{margin-top:4px}
+#mp-mix .mx-geo .col-swatch{height:22px}
 }
 </style>
 </head>
@@ -646,6 +665,13 @@ html body input[type=range]::-moz-range-thumb{width:24px;height:14px;border-radi
 <!-- ══════════ PANEL MÓVIL ══════════ -->
 <div id="mob" class="mixon">
 
+  <!-- Pestañas -->
+  <div id="mob-tabs">
+    <button class="mtab"        onclick="mobTab('forma')">FORMA</button>
+    <button class="mtab"        onclick="mobTab('mov')">MOV</button>
+    <button class="mtab"        onclick="mobTab('fx')">FX</button>
+  </div>
+
   <!-- Fila superior: selector de capa + ON/OFF -->
   <div id="mob-top">
     <div id="mob-layer-dot"></div>
@@ -656,13 +682,6 @@ html body input[type=range]::-moz-range-thumb{width:24px;height:14px;border-radi
       <button class="mob-lbtn"        onclick="mobSelLayer(3)">CAPA 4</button>
     </div>
     <button id="mob-layer-tog" class="on" onclick="mobTogLayer()">ON</button>
-  </div>
-
-  <!-- Pestañas -->
-  <div id="mob-tabs">
-    <button class="mtab"        onclick="mobTab('forma')">FORMA</button>
-    <button class="mtab"        onclick="mobTab('mov')">MOV</button>
-    <button class="mtab"        onclick="mobTab('fx')">FX</button>
   </div>
 
   <!-- Contenido -->
@@ -704,6 +723,8 @@ html body input[type=range]::-moz-range-thumb{width:24px;height:14px;border-radi
 
         <button id="mob-audio-btn" onclick="startAudio();setTimeout(mobSyncAudio,400)">▶ AUDIO</button>
 
+        <div id="mx-freq"></div>
+
         <div style="height:1px;background:rgba(0,255,224,0.07)"></div>
 
         <div style="font-size:7px;letter-spacing:3px;color:rgba(0,255,224,0.2);margin-bottom:2px">GLOBAL</div>
@@ -730,6 +751,7 @@ html body input[type=range]::-moz-range-thumb{width:24px;height:14px;border-radi
         <div id="mob-fx-actions">
           <button onclick="resetAll()"       style="border:1px solid var(--s);color:var(--s)">■ RESET</button>
           <button id="mob-freeze" onclick="toggleFreeze()" style="border:1px solid rgba(167,139,250,0.5);color:rgba(167,139,250,0.7)">❄ FREEZE</button>
+          <button id="mob-midi" onclick="mobMidi()" style="border:1px solid rgba(255,200,0,0.4);color:rgba(255,200,0,0.7)">⬡ MIDI</button>
         </div>
 
       </div>
@@ -971,6 +993,7 @@ const COLS=[
   {h:'#a78bfa',r:167,g:139,b:250},
   {h:'#ff6b35',r:255,g:107,b:53 },
   {h:'#ffffff',r:255,g:255,b:255},
+  {h:'#ff1f2d',r:255,g:31, b:45 },
 ];
 const GEOS=['sphere','cube','torus','wave','dna','diamond'];
 const GEO_LABELS=['ESFERA','CUBO','TORO','GRID','HELIX','ROMBO'];
@@ -1891,8 +1914,8 @@ let midiMapMode=false;
 let midiWaitingEl=null;  // elemento esperando mapeo
 let midiWaitingMeta=null;
 
-async function initMIDI(){
-  if(window.innerWidth<=860) return; // móvil: sin MIDI, no pide permiso
+async function initMIDI(force){
+  if(!force && window.innerWidth<=860) return; // móvil: no pide permiso salvo que se active con el botón MIDI
   if(!navigator.requestMIDIAccess){
     console.log('Web MIDI no disponible en este navegador — MIDI deshabilitado.');
     return;
@@ -1918,6 +1941,7 @@ async function initMIDI(){
 function onMIDIMessage(e){
   const [status,cc,value]=e.data;
   const type=status&0xf0;
+  const mb=document.getElementById('mob-midi'); if(mb&&mb.dataset.on&&(type===0xB0||type===0x90)) mb.textContent='⬡ '+(type===0xB0?'CC ':'N ')+cc+' · '+value;
   // Solo CC (0xB0) y Note On (0x90)
   if(type!==0xB0&&type!==0x90) return;
   const key=`${type}-${cc}`;
@@ -2041,6 +2065,17 @@ function applyMIDI(meta, v){
       else if(meta.param==='layer'){const L=getL(meta.id);if(L)togL(meta.id);}
     }
   }
+}
+
+async function mobMidi(){
+  const b=document.getElementById('mob-midi'); if(!b) return;
+  if(!midiAccess) await initMIDI(true);
+  if(!midiAccess){ b.textContent='⬡ SIN MIDI'; b.style.color='rgba(255,60,60,0.8)'; b.style.borderColor='rgba(255,60,60,0.5)'; return; }
+  midiAccess.inputs.forEach(function(i){ i.onmidimessage=onMIDIMessage; });
+  const n=midiAccess.inputs.size;
+  b.dataset.on='1';
+  b.style.color=n?'#ffc800':'rgba(255,200,0,0.5)'; b.style.borderColor=n?'#ffc800':'rgba(255,200,0,0.4)'; b.style.background=n?'rgba(255,200,0,0.1)':'';
+  b.textContent='⬡ MIDI · '+n;
 }
 
 function toggleMidiMap(){
@@ -2232,6 +2267,34 @@ function mobMixSet(i, v){
   if(t) t.style.bottom = 'calc('+pct+'% - 2.5px)';
   if(p) p.textContent = pct+'%';
 }
+function mobFreqHTML(){
+  const L = layers[mobLayerIdx]; if(!L) return '';
+  const col = COLS[L.ci % COLS.length].h, id = L.id, uid = 'm_mix_'+id;
+  return `
+      <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
+        <span>FRECUENCIA</span>
+        <div style="display:flex;gap:3px">
+          <button class="bb-tog ${(L.audioOn!==false&&analyser)?'on':''}" id="mob-btn-audio-freq" style="font-size:7px;padding:2px 6px;${(L.audioOn!==false&&analyser)?'border-color:'+col+';color:'+col:''}" onclick="toggleLayerAudio(${id})">AUDIO</button>
+          <button class="bb-tog ${L.bpmSync?'on':''}" style="font-size:7px;padding:2px 6px;${L.bpmSync?'border-color:'+col+';color:'+col:''}"
+            onclick="const L=getL(${id});L.bpmSync=!L.bpmSync;mobRender()">BPM SYNC</button>
+          <button class="lrst" onclick="const L=getL(${id});L.band=null;L.amp=1;saveGeoState(L);mobRender()">↺</button>
+        </div>
+      </div>
+      <div class="band-grid">
+        ${BANDS.map((b,i)=>{
+          const isActive = L.band===b;
+          const s = isActive ? `border-color:${col};color:${col};background:rgba(255,255,255,0.1)` : '';
+          return `<button class="bb${isActive?' active':''}" style="${s}" onclick="setBand(${id},'${b}')">${BNAMES[i]}</button>`;
+        }).join('')}
+      </div>
+      <div class="ctrl">
+        <div class="crow"><label style="color:${col}">AMPLITUD</label><span class="val" id="${uid}_a">${L.amp.toFixed(1)}</span></div>
+        <input type="range" min="0" max="5" step="0.1" value="${L.amp}"
+          oninput="const L=getL(${id});L.amp=+this.value;if(L.band){if(!L.bandStates)L.bandStates={};L.bandStates[L.band]={amp:L.amp};}document.getElementById('${uid}_a').textContent=(+this.value).toFixed(1)">
+      </div>
+  `;
+}
+
 function mobBuildMixer(){
   const cont = document.getElementById('mx-dyn');
   if(!cont) return;
@@ -2253,6 +2316,7 @@ function mobBuildMixer(){
       + '</div>';
   });
   cont.innerHTML = h + '</div>';
+  const fz = document.getElementById('mx-freq'); if(fz) fz.innerHTML = mobFreqHTML();
   cont.querySelectorAll('.mx-hit').forEach(function(hit){
     const i = +hit.dataset.i;
     const set = function(e){
@@ -2305,16 +2369,6 @@ function mobRender(){
 
   if(name === 'forma'){
     cont.innerHTML = `
-      <div class="lsec">GEOMETRÍA</div>
-      <div class="geo-grid">
-        ${GEOS.map((g,i)=>`<button class="gb${L.geo===g?' active':''}" onclick="setGeo(${id},'${g}')" style="${L.geo===g?'border-color:'+col+';color:'+col:''}">${GEO_LABELS[i]}</button>`).join('')}
-      </div>
-
-      <div class="lsec">COLOR</div>
-      <div class="col-grid">
-        ${COLS.map((c,i)=>`<div class="col-swatch${L.ci===i?' active':''}" style="background:${c.h};${L.ci===i?'outline:2px solid #fff;':''}" onclick="getL(${id}).ci=${i};mobUpdateHeader();mobRender()"></div>`).join('')}
-      </div>
-
       <div class="lsec">FORMA</div>
       <div class="ctrl">
         <div class="crow"><label style="color:${col}">DENSIDAD NODOS</label><span class="val" id="${uid}_d">${L.density}</span></div>
@@ -2365,27 +2419,6 @@ function mobRender(){
           oninput="getL(${id}).nodeOpacity=+this.value;document.getElementById('${uid}_no').textContent=(+this.value).toFixed(2)">
       </div>
 
-      <div class="lsec" style="display:flex;justify-content:space-between;align-items:center">
-        <span>FRECUENCIA</span>
-        <div style="display:flex;gap:3px">
-          <button class="bb-tog ${(L.audioOn!==false&&analyser)?'on':''}" id="mob-btn-audio-freq" style="font-size:7px;padding:2px 6px;${(L.audioOn!==false&&analyser)?'border-color:'+col+';color:'+col:''}" onclick="toggleLayerAudio(${id})">AUDIO</button>
-          <button class="bb-tog ${L.bpmSync?'on':''}" style="font-size:7px;padding:2px 6px;${L.bpmSync?'border-color:'+col+';color:'+col:''}"
-            onclick="const L=getL(${id});L.bpmSync=!L.bpmSync;mobRender()">BPM SYNC</button>
-          <button class="lrst" onclick="const L=getL(${id});L.band=null;L.amp=1;saveGeoState(L);mobRender()">↺</button>
-        </div>
-      </div>
-      <div class="band-grid">
-        ${BANDS.map((b,i)=>{
-          const isActive = L.band===b;
-          const s = isActive ? `border-color:${col};color:${col};background:rgba(255,255,255,0.1)` : '';
-          return `<button class="bb${isActive?' active':''}" style="${s}" onclick="setBand(${id},'${b}')">${BNAMES[i]}</button>`;
-        }).join('')}
-      </div>
-      <div class="ctrl">
-        <div class="crow"><label style="color:${col}">AMPLITUD</label><span class="val" id="${uid}_a">${L.amp.toFixed(1)}</span></div>
-        <input type="range" min="0" max="5" step="0.1" value="${L.amp}"
-          oninput="const L=getL(${id});L.amp=+this.value;if(L.band){if(!L.bandStates)L.bandStates={};L.bandStates[L.band]={amp:L.amp};}document.getElementById('${uid}_a').textContent=(+this.value).toFixed(1)">
-      </div>
     `;
   }
 

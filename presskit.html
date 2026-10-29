@@ -79,16 +79,17 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
 .sec-bracket { font-size:1.8rem; color:var(--border); font-family:var(--font-mono); line-height:1; }
 .presskit-title { font-family:var(--font-display); font-weight:700; font-size:clamp(1.1rem,2.5vw,1.6rem); letter-spacing:.28em; }
 .presskit-sub { margin-top:10px; font-size:.78rem; letter-spacing:.18em; color:var(--cyan); }
-.presskit-pdf {
-  position:absolute; right:24px; top:50%; transform:translateY(-50%);
-  display:flex; align-items:center; justify-content:center;
-  border:1px solid var(--cyan); padding:8px 16px;
-  cursor:none; transition:border-color .3s, background .3s;
-  background: rgba(0,229,255,0.06);
+/* Download button — appears next to "Read less" once the bio is open */
+.bio-actions { display:flex; align-items:center; flex-wrap:wrap; gap:20px; margin-top:4px; }
+.bio-pdf {
+  display:none; align-items:center; gap:8px;
+  border:1px solid var(--cyan); background:rgba(0,229,255,0.06);
+  color:var(--cyan); font-size:.62rem; letter-spacing:.2em;
+  padding:7px 14px; cursor:none; text-decoration:none;
+  transition:background .3s;
 }
-.presskit-pdf:hover { background:rgba(0,229,255,0.12); border-color:var(--cyan); }
-.presskit-pdf-label { font-size:.58rem; letter-spacing:.18em; color:var(--cyan); line-height:1.5; text-align:center; }
-.presskit-pdf-icon { display:none; }
+.bio-pdf:hover { background:rgba(0,229,255,0.15); }
+.bio-pdf.show { display:inline-flex; }
 
 /* ── Section wrap ── */
 .section-wrap { position:relative; z-index:10; border:1px solid var(--border-thin); }
@@ -262,9 +263,6 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
   .connect-email { justify-content:center; }
   .connect-response { text-align:center; }
   .connect-inner > .reveal:first-child { order:3; text-align:center; }
-  .presskit-pdf { position:static; transform:none; margin:12px auto 0; width:fit-content; padding:8px 14px; }
-  .presskit-pdf-label { font-size:.48rem; }
-  .presskit-pdf-icon { font-size:.8rem; }
   .presskit-header { padding:32px 16px; }
   .sec-title { font-size:clamp(.9rem,3.5vw,1.3rem); letter-spacing:.15em; }
   .connect-socials { justify-content:center; flex-wrap:wrap; gap:16px; }
@@ -348,10 +346,6 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
       <span class="sec-bracket">]</span>
     </div>
     <p class="presskit-sub" data-en="BOOKINGS" data-es="BOOKINGS">BOOKINGS</p>
-    <a class="presskit-pdf" href="https://drive.google.com/drive/folders/1AiNa3oGzv5DWh9NYmnHXKEFtjYwVt4O9?usp=sharing" target="_blank">
-      <div class="presskit-pdf-label"><span data-en="DOWNLOAD" data-es="DESCARGAR">DOWNLOAD</span><br>PDF</div>
-      <div class="presskit-pdf-icon">↓</div>
-    </a>
   </div>
 
   <!-- ══════════════════════════
@@ -400,11 +394,16 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
           </div>
         </div>
 
-        <!-- Read more button -->
-        <button class="bio-read-more" id="bioReadMore">
-          <span class="bio-read-label" data-en="Read more" data-es="Leer más">Read more</span>
-          <span class="bio-read-arrow">→</span>
-        </button>
+        <!-- Read more + Download (download shows once the bio is open) -->
+        <div class="bio-actions">
+          <button class="bio-read-more" id="bioReadMore">
+            <span class="bio-read-label" data-en="Read more" data-es="Leer más">Read more</span>
+            <span class="bio-read-arrow">→</span>
+          </button>
+          <a class="bio-pdf" id="bioPdf" href="https://drive.google.com/drive/folders/1AiNa3oGzv5DWh9NYmnHXKEFtjYwVt4O9?usp=sharing" target="_blank" rel="noopener">
+            <span data-en="DOWNLOAD" data-es="DESCARGAR">DOWNLOAD</span> <span aria-hidden="true">↓</span>
+          </a>
+        </div>
       </div>
 
       <!-- Photo column -->
@@ -695,6 +694,7 @@ readMoreBtn.addEventListener('click', ()=>{
     ? (lang === 'en' ? 'Read less' : 'Leer menos')
     : (lang === 'en' ? 'Read more' : 'Leer más');
   readMoreBtn.classList.toggle('expanded', bioExpanded);
+  document.getElementById('bioPdf').classList.toggle('show', bioExpanded);
 });
 
 /* ── Language: uses the visitor's browser language by default (English if not Spanish);
@@ -748,7 +748,7 @@ burger.addEventListener('click',()=>{
 navLinksM.querySelectorAll('a').forEach(a=>{ a.addEventListener('click',()=>{ menuOpen=false; navLinksM.style.display='none'; }); });
 
 /* Hover for arrows */
-document.querySelectorAll('.presskit-pdf').forEach(el=>{
+document.querySelectorAll('.bio-pdf').forEach(el=>{
   el.addEventListener('mouseenter',()=>document.body.classList.add('hovering'));
   el.addEventListener('mouseleave',()=>document.body.classList.remove('hovering'));
 });

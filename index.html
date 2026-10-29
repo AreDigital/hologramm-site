@@ -601,6 +601,8 @@ nav.nav-hidden {
   nav .nav-inner { padding: 22px 12px; }
   .nav-links { display:none; }
   .nav-hamburger { display:flex; }
+  .nav-right { gap:10px; }
+  .lang-btn { padding:4px 7px; letter-spacing:.1em; }
 
   /* Hero */
   #home { padding: 90px 16px 40px; min-height:100svh; }
@@ -682,6 +684,7 @@ nav.nav-hidden {
     <li><a href="/connect" data-en="CONNECT" data-es="CONECTAR">CONNECT</a></li>
   </ul>
   <div class="nav-right">
+    <button class="lang-btn" id="langBtn" aria-label="Language">ES</button>
     <div class="nav-hamburger" id="hamburger">
       <span></span><span></span><span></span>
     </div>
@@ -941,7 +944,7 @@ nav.nav-hidden {
       <input class="join-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
       <label class="join-consent">
         <input type="checkbox" name="consent" required>
-        <span>I agree to receive updates from HOLOGRAMM</span>
+        <span data-en="I agree to receive updates from HOLOGRAMM" data-es="Acepto recibir novedades de HOLOGRAMM">I agree to receive updates from HOLOGRAMM</span>
       </label>
       <p class="join-status" id="joinStatus" aria-live="polite"></p>
     </form>
@@ -1229,7 +1232,7 @@ function joinSuggest(fixed){
   const b = document.createElement('button');
   b.type = 'button';
   b.className = 'join-fix';
-  b.textContent = 'DID YOU MEAN @' + fixed.split('@')[1].toUpperCase() + '?';
+  b.textContent = t('DID YOU MEAN @','¿QUISISTE DECIR @') + fixed.split('@')[1].toUpperCase() + '?';
   b.addEventListener('mouseenter',()=>document.body.classList.add('hovering'));
   b.addEventListener('mouseleave',()=>document.body.classList.remove('hovering'));
   b.addEventListener('click',()=>{
@@ -1250,26 +1253,26 @@ joinForm.addEventListener('submit', e=>{
   if(f.website.value) return;                                   /* bot trap */
   const email = f.email.value.trim().toLowerCase();
   f.email.value = email;
-  if(!EMAIL_RE.test(email)) return joinMsg('ENTER A VALID EMAIL', true);
+  if(!EMAIL_RE.test(email)) return joinMsg(t('ENTER A VALID EMAIL','ESCRIBE UN CORREO VÁLIDO'), true);
   const domain = email.split('@')[1];
   if(DOMAIN_TYPOS[domain]) return joinSuggest(email.split('@')[0] + '@' + DOMAIN_TYPOS[domain]);
   const whatsapp = f.whatsapp.value.trim();
   const digits = whatsapp.replace(/\D/g, '');
   if(!/^\+?[\d\s\-().]+$/.test(whatsapp) || digits.length < 7 || digits.length > 15)
-    return joinMsg('ENTER A VALID WHATSAPP', true);
-  if(!f.consent.checked) return joinMsg('PLEASE ACCEPT TO CONTINUE', true);
+    return joinMsg(t('ENTER A VALID WHATSAPP','ESCRIBE UN WHATSAPP VÁLIDO'), true);
+  if(!f.consent.checked) return joinMsg(t('PLEASE ACCEPT TO CONTINUE','ACEPTA PARA CONTINUAR'), true);
   if(!JOIN_URL) return joinMsg('NOT CONNECTED YET', true);
 
   joinBtn.disabled = true;
-  joinMsg('SENDING...');
+  joinMsg(t('SENDING...','ENVIANDO...'));
   const data = new URLSearchParams({
     email: email,
     whatsapp: whatsapp,
     page: location.pathname || '/'
   });
   fetch(JOIN_URL, { method:'POST', mode:'no-cors', body:data })
-    .then(()=>{ joinForm.reset(); joinMsg('SIGNAL RECEIVED // YOU ARE IN'); })
-    .catch(()=> joinMsg('TRANSMISSION FAILED — TRY AGAIN', true))
+    .then(()=>{ joinForm.reset(); joinMsg(t('SIGNAL RECEIVED // YOU ARE IN','SEÑAL RECIBIDA // YA ESTÁS DENTRO')); })
+    .catch(()=> joinMsg(t('TRANSMISSION FAILED — TRY AGAIN','FALLÓ EL ENVÍO — INTENTA DE NUEVO'), true))
     .finally(()=>{ joinBtn.disabled = false; });
 });
 
@@ -1303,20 +1306,28 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
   });
 });
 
-/* ════════════════════════════════════
-   LANGUAGE TOGGLE — only HUD status labels translate
-════════════════════════════════════ */
-let lang='en';
-const langBtn=document.getElementById('langBtn');
-if(langBtn){
-  langBtn.addEventListener('click',()=>{
-    lang = lang==='en' ? 'es' : 'en';
-    langBtn.textContent = lang==='en' ? 'ES' : 'EN';
-    document.querySelectorAll('.hud-bl[data-en], .hud-br[data-en]').forEach(el=>{
-      el.textContent = lang==='en' ? el.dataset.en : el.dataset.es;
-    });
+/* ── Language: uses the visitor's browser language by default (English if not Spanish);
+      the choice is remembered across pages. Menu and section titles stay in English. ── */
+const LANG_KEY = 'hologrammLang';
+let lang = (function(){
+  try { const s = localStorage.getItem(LANG_KEY); if(s === 'en' || s === 'es') return s; } catch(e){}
+  return (navigator.language || 'en').toLowerCase().indexOf('es') === 0 ? 'es' : 'en';
+})();
+function t(en, es){ return lang === 'es' ? es : en; }
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-en][data-es]').forEach(el => {
+    if(el.closest('nav, .sec-title, .presskit-title, .section-index')) return;
+    el.textContent = lang === 'es' ? el.dataset.es : el.dataset.en;
   });
+  document.getElementById('langBtn').textContent = lang === 'es' ? 'EN' : 'ES';
 }
+document.getElementById('langBtn').addEventListener('click', () => {
+  lang = lang === 'es' ? 'en' : 'es';
+  try { localStorage.setItem(LANG_KEY, lang); } catch(e){}
+  applyLang();
+});
+applyLang();
 
 /* ════════════════════════════════════
    MOBILE HAMBURGER

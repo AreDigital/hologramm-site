@@ -278,6 +278,8 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
   nav .nav-inner { padding:22px 12px; }
   .nav-links { display:none; }
   .nav-hamburger { display:flex; }
+  .nav-right { gap:10px; }
+  .lang-btn { padding:4px 7px; letter-spacing:.1em; }
   .rider-cols { grid-template-columns:1fr; }
   .connect-socials { justify-content:center; gap:14px; }
   .social-icon { width:40px; height:40px; }
@@ -317,6 +319,7 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
     <li><a href="/connect" data-en="CONNECT" data-es="CONECTAR">CONNECT</a></li>
   </ul>
   <div class="nav-right">
+    <button class="lang-btn" id="langBtn" aria-label="Language">ES</button>
     <div class="nav-hamburger" id="hamburger"><span></span><span></span><span></span></div>
   </div>
 </div>
@@ -333,7 +336,7 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
     </div>
     <p class="presskit-sub" data-en="RESOURCES FOR MEDIA & BOOKINGS" data-es="RECURSOS PARA MEDIOS Y BOOKINGS">RESOURCES FOR MEDIA & BOOKINGS</p>
     <a class="presskit-pdf" href="https://drive.google.com/drive/folders/1AiNa3oGzv5DWh9NYmnHXKEFtjYwVt4O9?usp=sharing" target="_blank">
-      <div class="presskit-pdf-label">DOWNLOAD<br>PDF</div>
+      <div class="presskit-pdf-label"><span data-en="DOWNLOAD" data-es="DESCARGAR">DOWNLOAD</span><br>PDF</div>
       <div class="presskit-pdf-icon">↓</div>
     </a>
   </div>
@@ -349,7 +352,6 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
         <span class="sec-bracket">[</span>
         <h2 class="sec-title" data-en="BIOGRAPHY" data-es="BIOGRAFÍA">BIOGRAPHY</h2>
         <span class="sec-bracket">]</span>
-        <button class="lang-btn" id="langBtn">ES</button>
       </div>
     </div>
 
@@ -451,7 +453,6 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
         <span class="sec-bracket">[</span>
         <h2 class="sec-title" data-en="TECHNICAL RIDER" data-es="RIDER TÉCNICO">TECHNICAL RIDER</h2>
         <span class="sec-bracket">]</span>
-        <button class="lang-btn" id="langBtnRider">ES</button>
       </div>
       <p class="sec-sub" data-en="DJ SETUP / AUDIO / VISUAL / STAGE" data-es="DJ SETUP / AUDIO / VISUAL / ESCENARIO">DJ SETUP / AUDIO / VISUAL / STAGE</p>
     </div>
@@ -683,24 +684,33 @@ readMoreBtn.addEventListener('click', ()=>{
   readMoreBtn.classList.toggle('expanded', bioExpanded);
 });
 
-/* ── Language toggle — bio and rider only ── */
-let lang = 'en';
-function toggleLang(){
-  lang = lang==='en' ? 'es' : 'en';
-  const label = lang==='en' ? 'ES' : 'EN';
-  document.querySelectorAll('.lang-btn').forEach(b => b.textContent = label);
-  document.querySelector('.bio-en').style.display = lang==='en' ? 'block' : 'none';
-  document.querySelector('.bio-es').style.display = lang==='es' ? 'block' : 'none';
-  document.querySelectorAll('.rider-list li[data-en]').forEach(el=>{ el.textContent = lang==='en' ? el.dataset.en : el.dataset.es; });
-  document.querySelectorAll('.rider-col-title span[data-en]').forEach(el=>{ el.textContent = lang==='en' ? el.dataset.en : el.dataset.es; });
-  document.querySelectorAll('.rider-important span[data-en]').forEach(el=>{ el.textContent = lang==='en' ? el.dataset.en : el.dataset.es; });
-  const readLabel = readMoreBtn.querySelector('.bio-read-label');
-  readLabel.textContent = bioExpanded
-    ? (lang==='en' ? 'Read less' : 'Leer menos')
-    : (lang==='en' ? 'Read more' : 'Leer más');
+/* ── Language: uses the visitor's browser language by default (English if not Spanish);
+      the choice is remembered across pages. Menu and section titles stay in English. ── */
+const LANG_KEY = 'hologrammLang';
+let lang = (function(){
+  try { const s = localStorage.getItem(LANG_KEY); if(s === 'en' || s === 'es') return s; } catch(e){}
+  return (navigator.language || 'en').toLowerCase().indexOf('es') === 0 ? 'es' : 'en';
+})();
+function t(en, es){ return lang === 'es' ? es : en; }
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-en][data-es]').forEach(el => {
+    if(el.closest('nav, .sec-title, .presskit-title, .section-index')) return;
+    el.textContent = lang === 'es' ? el.dataset.es : el.dataset.en;
+  });
+  document.getElementById('langBtn').textContent = lang === 'es' ? 'EN' : 'ES';
+  /* Presskit: bio in two versions + read more label */
+  document.querySelector('.bio-en').style.display = lang === 'en' ? 'block' : 'none';
+  document.querySelector('.bio-es').style.display = lang === 'es' ? 'block' : 'none';
+  readMoreBtn.querySelector('.bio-read-label').textContent = bioExpanded ? t('Read less','Leer menos') : t('Read more','Leer más');
 }
-document.getElementById('langBtn').addEventListener('click', toggleLang);
-document.getElementById('langBtnRider').addEventListener('click', toggleLang);
+document.getElementById('langBtn').addEventListener('click', () => {
+  lang = lang === 'es' ? 'en' : 'es';
+  try { localStorage.setItem(LANG_KEY, lang); } catch(e){}
+  applyLang();
+});
+applyLang();
+
 
 /* ── Hamburger ── */
 const burger=document.getElementById('hamburger');

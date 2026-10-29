@@ -309,6 +309,8 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
   nav .nav-inner { padding:22px 12px; }
   .nav-links { display:none; }
   .nav-hamburger { display:flex; }
+  .nav-right { gap:10px; }
+  .lang-btn { padding:4px 7px; letter-spacing:.1em; }
   .signals-hero { margin:0 8px; }
   .signals-hero-thumb { aspect-ratio:16/9; }
   .carousel-wrap { margin:8px 8px 0; }
@@ -374,6 +376,7 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
     <li><a href="/connect" data-en="CONNECT" data-es="CONECTAR">CONNECT</a></li>
   </ul>
   <div class="nav-right">
+    <button class="lang-btn" id="langBtn" aria-label="Language">ES</button>
     <div class="nav-hamburger" id="hamburger">
       <span></span><span></span><span></span>
     </div>
@@ -719,10 +722,28 @@ const obs=new IntersectionObserver(entries=>{
 },{threshold:.12});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
-/* ── Language toggle — titles stay in English ── */
-let lang='en';
-const langBtnEl=document.getElementById('langBtn');
-if(langBtnEl){ langBtnEl.addEventListener('click',()=>{ lang=lang==='en'?'es':'en'; langBtnEl.textContent=lang==='en'?'ES':'EN'; }); }
+/* ── Language: uses the visitor's browser language by default (English if not Spanish);
+      the choice is remembered across pages. Menu and section titles stay in English. ── */
+const LANG_KEY = 'hologrammLang';
+let lang = (function(){
+  try { const s = localStorage.getItem(LANG_KEY); if(s === 'en' || s === 'es') return s; } catch(e){}
+  return (navigator.language || 'en').toLowerCase().indexOf('es') === 0 ? 'es' : 'en';
+})();
+function t(en, es){ return lang === 'es' ? es : en; }
+function applyLang(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-en][data-es]').forEach(el => {
+    if(el.closest('nav, .sec-title, .presskit-title, .section-index')) return;
+    el.textContent = lang === 'es' ? el.dataset.es : el.dataset.en;
+  });
+  document.getElementById('langBtn').textContent = lang === 'es' ? 'EN' : 'ES';
+}
+document.getElementById('langBtn').addEventListener('click', () => {
+  lang = lang === 'es' ? 'en' : 'es';
+  try { localStorage.setItem(LANG_KEY, lang); } catch(e){}
+  applyLang();
+});
+applyLang();
 
 /* ── Hamburger ── */
 const burger=document.getElementById('hamburger');

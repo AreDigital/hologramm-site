@@ -176,6 +176,13 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
 .link-icon svg { width:100%; height:auto; display:block; }
 .link-icon.wide { width:30px; }
 .link-card:hover .link-icon { color:var(--cyan); }
+/* Small tag sitting on the top border of a link (e.g. BETA) */
+.link-tag {
+  position:absolute; top:-8px; left:14px;
+  font-size:.5rem; letter-spacing:.22em; line-height:1;
+  color:var(--cyan); background:var(--bg);
+  border:1px solid var(--cyan-mid); padding:3px 6px 3px 8px;
+}
 
 /* ── CONNECT — social icons ── */
 .connect-socials { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:24px; padding:8px 20px 56px; }
@@ -345,6 +352,7 @@ html { background:#020608; }
   <!-- Links — to add one, copy a <a class="link-card"> block -->
   <div class="links">
     <a class="link-card reveal" href="/nodoscope">
+      <span class="link-tag">BETA</span>
       <div class="link-title">NODOSCOPE APP</div>
       <span class="link-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg></span>
     </a>

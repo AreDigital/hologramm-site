@@ -5,6 +5,7 @@
 <meta name="google" content="notranslate"><!-- no browser translate prompt: the site has its own ES/EN button -->
 <link rel="icon" href="https://res.cloudinary.com/djjz6wmfz/image/upload/v1779607464/favicon_holo2_tdq0ef.jpg" type="image/jpeg">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#020608">
 <title>HOLOGRAMM — AUDIOVISUAL SYSTEM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Michroma&family=Orbitron:wght@500&display=swap" rel="stylesheet">
@@ -676,6 +677,11 @@ nav.nav-hidden {
 html.touch #cursor, html.touch #cursor-ring, html.touch #cursor-glow { display:none; }
 /* Touch screens: a tap must not leave a menu link lit (only the current page stays cyan) */
 html.touch .nav-links a:not(.active):hover { color:rgba(238,245,247,0.7); }
+
+/* Page change: dark background from the first instant + very short, soft fade between pages */
+html { background:#020608; }
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration:.18s; }
 </style>
 </head>
 <body>
@@ -1224,6 +1230,15 @@ const obs=new IntersectionObserver(entries=>{
     }
   });
 },{threshold:.12});
+/* What is already on screen when the page opens appears in place (no slide-up "bounce");
+   the animation stays only for sections that appear while scrolling */
+document.querySelectorAll('.reveal').forEach(el=>{
+  if(el.getBoundingClientRect().top < window.innerHeight){
+    el.style.transition = 'none';
+    el.classList.add('visible');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ el.style.transition = ''; }));
+  }
+});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
 /* ════════════════════════════════════

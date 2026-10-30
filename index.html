@@ -669,6 +669,9 @@ nav.nav-hidden {
   .nav-links a { font-size:.68rem; letter-spacing:.14em; padding:4px 0; }
   #home { padding-top:138px; }
 }
+
+/* Touch screens: hide the custom cursor */
+html.touch #cursor, html.touch #cursor-ring, html.touch #cursor-glow { display:none; }
 </style>
 </head>
 <body>
@@ -986,6 +989,11 @@ nav.nav-hidden {
 </div>
 
 <script>
+/* Touch screens (phones/tablets): no custom cursor and no hover tricks — avoids needing two taps on iPhone */
+const TOUCH = !window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+if(TOUCH) document.documentElement.classList.add('touch');
+</script>
+<script>
 /* ════════════════════════════════════
    PARTICLE FIELD
 ════════════════════════════════════ */
@@ -1128,7 +1136,7 @@ window.addEventListener('mousemove',e=>{
   requestAnimationFrame(trackRing);
 })();
 document.querySelectorAll('button,a,.signal-card,.connect-item,.play-circle,.signal-play,.carousel-arrow,.join-consent').forEach(el=>{
-  el.addEventListener('mouseenter',()=>document.body.classList.add('hovering'));
+  if(!TOUCH) el.addEventListener('mouseenter',()=>document.body.classList.add('hovering'));
   el.addEventListener('mouseleave',()=>document.body.classList.remove('hovering'));
 });
 
@@ -1246,7 +1254,7 @@ function joinSuggest(fixed){
   b.type = 'button';
   b.className = 'join-fix';
   b.textContent = t('DID YOU MEAN @','¿QUISISTE DECIR @') + fixed.split('@')[1].toUpperCase() + '?';
-  b.addEventListener('mouseenter',()=>document.body.classList.add('hovering'));
+  if(!TOUCH) b.addEventListener('mouseenter',()=>document.body.classList.add('hovering'));
   b.addEventListener('mouseleave',()=>document.body.classList.remove('hovering'));
   b.addEventListener('click',()=>{
     joinForm.elements.email.value = fixed;

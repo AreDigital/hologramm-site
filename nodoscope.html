@@ -496,6 +496,7 @@ input[type=range]::-webkit-slider-thumb,.bb-range::-webkit-slider-thumb,.bb-gran
 #mp-mix .bb-faders-row{gap:6px;padding:4px 2px 0}
 #mp-mix #mob-fx-inner{margin-top:0;padding-top:14px;border-top:1px solid rgba(255,255,255,0.07)}
 .mx-hit{padding:0 24px;margin:0 -24px;touch-action:none;position:relative}
+#mp-mix .mx-col .bb-fw{touch-action:none} /* whole fader card grabs the finger: no page scroll while moving a fader */
 </style>
 <style id="capa-btn">
 .lhdr{gap:7px;padding:8px 10px}
@@ -2396,16 +2397,21 @@ function mobBuildMixer(){
       if(i !== mobLayerIdx) mobSelLayerSoft(i);
     });
   });
-  cont.querySelectorAll('.mx-hit').forEach(function(hit){
-    const i = +hit.dataset.i;
+  // Toda la tarjeta del fader sirve para moverlo (no solo la línea): sobre la línea salta al punto tocado;
+  // fuera de la línea (arriba, abajo, el %) se mueve arrastrando, sin saltar.
+  cont.querySelectorAll('.mx-col .bb-fw').forEach(function(hit, i){
+    let rel = null; // {y, v} cuando se arrastra desde fuera de la línea
     const set = function(e){
       const tr = document.getElementById('mx-ft-'+i);
       if(!tr) return;
       const r = tr.getBoundingClientRect();
-      mobMixSet(i, Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height)));
+      const v = rel ? rel.v + (rel.y - e.clientY) / r.height : 1 - (e.clientY - r.top) / r.height;
+      mobMixSet(i, Math.max(0, Math.min(1, v)));
     };
     hit.addEventListener('pointerdown', function(e){
+      if(e.target.closest && e.target.closest('.bb-fon')) return; // ON/OFF sigue siendo botón
       mobSelLayerSoft(i); // tocar el fader selecciona la capa Y lo mueve de una
+      rel = (e.target.closest && e.target.closest('.mx-hit')) ? null : { y: e.clientY, v: (layers[i] && layers[i].opacity != null) ? layers[i].opacity : 1 };
       hit._drag = true; if(layers[i]) layers[i]._drag = true; hit.setPointerCapture(e.pointerId); set(e);
     });
     hit.addEventListener('pointermove', function(e){ if(hit._drag) set(e); });

@@ -226,7 +226,7 @@ nav.nav-hidden { transform:translateY(-100%); opacity:0; pointer-events:none; }
   position:relative; margin:10px 40px 0; padding:0;
 }
 .signals-grid {
-  display:grid; grid-template-columns:repeat(4,1fr);
+  display:grid; grid-template-columns:repeat(3,1fr);
   gap:10px;
 }
 .sig-arrow {
@@ -432,7 +432,7 @@ html { background:#020608; }
   <div class="signals-hero reveal">
     <div class="signals-hero-thumb">
       <div class="play-circle">▶</div>
-      <div class="signal-hero-label">SIGNAL FORM</div>
+      <div class="signal-hero-label">LASER TRACKING</div>
       <div class="signal-hero-dur"></div>
     </div>
   </div>
@@ -443,7 +443,37 @@ html { background:#020608; }
     <div class="sig-arrow right" id="sigArrowRight">&#8250;</div>
 
     <div class="signals-grid" id="signalsGrid">
-      <div class="signal-card active-card reveal" data-index="0" data-name="SIGNAL FORM" data-dur="" data-vimeo="https://vimeo.com/1236476047">
+      <div class="signal-card active-card reveal" data-index="0" data-name="LASER TRACKING" data-dur="" data-vimeo="https://vimeo.com/1246034810">
+        <div class="signal-thumb">
+          <svg class="thumb-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 95 L55 80 L85 88 L120 60 L150 68 L180 40" fill="none" stroke="#00e5ff" stroke-width="1.2" opacity=".85"/>
+            <path d="M20 105 L55 90 L85 98 L120 70 L150 78 L180 50" fill="none" stroke="#00e5ff" stroke-width=".5" opacity=".35"/>
+            <circle cx="20" cy="95" r="3" fill="#00e5ff" opacity=".7"/><circle cx="180" cy="40" r="3" fill="#00e5ff" opacity=".7"/>
+            <g fill="none" stroke="#00e5ff" stroke-width=".4" opacity=".3"><circle cx="20" cy="95" r="9"/><circle cx="180" cy="40" r="9"/></g>
+          </svg>
+        </div>
+        <div class="signal-info">
+          <div><div class="signal-name">LASER TRACKING</div><div class="signal-dur"></div></div>
+          <div class="signal-play">▶</div>
+        </div>
+      </div>
+
+      <div class="signal-card reveal" data-index="1" data-name="PERSISTENCE LAB" data-dur="" data-vimeo="https://vimeo.com/1246034811" style="transition-delay:0.08s">
+        <div class="signal-thumb">
+          <svg class="thumb-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <g fill="none" stroke="#00e5ff" stroke-width=".6">
+              <ellipse cx="100" cy="75" rx="18" ry="26" opacity=".85"/><ellipse cx="100" cy="75" rx="32" ry="42" opacity=".55"/>
+              <ellipse cx="100" cy="75" rx="48" ry="58" opacity=".35"/><ellipse cx="100" cy="75" rx="66" ry="72" opacity=".2"/>
+            </g>
+          </svg>
+        </div>
+        <div class="signal-info">
+          <div><div class="signal-name">PERSISTENCE LAB</div><div class="signal-dur"></div></div>
+          <div class="signal-play">▶</div>
+        </div>
+      </div>
+
+      <div class="signal-card reveal" data-index="2" data-name="SIGNAL FORM" data-dur="" data-vimeo="https://vimeo.com/1236476047">
         <div class="signal-thumb">
           <svg class="thumb-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
             <defs><radialGradient id="rg1" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#00e5ff" stop-opacity=".6"/><stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/></radialGradient></defs>
@@ -465,7 +495,7 @@ html { background:#020608; }
         </div>
       </div>
 
-      <div class="signal-card reveal" data-index="1" data-name="NODOSCOPE" data-dur="" data-vimeo="https://vimeo.com/1236476045" style="transition-delay:.08s">
+      <div class="signal-card reveal" data-index="3" data-name="NODOSCOPE" data-dur="" data-vimeo="https://vimeo.com/1236476045" style="transition-delay:.08s">
         <div class="signal-thumb">
           <svg class="thumb-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
             <g stroke="#00e5ff" stroke-width=".6" opacity=".7">
@@ -487,7 +517,7 @@ html { background:#020608; }
         </div>
       </div>
 
-      <div class="signal-card reveal" data-index="2" data-name="RED FREQUENCY" data-dur="" data-vimeo="https://vimeo.com/1236476048" style="transition-delay:.16s">
+      <div class="signal-card reveal" data-index="4" data-name="RED FREQUENCY" data-dur="" data-vimeo="https://vimeo.com/1236476048" style="transition-delay:.16s">
         <div class="signal-thumb">
           <svg class="thumb-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
             <path d="M0 100 C30 60,60 80,100 55 C140 30,170 70,200 50" fill="none" stroke="#00e5ff" stroke-width="1" opacity=".8"/>
@@ -504,7 +534,7 @@ html { background:#020608; }
         </div>
       </div>
 
-      <div class="signal-card reveal" data-index="3" data-name="ASCII MATTER" data-dur="" data-vimeo="https://vimeo.com/1236476046" style="transition-delay:.24s">
+      <div class="signal-card reveal" data-index="5" data-name="ASCII MATTER" data-dur="" data-vimeo="https://vimeo.com/1236476046" style="transition-delay:.24s">
         <div class="signal-thumb">
           <svg class="thumb-svg" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
             <g fill="#00e5ff">
